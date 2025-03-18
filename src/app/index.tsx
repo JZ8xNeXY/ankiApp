@@ -1,23 +1,8 @@
-import React from "react";
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { Redirect } from "expo-router";
+import React from 'react'
 
-const Index = ():JSX.Element => {
-  return (
-    <View style={styles.container}>
-      <Text>Hello World</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+const Index = (): JSX.Element => {
+  return <Redirect href="/memo/anki" />;
 };
 
 export default Index;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'ffffff',
-  },
-});

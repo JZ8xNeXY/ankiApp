@@ -1,7 +1,7 @@
-import React from "react"; 
-import { Slot } from "expo-router";
+import { Slot } from 'expo-router';
 
-const Layout = (): JSX.Element => {
+// stack型ナビゲーション
+const Layout = () : JSX.Element => {
   return <Slot />;
 };
 
