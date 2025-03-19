@@ -1,18 +1,13 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import Header from "../components/header";
 
 const FlashcardScreen = (): JSX.Element => {
   const [showAnswer, setShowAnswer] = useState(false);
 
   return (
     <View style={styles.container}>
-      {/* ナビゲーションバー */}
-      <View style={styles.navbar}>
-        <Text style={styles.navItem}>Decks</Text>
-        <Text style={styles.navItem}>Add</Text>
-        <Text style={styles.navItem}>Edit</Text>
-        <Text style={styles.navItem}>Find</Text>
-      </View>
+      <Header />
 
       {/* 問題部分 */}
       <View style={styles.cardContainer}>
@@ -38,21 +33,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F8F8F8",
     paddingTop: 50,
-    alignItems: "center",
-  },
-  navbar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "100%",
-    paddingVertical: 15,
-  },
-  navItem: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#467FD3",
   },
   cardContainer: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
@@ -66,11 +49,17 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   button: {
+    position: "absolute",  
+    bottom: 50,  
+    left: "50%",
+    transform: [{ translateX: -100 }], 
     backgroundColor: "#467FD3",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
     marginBottom: 30,
+    width:200,
+    alignItems:'center'
   },
   buttonText: {
     fontSize: 18,

@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet ,Dimensions} from "react-native";
 import Header from "../components/header";
+import { useRouter } from "expo-router";
 
 const decks = [
   { id: "1", title: "英語", count: 10 },
@@ -11,6 +12,8 @@ const decks = [
 
 
 const DeckScreen = (): JSX.Element => {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
       <Header />
@@ -22,7 +25,11 @@ const DeckScreen = (): JSX.Element => {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.deckItem}>
-              <Text style={styles.deckTitle}>{item.title}</Text>
+              <TouchableOpacity
+                onPress={() => router.push("/memo/flashcardScreen")}
+              >
+                <Text style={styles.deckTitle}>{item.title}</Text>
+              </TouchableOpacity>
               <Text style={styles.deckCount}>{item.count}</Text>
               <TouchableOpacity style={styles.actionButton}>
                 <Text style={styles.actionText}>Action ▼</Text>
@@ -37,6 +44,7 @@ const DeckScreen = (): JSX.Element => {
 
 export default DeckScreen;
 
+const screenWidth = Dimensions.get("window").width;
 
 const styles = StyleSheet.create({
   container: {
@@ -70,6 +78,9 @@ const styles = StyleSheet.create({
   deckTitle: {
     fontSize: 18,
     color: "#467FD3",
+    width: screenWidth/3,
+    flexShrink: 1,
+    overflow: "hidden",
   },
   deckCount: {
     fontSize: 16,
