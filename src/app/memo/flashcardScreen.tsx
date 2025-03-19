@@ -13,8 +13,13 @@ const FlashcardScreen = (): JSX.Element => {
       <View style={styles.cardContainer}>
         <Text style={styles.cardText}>
           The goal is to help slow down{" "}
-          <Text style={styles.hiddenText}>[...]</Text> and keep the temperature rise below{" "}
-          <Text style={styles.hiddenText}>[...]</Text>
+          <Text style={showAnswer ? styles.answerText : styles.hiddenText}>
+            {showAnswer ? "global warming" : "[...]"}
+          </Text>{" "}
+          and keep the temperature rise below{" "}
+          <Text style={showAnswer ? styles.answerText : styles.hiddenText}>
+            {showAnswer ? "1.5°C" : "[...]"}
+          </Text>
         </Text>
       </View>
 
@@ -45,6 +50,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   hiddenText: {
+    color: "#467FD3",
+    fontWeight: "bold",
+  },
+  answerText: {
     color: "#467FD3",
     fontWeight: "bold",
   },
