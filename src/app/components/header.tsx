@@ -1,9 +1,22 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity,Alert } from "react-native";
 import { useRouter } from "expo-router";
+import { auth } from "../../config";
+import { signOut } from 'firebase/auth'
 
 const Header = (): JSX.Element => {
   const router = useRouter();
+
+  const handlePress = ():void => {
+    signOut(auth)
+    .then(() =>{
+      router.replace('/auth/logIn')
+    })
+    .catch(() => {
+      Alert.alert('ログアウトに失敗しました')
+    })
+  
+  }
 
   return (
     <View style={styles.header}>
@@ -18,6 +31,9 @@ const Header = (): JSX.Element => {
       </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push("/../memo/find")}>
         <Text style={styles.headerText}>Find</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => {handlePress()}}>
+        <Text style={styles.headerText}>Log Out</Text>
       </TouchableOpacity>
     </View>
   );
