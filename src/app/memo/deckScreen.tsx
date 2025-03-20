@@ -22,11 +22,10 @@ const DeckScreen = (): JSX.Element => {
   const [decks, setDecks] = useState<Deck[]>([]);
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [selectedDeck, setSelectedDeck] = useState(null);
+  const [selectedDeck, setSelectedDeck] = useState<{ id: string; name: string } | null>(null);
 
-
-  const actionSheetRef = useRef(null);
-  const selectedDeckId = useRef(null);
+  const actionSheetRef = useRef<{ show: () => void } | null>(null);
+  const selectedDeckId = useRef<string | null>(null);
   
   const handleAddDeck = (deckName: string, deckId: string) => {
     setDecks((prevDecks) => [
@@ -50,27 +49,29 @@ const DeckScreen = (): JSX.Element => {
     setDecks(deckList);
   };
 
-  const handleShowActionSheet = (deckId) => {
-    selectedDeckId.current = deckId; 
+  const handleShowActionSheet = (deckId:string) => {
+    if (selectedDeckId){
+      selectedDeckId.current = deckId;
+    }
     if(actionSheetRef.current){
       actionSheetRef.current.show();
     }
   };
 
-  const handleRename = (deckId, currentName) => {
+  const handleRename = (deckId:string, currentName:string) => {
     setSelectedDeck({ id: deckId, name: currentName });
     setEditModalVisible(true);
   };
 
-  const handleDelete = async(deckId) => {
+  const handleDelete = async(deckId:string) => {
     console.log(`Delete deck: ${deckId}`);
     
     try {
-      const deckRef = doc(db, `users/${auth.currentUser.uid}/decks`, deckId);
-      await deleteDoc(deckRef);
-      console.log(`Deleted deck: ${deckId}`);
-
-      // UIを更新（削除されたデッキをリストから削除）
+      if(auth.currentUser){
+        const deckRef = doc(db, `users/${auth.currentUser.uid}/decks`, deckId);
+        await deleteDoc(deckRef);
+        console.log(`Deleted deck: ${deckId}`);
+      }
       setDecks((prevDecks) => prevDecks.filter((deck) => deck.id !== deckId));
     } catch (error) {
       console.error("デッキ削除エラー: ", error);
@@ -78,7 +79,7 @@ const DeckScreen = (): JSX.Element => {
     }
   };
 
-  const handleUpdateDeck = (deckId, newName) => {
+  const handleUpdateDeck = (deckId:string, newName:string) => {
     setDecks((prevDecks) =>
       prevDecks.map((deck) => (deck.id === deckId ? { ...deck, name: newName } : deck))
     );
@@ -108,9 +109,10 @@ const DeckScreen = (): JSX.Element => {
               <TouchableOpacity style={styles.actionButton} onPress={() => handleShowActionSheet(item.id)}>
                 {/* ActionSheet */}
                 <ActionSheetComponent
-                  deckId={item.id}  // ✅ 修正: 各デッキの ID を渡す
-                onRename={(id) => handleRename(id)}
-                onDelete={(id) => handleDelete(id)}
+                  deckId={item.id} 
+                  deckName={item.name}
+                  onRename={(id:string,name:string) => handleRename(id,name)}
+                  onDelete={(id:string) => handleDelete(id)}
                />
               </TouchableOpacity>
             </View>
@@ -136,11 +138,10 @@ const DeckScreen = (): JSX.Element => {
           visible={editModalVisible}
           onClose={() => setEditModalVisible(false)}
           deckId={selectedDeck.id}
-          currentName={selectedDeck.name}
+          currentName={selectedDeck?.name || ""}
           onUpdateDeck={handleUpdateDeck}
         />
       )}
-
 
     </View>
   );

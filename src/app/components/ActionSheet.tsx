@@ -2,7 +2,15 @@ import React, { useRef } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import ActionSheet from "react-native-actionsheet";
 
-const ActionSheetComponent = ({ deckId, onRename, onDelete }) => {
+
+interface ActionSheetProps {
+  deckId:string
+  deckName:string
+  onRename: (id:string,name:string) => void
+  onDelete: (id:string) => void
+}
+
+const ActionSheetComponent:React.FC<ActionSheetProps> = ({ deckId, deckName,onRename, onDelete }) => {
   const actionSheetRef = useRef(null);
 
   const showActionSheet = () => {
@@ -23,8 +31,8 @@ const ActionSheetComponent = ({ deckId, onRename, onDelete }) => {
         options={["Rename", "Delete", "Cancel"]}
         cancelButtonIndex={2} 
         destructiveButtonIndex={1} 
-        onPress={(index) => {
-          if (index === 0) onRename(deckId); 
+        onPress={(index:number) => {
+          if (index === 0) onRename(deckId,deckName); 
           if (index === 1) onDelete(deckId); 
         }}
       />

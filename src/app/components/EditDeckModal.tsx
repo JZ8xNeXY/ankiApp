@@ -3,13 +3,18 @@ import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from "reac
 import { doc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../config";
 
-const EditDeckModal = ({ visible, onClose, deckId, currentName, onUpdateDeck }) => {
-  const [newDeckName, setNewDeckName] = useState("");
+interface EditDeckModalProps {
+  visible: boolean  
+  onClose: () => void  
+  deckId:string
+  currentName: string
+  onUpdateDeck:(deckId: string, newName: string) => void
+}
 
-  // デッキ名を編集前のものにセット
-  useEffect(() => {
-    setNewDeckName(currentName || "");
-  }, [currentName]);
+const EditDeckModal : React.FC<EditDeckModalProps>= (
+  { visible, onClose, deckId, currentName, onUpdateDeck }
+) => {
+  const [newDeckName, setNewDeckName] = useState("");
 
   const handleUpdateDeck = async () => {
     if (!newDeckName.trim()) {
@@ -38,6 +43,10 @@ const EditDeckModal = ({ visible, onClose, deckId, currentName, onUpdateDeck }) 
       alert("デッキの編集に失敗しました");
     }
   };
+
+  useEffect(() => {
+    setNewDeckName(currentName);
+  }, [currentName,visible]);
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -69,7 +78,7 @@ export default EditDeckModal;
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)", // 背景を半透明に
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
   },

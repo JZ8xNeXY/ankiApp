@@ -3,10 +3,14 @@ import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from "reac
 import { collection,addDoc,serverTimestamp  } from "firebase/firestore"
 import { auth,db } from "../../config"
 
-const AddDeckModal = ({ visible, onClose, onAddDeck }) => {
+interface AddDeckModalProps {
+  visible: boolean;  
+  onClose: () => void;  
+  onAddDeck: (deckName: string, deckId: string) => void; 
+}
+
+const AddDeckModal: React.FC<AddDeckModalProps> = ({ visible, onClose, onAddDeck }) => {
   const [deckName, setDeckName] = useState("");
-
-
 
   const handleAddDeck = async () => {
     if (!deckName.trim()) {
