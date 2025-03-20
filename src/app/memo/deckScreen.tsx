@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet ,Dimensions} from "react-native";
 import Header from "../components/header";
 import { useRouter } from "expo-router";
 import Button from "../components/Button";
 import AddDeckModal from "../components/AddDeckModal";
+import { collection,getDocs } from "firebase/firestore"
+import { auth,db } from "../../config"
 
 
 interface Deck {
@@ -17,21 +19,33 @@ const DeckScreen = (): JSX.Element => {
   const router = useRouter();
 
   const [modalVisible, setModalVisible] = useState(false);
-
-  const [decks, setDecks] = useState<Deck[]>([
-    { id: "1", name: "英語", cardCount: 10 },
-    { id: "2", name: "TOEIC", cardCount: 5 },
-    { id: "3", name: "プログラミング", cardCount: 8 },
-    { id: "4", name: "歴史", cardCount: 12 },
-  ]);
+  const [decks, setDecks] = useState<Deck[]>([]);
   
-
   const handleAddDeck = (deckName: string, deckId: string) => {
     setDecks((prevDecks) => [
       ...prevDecks,
       { id: deckId, name: deckName, cardCount: 0 },
     ]);
   };
+
+  const fetchDecks = async () => {
+    if (!auth.currentUser) return;
+    
+    const ref = collection(db, `users/${auth.currentUser.uid}/decks`);
+    const snapshot = await getDocs(ref);
+  
+    const deckList: Deck[] = snapshot.docs.map(doc => ({
+      id: doc.id,
+      name: doc.data().name,
+      cardCount: doc.data().cardCount || 0,
+      createdAt: doc.data().createdAt?.toDate() || new Date(),
+    }));  
+    setDecks(deckList);
+  };
+
+  useEffect(() => {
+    fetchDecks();
+  }, []);
 
   return (
     <View style={styles.container}>
