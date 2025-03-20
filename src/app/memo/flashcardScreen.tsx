@@ -4,29 +4,58 @@ import Header from "../components/header";
 
 const FlashcardScreen = (): JSX.Element => {
   const [showAnswer, setShowAnswer] = useState(false);
+  const [showReviewButtons, setShowReviewButtons] = useState(false);
+  const [currentCard, setCurrentCard] = useState(0);
+
+  const handleShowAnswer = () => {
+    setShowAnswer(true);
+    setShowReviewButtons(true);
+  };
+
+  const handleNextCard = () => {
+    setShowAnswer(false);
+    setShowReviewButtons(false);
+    setCurrentCard((prev) => (prev + 1) % flashcards.length);
+  };
+
+  const flashcards = [
+    { question: "What is the capital of Japan?", answer: "Tokyo" },
+    { question: "What is the capital of France?", answer: "Paris" },
+    // 追加のカード
+  ];
+
 
   return (
     <View style={styles.container}>
       <Header />
 
-      {/* 問題部分 */}
+      {/* Question & Answer */}
       <View style={styles.cardContainer}>
-        <Text style={styles.cardText}>
-          The goal is to help slow down{" "}
-          <Text style={showAnswer ? styles.answerText : styles.hiddenText}>
-            {showAnswer ? "global warming" : "[...]"}
-          </Text>{" "}
-          and keep the temperature rise below{" "}
-          <Text style={showAnswer ? styles.answerText : styles.hiddenText}>
-            {showAnswer ? "1.5°C" : "[...]"}
-          </Text>
-        </Text>
+        {!showReviewButtons ? (<Text style={styles.cardText}>
+          {flashcards[currentCard].question}
+        </Text>):(
+          <Text style={styles.answerText}>{flashcards[currentCard].answer}</Text>
+        )}
       </View>
 
-      {/* Show Answer ボタン */}
-      <TouchableOpacity style={styles.button} onPress={() => setShowAnswer(!showAnswer)}>
-        <Text style={styles.buttonText}>{showAnswer ? "Hide Answer" : "Show Answer"}</Text>
-      </TouchableOpacity>
+      {/* answerButton & reviewButton */}
+      {!showReviewButtons ? (
+        <TouchableOpacity style={styles.answerButton} onPress={handleShowAnswer}>
+          <Text style={styles.answerButtonText}>Show Answer</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={[styles.reviewButton, styles.again]} onPress={handleNextCard}>
+            <Text style={styles.reviewText}>1m {"\n"}Again</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.reviewButton, styles.good]} onPress={handleNextCard}>
+            <Text style={styles.reviewText}>10m {"\n"}Good</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.reviewButton, styles.easy]} onPress={handleNextCard}>
+            <Text style={styles.reviewText}>4d {"\n"}Easy</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -43,23 +72,25 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
+    marginBottom:100
   },
   cardText: {
     fontSize: 18,
     textAlign: "center",
   },
   hiddenText: {
+    fontSize: 18,
     color: "#467FD3",
     fontWeight: "bold",
   },
   answerText: {
+    fontSize: 18,
     color: "#467FD3",
     fontWeight: "bold",
   },
-  button: {
+  answerButton: {
     position: "absolute",  
-    bottom: 50,  
+    bottom: 25,  
     left: "50%",
     transform: [{ translateX: -100 }], 
     backgroundColor: "#467FD3",
@@ -70,8 +101,29 @@ const styles = StyleSheet.create({
     width:200,
     alignItems:'center'
   },
-  buttonText: {
+  answerButtonText: {
     fontSize: 18,
     color: "#fff",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    width: "100%",
+    position: "absolute",
+    bottom: 50,
+  },
+  reviewButton: {
+    width: 96,
+    paddingVertical: 5,
+    alignItems: "center",
+    borderRadius: 10,
+  },
+  again: { backgroundColor: "#B90101" },
+  good: { backgroundColor: "#26B502" },
+  easy: { backgroundColor: "#2F79E7" },
+  reviewText: {
+    fontSize: 16,
+    color: "#fff",
+    textAlign: "center",
   },
 });
