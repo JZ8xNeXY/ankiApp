@@ -1,18 +1,93 @@
-import React from "react";
+import React, { useState,useEffect,useRef } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet ,Dimensions} from "react-native";
 import Header from "../components/header";
 import { useRouter } from "expo-router";
+import AddDeckModal from "../components/AddDeckModal";
+import EditDeckModal from "../components/EditDeckModal";
+import { collection,doc,getDocs,deleteDoc} from "firebase/firestore"
+import { auth,db } from "../../config"
+import ActionSheetComponent from "../components/ActionSheet";
 
-const decks = [
-  { id: "1", title: "英語", count: 10 },
-  { id: "2", title: "TOEIC", count: 5 },
-  { id: "3", title: "プログラミング", count: 8 },
-  { id: "4", title: "歴史", count: 12 },
-];
 
+interface Deck {
+  id: string;
+  name: string;
+  cardCount: number;
+  createdAt?: Date;
+}
 
 const DeckScreen = (): JSX.Element => {
   const router = useRouter();
+
+  const [decks, setDecks] = useState<Deck[]>([]);
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedDeck, setSelectedDeck] = useState<{ id: string; name: string } | null>(null);
+
+  const actionSheetRef = useRef<{ show: () => void } | null>(null);
+  const selectedDeckId = useRef<string | null>(null);
+  
+  const handleAddDeck = (deckName: string, deckId: string) => {
+    setDecks((prevDecks) => [
+      ...prevDecks,
+      { id: deckId, name: deckName, cardCount: 0 },
+    ]);
+  };
+
+  const fetchDecks = async () => {
+    if (!auth.currentUser) return;
+    
+    const ref = collection(db, `users/${auth.currentUser.uid}/decks`);
+    const snapshot = await getDocs(ref);
+  
+    const deckList: Deck[] = snapshot.docs.map(doc => ({
+      id: doc.id,
+      name: doc.data().name,
+      cardCount: doc.data().cardCount || 0,
+      createdAt: doc.data().createdAt?.toDate() || new Date(),
+    }));  
+    setDecks(deckList);
+  };
+
+  const handleShowActionSheet = (deckId:string) => {
+    if (selectedDeckId){
+      selectedDeckId.current = deckId;
+    }
+    if(actionSheetRef.current){
+      actionSheetRef.current.show();
+    }
+  };
+
+  const handleRename = (deckId:string, currentName:string) => {
+    setSelectedDeck({ id: deckId, name: currentName });
+    setEditModalVisible(true);
+  };
+
+  const handleDelete = async(deckId:string) => {
+    console.log(`Delete deck: ${deckId}`);
+    
+    try {
+      if(auth.currentUser){
+        const deckRef = doc(db, `users/${auth.currentUser.uid}/decks`, deckId);
+        await deleteDoc(deckRef);
+        console.log(`Deleted deck: ${deckId}`);
+      }
+      setDecks((prevDecks) => prevDecks.filter((deck) => deck.id !== deckId));
+    } catch (error) {
+      console.error("デッキ削除エラー: ", error);
+      alert("デッキの削除に失敗しました");
+    }
+  };
+
+  const handleUpdateDeck = (deckId:string, newName:string) => {
+    setDecks((prevDecks) =>
+      prevDecks.map((deck) => (deck.id === deckId ? { ...deck, name: newName } : deck))
+    );
+  };
+
+  useEffect(() => {
+    fetchDecks();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -28,16 +103,46 @@ const DeckScreen = (): JSX.Element => {
               <TouchableOpacity
                 onPress={() => router.push("/memo/flashcardScreen")}
               >
-                <Text style={styles.deckTitle}>{item.title}</Text>
+                <Text style={styles.deckTitle}>{item.name}</Text>
               </TouchableOpacity>
-              <Text style={styles.deckCount}>{item.count}</Text>
-              <TouchableOpacity style={styles.actionButton}>
-                <Text style={styles.actionText}>Action ▼</Text>
+              <Text style={styles.deckCount}>{item.cardCount}</Text>
+              <TouchableOpacity style={styles.actionButton} onPress={() => handleShowActionSheet(item.id)}>
+                {/* ActionSheet */}
+                <ActionSheetComponent
+                  deckId={item.id} 
+                  deckName={item.name}
+                  onRename={(id:string,name:string) => handleRename(id,name)}
+                  onDelete={(id:string) => handleDelete(id)}
+               />
               </TouchableOpacity>
             </View>
           )}
         />
       </View>
+      
+      <View style={styles.addDeckButton}>
+        <TouchableOpacity style={styles.addButton} onPress={() => setAddModalVisible(true)}>
+          <Text style={styles.addButtonText}>Add Deck</Text>
+        </TouchableOpacity>
+      </View>
+
+       {/* モーダルを表示 */}
+       <AddDeckModal 
+        visible={addModalVisible} 
+        onClose={() => setAddModalVisible(false)} 
+        onAddDeck={handleAddDeck} 
+       />
+
+      {selectedDeck && (
+        <EditDeckModal
+          visible={editModalVisible}
+          onClose={() => setEditModalVisible(false)}
+          deckId={selectedDeck.id}
+          currentName={selectedDeck?.name || ""}
+          onUpdateDeck={handleUpdateDeck}
+        />
+      )}
+
     </View>
   );
 };
@@ -92,5 +197,20 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 16,
     color: "#467FD3",
+  },
+  addDeckButton: {
+    alignItems: "center",
+    marginVertical: 100,
+  },
+  addButton: {
+    backgroundColor: "#467FD3",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  addButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
