@@ -1,11 +1,12 @@
-import React, { useState,useEffect } from "react";
+import React, { useState,useEffect,useRef } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet ,Dimensions} from "react-native";
 import Header from "../components/header";
 import { useRouter } from "expo-router";
-import Button from "../components/Button";
 import AddDeckModal from "../components/AddDeckModal";
-import { collection,getDocs } from "firebase/firestore"
+import EditDeckModal from "../components/EditDeckModal";
+import { collection,doc,getDocs,deleteDoc} from "firebase/firestore"
 import { auth,db } from "../../config"
+import ActionSheetComponent from "../components/ActionSheet";
 
 
 interface Deck {
@@ -18,8 +19,14 @@ interface Deck {
 const DeckScreen = (): JSX.Element => {
   const router = useRouter();
 
-  const [modalVisible, setModalVisible] = useState(false);
   const [decks, setDecks] = useState<Deck[]>([]);
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedDeck, setSelectedDeck] = useState(null);
+
+
+  const actionSheetRef = useRef(null);
+  const selectedDeckId = useRef(null);
   
   const handleAddDeck = (deckName: string, deckId: string) => {
     setDecks((prevDecks) => [
@@ -43,6 +50,40 @@ const DeckScreen = (): JSX.Element => {
     setDecks(deckList);
   };
 
+  const handleShowActionSheet = (deckId) => {
+    selectedDeckId.current = deckId; 
+    if(actionSheetRef.current){
+      actionSheetRef.current.show();
+    }
+  };
+
+  const handleRename = (deckId, currentName) => {
+    setSelectedDeck({ id: deckId, name: currentName });
+    setEditModalVisible(true);
+  };
+
+  const handleDelete = async(deckId) => {
+    console.log(`Delete deck: ${deckId}`);
+    
+    try {
+      const deckRef = doc(db, `users/${auth.currentUser.uid}/decks`, deckId);
+      await deleteDoc(deckRef);
+      console.log(`Deleted deck: ${deckId}`);
+
+      // UIを更新（削除されたデッキをリストから削除）
+      setDecks((prevDecks) => prevDecks.filter((deck) => deck.id !== deckId));
+    } catch (error) {
+      console.error("デッキ削除エラー: ", error);
+      alert("デッキの削除に失敗しました");
+    }
+  };
+
+  const handleUpdateDeck = (deckId, newName) => {
+    setDecks((prevDecks) =>
+      prevDecks.map((deck) => (deck.id === deckId ? { ...deck, name: newName } : deck))
+    );
+  };
+
   useEffect(() => {
     fetchDecks();
   }, []);
@@ -64,21 +105,43 @@ const DeckScreen = (): JSX.Element => {
                 <Text style={styles.deckTitle}>{item.name}</Text>
               </TouchableOpacity>
               <Text style={styles.deckCount}>{item.cardCount}</Text>
-              <TouchableOpacity style={styles.actionButton}>
-                <Text style={styles.actionText}>Action ▼</Text>
+              <TouchableOpacity style={styles.actionButton} onPress={() => handleShowActionSheet(item.id)}>
+                {/* ActionSheet */}
+                <ActionSheetComponent
+                  deckId={item.id}  // ✅ 修正: 各デッキの ID を渡す
+                onRename={(id) => handleRename(id)}
+                onDelete={(id) => handleDelete(id)}
+               />
               </TouchableOpacity>
             </View>
           )}
         />
       </View>
+      
       <View style={styles.addDeckButton}>
-      <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
-        <Text style={styles.addButtonText}>Add Deck</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.addButton} onPress={() => setAddModalVisible(true)}>
+          <Text style={styles.addButtonText}>Add Deck</Text>
+        </TouchableOpacity>
       </View>
 
        {/* モーダルを表示 */}
-       <AddDeckModal visible={modalVisible} onClose={() => setModalVisible(false)} onAddDeck={handleAddDeck} />
+       <AddDeckModal 
+        visible={addModalVisible} 
+        onClose={() => setAddModalVisible(false)} 
+        onAddDeck={handleAddDeck} 
+       />
+
+      {selectedDeck && (
+        <EditDeckModal
+          visible={editModalVisible}
+          onClose={() => setEditModalVisible(false)}
+          deckId={selectedDeck.id}
+          currentName={selectedDeck.name}
+          onUpdateDeck={handleUpdateDeck}
+        />
+      )}
+
+
     </View>
   );
 };

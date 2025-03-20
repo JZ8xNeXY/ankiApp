@@ -1,15 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { collection,addDoc,serverTimestamp  } from "firebase/firestore"
-import { auth,db } from "../../config"
+import { doc, updateDoc } from "firebase/firestore";
+import { auth, db } from "../../config";
 
-const AddDeckModal = ({ visible, onClose, onAddDeck }) => {
-  const [deckName, setDeckName] = useState("");
+const EditDeckModal = ({ visible, onClose, deckId, currentName, onUpdateDeck }) => {
+  const [newDeckName, setNewDeckName] = useState("");
 
+  // デッキ名を編集前のものにセット
+  useEffect(() => {
+    setNewDeckName(currentName || "");
+  }, [currentName]);
 
-
-  const handleAddDeck = async () => {
-    if (!deckName.trim()) {
+  const handleUpdateDeck = async () => {
+    if (!newDeckName.trim()) {
       alert("デッキ名を入力してください");
       return;
     }
@@ -17,22 +20,22 @@ const AddDeckModal = ({ visible, onClose, onAddDeck }) => {
       alert("ログインしてください");
       return;
     }
+    if (!deckId) {
+      alert("編集するデッキが見つかりません");
+      return;
+    }
 
     try {
-      const ref = collection(db, `users/${auth.currentUser.uid}/decks`);
-      const docRef = await addDoc(ref, {
-        name: deckName,
-        cardCount: 0,
-        createdAt: serverTimestamp(),
-      });
+      const deckRef = doc(db, `users/${auth.currentUser.uid}/decks`, deckId);
+      await updateDoc(deckRef, { name: newDeckName });
 
-      onAddDeck(deckName, docRef.id);
+      onUpdateDeck(deckId, newDeckName);
+      setNewDeckName("")
 
-      setDeckName("");
       onClose();
     } catch (error) {
-      console.error("デッキ追加エラー: ", error);
-      alert("デッキの追加に失敗しました");
+      console.error("デッキ編集エラー: ", error);
+      alert("デッキの編集に失敗しました");
     }
   };
 
@@ -40,19 +43,19 @@ const AddDeckModal = ({ visible, onClose, onAddDeck }) => {
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
-          <Text style={styles.title}>Add Deck</Text>
+          <Text style={styles.title}>Edit Deck</Text>
           <TextInput
             style={styles.input}
-            placeholder="Add Deck Name"
-            value={deckName}
-            onChangeText={setDeckName}
+            placeholder="Enter new deck name"
+            value={newDeckName}
+            onChangeText={setNewDeckName}
           />
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={[styles.button, styles.cancel]} onPress={onClose}>
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, styles.add]} onPress={handleAddDeck}>
-              <Text style={styles.buttonText}>Add</Text>
+            <TouchableOpacity style={[styles.button, styles.save]} onPress={handleUpdateDeck}>
+              <Text style={styles.buttonText}>Save</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -61,7 +64,7 @@ const AddDeckModal = ({ visible, onClose, onAddDeck }) => {
   );
 };
 
-export default AddDeckModal;
+export default EditDeckModal;
 
 const styles = StyleSheet.create({
   overlay: {
@@ -105,7 +108,7 @@ const styles = StyleSheet.create({
   cancel: {
     backgroundColor: "#ccc",
   },
-  add: {
+  save: {
     backgroundColor: "#467FD3",
   },
   buttonText: {
