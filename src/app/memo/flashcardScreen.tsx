@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Header from "../components/header";
+import ReviewButton from "../components/ReviewButton";
 
 const FlashcardScreen = (): JSX.Element => {
-  const [showAnswer, setShowAnswer] = useState(false);
+  const [, setShowAnswer] = useState(false);
   const [showReviewButtons, setShowReviewButtons] = useState(false);
   const [currentCard, setCurrentCard] = useState(0);
 
@@ -45,15 +46,9 @@ const FlashcardScreen = (): JSX.Element => {
         </TouchableOpacity>
       ) : (
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={[styles.reviewButton, styles.again]} onPress={handleNextCard}>
-            <Text style={styles.reviewText}>1m {"\n"}Again</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.reviewButton, styles.good]} onPress={handleNextCard}>
-            <Text style={styles.reviewText}>10m {"\n"}Good</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.reviewButton, styles.easy]} onPress={handleNextCard}>
-            <Text style={styles.reviewText}>4d {"\n"}Easy</Text>
-          </TouchableOpacity>
+          <ReviewButton label="Again" time="1m" color="#B90101" onPress={handleNextCard} />
+          <ReviewButton label="Good" time="10m" color="#26B502" onPress={handleNextCard} />
+          <ReviewButton label="Easy" time="4d" color="#2F79E7" onPress={handleNextCard} />
         </View>
       )}
     </View>
@@ -111,19 +106,5 @@ const styles = StyleSheet.create({
     width: "100%",
     position: "absolute",
     bottom: 50,
-  },
-  reviewButton: {
-    width: 96,
-    paddingVertical: 5,
-    alignItems: "center",
-    borderRadius: 10,
-  },
-  again: { backgroundColor: "#B90101" },
-  good: { backgroundColor: "#26B502" },
-  easy: { backgroundColor: "#2F79E7" },
-  reviewText: {
-    fontSize: 16,
-    color: "#fff",
-    textAlign: "center",
   },
 });
