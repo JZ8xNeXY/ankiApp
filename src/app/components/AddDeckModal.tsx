@@ -1,17 +1,41 @@
 import React, { useState } from "react";
 import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { collection,addDoc,serverTimestamp  } from "firebase/firestore"
+import { auth,db } from "../../config"
 
 const AddDeckModal = ({ visible, onClose, onAddDeck }) => {
   const [deckName, setDeckName] = useState("");
 
-  const handleAdd = () => {
-    if (deckName.trim() === "") {
-      alert("Add Deck Name");
+
+
+  const handleAddDeck = async () => {
+    if (!deckName.trim()) {
+      alert("デッキ名を入力してください");
       return;
     }
-    onAddDeck(deckName); 
-    setDeckName(""); 
-    onClose(); 
+    if (!auth.currentUser) {
+      alert("ログインしてください");
+      return;
+    }
+
+    try {
+      const ref = collection(db, `users/${auth.currentUser.uid}/decks`);
+      const docRef = await addDoc(ref, {
+        name: deckName,
+        cardCount: 0,
+        createdAt: serverTimestamp(),
+      });
+
+      // DeckScreen にデータを渡してリストを更新
+      onAddDeck(deckName, docRef.id);
+
+      // 入力をリセット & モーダルを閉じる
+      setDeckName("");
+      onClose();
+    } catch (error) {
+      console.error("デッキ追加エラー: ", error);
+      alert("デッキの追加に失敗しました");
+    }
   };
 
   return (
@@ -29,7 +53,7 @@ const AddDeckModal = ({ visible, onClose, onAddDeck }) => {
             <TouchableOpacity style={[styles.button, styles.cancel]} onPress={onClose}>
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, styles.add]} onPress={handleAdd}>
+            <TouchableOpacity style={[styles.button, styles.add]} onPress={handleAddDeck}>
               <Text style={styles.buttonText}>Add</Text>
             </TouchableOpacity>
           </View>
@@ -91,4 +115,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
-

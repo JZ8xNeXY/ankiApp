@@ -6,23 +6,31 @@ import Button from "../components/Button";
 import AddDeckModal from "../components/AddDeckModal";
 
 
-
+interface Deck {
+  id: string;
+  name: string;
+  cardCount: number;
+  createdAt?: Date;
+}
 
 const DeckScreen = (): JSX.Element => {
   const router = useRouter();
 
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [decks, setDecks] = useState([
-    { id: "1", title: "英語", count: 10 },
-    { id: "2", title: "TOEIC", count: 5 },
-    { id: "3", title: "プログラミング", count: 8 },
-    { id: "4", title: "歴史", count: 12 },
+  const [decks, setDecks] = useState<Deck[]>([
+    { id: "1", name: "英語", cardCount: 10 },
+    { id: "2", name: "TOEIC", cardCount: 5 },
+    { id: "3", name: "プログラミング", cardCount: 8 },
+    { id: "4", name: "歴史", cardCount: 12 },
   ]);
   
 
-  const handleAddDeck = (deckName) => {
-    setDecks([...decks, { id: String(decks.length + 1), title: deckName, count: 0 }]);
+  const handleAddDeck = (deckName: string, deckId: string) => {
+    setDecks((prevDecks) => [
+      ...prevDecks,
+      { id: deckId, name: deckName, cardCount: 0 },
+    ]);
   };
 
   return (
@@ -39,9 +47,9 @@ const DeckScreen = (): JSX.Element => {
               <TouchableOpacity
                 onPress={() => router.push("/memo/flashcardScreen")}
               >
-                <Text style={styles.deckTitle}>{item.title}</Text>
+                <Text style={styles.deckTitle}>{item.name}</Text>
               </TouchableOpacity>
-              <Text style={styles.deckCount}>{item.count}</Text>
+              <Text style={styles.deckCount}>{item.cardCount}</Text>
               <TouchableOpacity style={styles.actionButton}>
                 <Text style={styles.actionText}>Action ▼</Text>
               </TouchableOpacity>
