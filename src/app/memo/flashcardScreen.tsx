@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Header from "../components/header";
 import ReviewButton from "../components/ReviewButton";
+import AnswerButton from "../components/AnswerButton";
 
 const FlashcardScreen = (): JSX.Element => {
   const [, setShowAnswer] = useState(false);
@@ -41,9 +42,7 @@ const FlashcardScreen = (): JSX.Element => {
 
       {/* answerButton & reviewButton */}
       {!showReviewButtons ? (
-        <TouchableOpacity style={styles.answerButton} onPress={handleShowAnswer}>
-          <Text style={styles.answerButtonText}>Show Answer</Text>
-        </TouchableOpacity>
+        <AnswerButton label="Show Answer" onPress={handleShowAnswer} />
       ) : (
         <View style={styles.buttonContainer}>
           <ReviewButton label="Again" time="1m" color="#B90101" onPress={handleNextCard} />
