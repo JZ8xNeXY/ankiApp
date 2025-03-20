@@ -14,7 +14,7 @@ const handlePress = (email:string,password:string) :void => {
   signInWithEmailAndPassword(auth,email,password)
   .then((userCredential) =>{
     console.log(userCredential.user.uid)
-    router.replace('/memo/list')
+    router.replace('/memo/deckScreen')
   })
   .catch((error) => {
     const {code,message} = error
@@ -58,7 +58,6 @@ const LogIn = ():JSX.Element => {
             <Text style={styles.footerLink}>Sign up here</Text>
           </TouchableOpacity>
         </Link>
-
       </View>
     </View>
    </View>

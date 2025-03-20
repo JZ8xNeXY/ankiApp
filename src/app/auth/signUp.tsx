@@ -3,7 +3,7 @@ import {
  } from "react-native"
 import Button from "../components/Button"
 import { Link,router } from "expo-router"
-import { useState } from "react"
+import React,{ useState } from "react"
 import { auth } from "../../config"
 import { createUserWithEmailAndPassword } from "firebase/auth"
 
@@ -12,7 +12,7 @@ const handlePress = (email:string,password:string) :void => {
   createUserWithEmailAndPassword(auth,email,password)
   .then((userCredential) => {
     console.log(userCredential.user.uid)
-    router.replace('/memo/list')
+    router.replace('/memo/deckScreen')
   })
   .catch((error) => {
     const {code,message} = error
