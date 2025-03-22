@@ -105,12 +105,12 @@ const Header = ({
         <Text style={styles.headerText}>Delete</Text>
         </TouchableOpacity>
       )}
-      {!flashcardId && (
+      {/* {!flashcardId && (
         <TouchableOpacity onPress={() => router.push("/../memo/find")}>
          <Text style={styles.headerText}>Find</Text>
         </TouchableOpacity>
  
-      )}
+      )} */}
       <TouchableOpacity onPress={() => {handlePress()}}>
         <Text style={styles.headerText}>Log Out</Text>
       </TouchableOpacity>

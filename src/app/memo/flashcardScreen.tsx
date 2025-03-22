@@ -4,7 +4,7 @@ import Header from "../components/header";
 import ReviewButton from "../components/ReviewButton";
 import AnswerButton from "../components/AnswerButton";
 import { useLocalSearchParams } from "expo-router";
-import { collection,doc,getDocs,deleteDoc,Timestamp} from "firebase/firestore"
+import { collection,getDocs,Timestamp} from "firebase/firestore"
 import { auth,db } from "../../config"
 
 
@@ -19,10 +19,6 @@ const FlashcardScreen = (): JSX.Element => {
   const {
     deckId,
     deckName,
-    flashcardId,
-    flashcardFront,
-    flashcardBack,
-    tags,
   } = useLocalSearchParams<{
     deckId: string;
     deckName: string;
@@ -46,7 +42,7 @@ const FlashcardScreen = (): JSX.Element => {
   const handleNextCard = () => {
     setShowAnswer(false);
     setShowReviewButtons(false);
-    setCurrentCard((prev) => (prev + 1) % flashcards.length);
+    setCurrentCard((prev) => prev + 1); 
   };
 
   const fetchFlashCard = async () => {
@@ -72,20 +68,6 @@ const FlashcardScreen = (): JSX.Element => {
     fetchFlashCard();
   }, []);
 
-  useEffect(() => {
-    console.log("選ばれたデッキ名:", deckName);
-    console.log("デッキID:", deckId)
-
-    // Firestoreからカードを読み込む処理へ
-  }, [deckId, deckName]);
-
-  useEffect(() => {
-    if (flashcards && flashcards.length > 0) {
-      console.log("最初のカードID:", flashcards[0].id);
-    }
-  }, [flashcards]);
-
-
   return (
     <View style={styles.container}>
       <Header
@@ -99,28 +81,33 @@ const FlashcardScreen = (): JSX.Element => {
       {/* Question & Answer */}
       <View style={styles.cardContainer}>
         {flashcards && flashcards.length > 0 ? (
-        !showReviewButtons ? (
-          <Text style={styles.cardText}>
-          {flashcards[currentCard].question}
-          </Text>
-       ) : (
-        <Text style={styles.answerText}>
-         {flashcards[currentCard].answer}
-        </Text>
-        )
-       ) : (
-         <Text style={styles.cardText}>カードがありません</Text>
-       )}
+          currentCard >= flashcards.length ? (
+            <Text style={styles.cardText}>全てのカードを終了しました 🎉</Text>
+          ) : !showReviewButtons ? (
+            <Text style={styles.cardText}>
+              {flashcards[currentCard].question}
+            </Text>
+          ) : (
+            <Text style={styles.answerText}>
+              {flashcards[currentCard].answer}
+            </Text>
+          )
+        ) : (
+          <Text style={styles.cardText}>カードがありません</Text>
+        )}
       </View>
+
       {/* answerButton & reviewButton */}
-      {!showReviewButtons ? (
-        <AnswerButton label="Show Answer" onPress={handleShowAnswer} />
-      ) : (
-        <View style={styles.buttonContainer}>
-          <ReviewButton label="Again" time="1m" color="#B90101" onPress={handleNextCard} />
-          <ReviewButton label="Good" time="10m" color="#26B502" onPress={handleNextCard} />
-          <ReviewButton label="Easy" time="4d" color="#2F79E7" onPress={handleNextCard} />
-        </View>
+      {flashcards && currentCard < flashcards.length && (
+        !showReviewButtons ? (
+          <AnswerButton label="Show Answer" onPress={handleShowAnswer} />
+        ) : (
+          <View style={styles.buttonContainer}>
+            <ReviewButton label="Again" time="1m" color="#B90101" onPress={handleNextCard} />
+            <ReviewButton label="Good" time="10m" color="#26B502" onPress={handleNextCard} />
+            <ReviewButton label="Easy" time="4d" color="#2F79E7" onPress={handleNextCard} />
+          </View>
+        )
       )}
     </View>
   );
