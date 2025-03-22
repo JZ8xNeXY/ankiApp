@@ -4,6 +4,16 @@ import Header from "../components/header";
 import ReviewButton from "../components/ReviewButton";
 import AnswerButton from "../components/AnswerButton";
 import { useLocalSearchParams } from "expo-router";
+import { collection,doc,getDocs,deleteDoc,Timestamp} from "firebase/firestore"
+import { auth,db } from "../../config"
+
+
+interface Flashcard {
+  id:string
+  question: string;
+  answer: string;
+  createdAt:Timestamp
+}
 
 const FlashcardScreen = (): JSX.Element => {
   const { deckId, deckName } = useLocalSearchParams<{ deckId: string; deckName: string }>();
@@ -11,6 +21,7 @@ const FlashcardScreen = (): JSX.Element => {
   const [, setShowAnswer] = useState(false);
   const [showReviewButtons, setShowReviewButtons] = useState(false);
   const [currentCard, setCurrentCard] = useState(0);
+  const [flashcards,setFlashCards] = useState<Flashcard[]>()
 
   const handleShowAnswer = () => {
     setShowAnswer(true);
@@ -23,11 +34,30 @@ const FlashcardScreen = (): JSX.Element => {
     setCurrentCard((prev) => (prev + 1) % flashcards.length);
   };
 
-  const flashcards = [
-    { question: "What is the capital of Japan?", answer: "Tokyo" },
-    { question: "What is the capital of France?", answer: "Paris" },
-    // 追加のカード
-  ];
+  // const flashcards:Flashcard[] = [
+  //   { question: "What is the capital of Japan?", answer: "Tokyo" },
+  //   { question: "What is the capital of France?", answer: "Paris" },
+  // ];
+
+  const fetchFlashCard = async () => {
+    if (!auth.currentUser) return;
+  
+    const ref = collection(db, `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`);
+    const snapshot = await getDocs(ref);
+  
+    const flashCardList: Flashcard[] = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        question: data.front,       
+        answer: data.back,         
+        createdAt: data.createdAt || Timestamp.now(),
+      };
+    });
+  
+    setFlashCards(flashCardList);
+    console.log(flashCardList)
+  };
 
   useEffect(() => {
     console.log("選ばれたデッキ名:", deckName);
@@ -36,6 +66,10 @@ const FlashcardScreen = (): JSX.Element => {
     // Firestoreからカードを読み込む処理へ
   }, [deckId, deckName]);
 
+  useEffect(() => {
+    fetchFlashCard();
+  }, []);
+
 
   return (
     <View style={styles.container}>
@@ -43,13 +77,20 @@ const FlashcardScreen = (): JSX.Element => {
 
       {/* Question & Answer */}
       <View style={styles.cardContainer}>
-        {!showReviewButtons ? (<Text style={styles.cardText}>
+        {flashcards && flashcards.length > 0 ? (
+        !showReviewButtons ? (
+          <Text style={styles.cardText}>
           {flashcards[currentCard].question}
-        </Text>):(
-          <Text style={styles.answerText}>{flashcards[currentCard].answer}</Text>
-        )}
+          </Text>
+       ) : (
+        <Text style={styles.answerText}>
+         {flashcards[currentCard].answer}
+        </Text>
+        )
+       ) : (
+         <Text style={styles.cardText}>カードがありません</Text>
+       )}
       </View>
-
       {/* answerButton & reviewButton */}
       {!showReviewButtons ? (
         <AnswerButton label="Show Answer" onPress={handleShowAnswer} />

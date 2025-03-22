@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -14,16 +14,11 @@ import { collection,addDoc,serverTimestamp  } from "firebase/firestore"
 import { auth,db } from "../../config"
 
 const AddCard= (): JSX.Element => {
-  const { deckId, deckName } = useLocalSearchParams<{ deckId: string; deckName: string }>();
+  const { deckId } = useLocalSearchParams<{ deckId: string; deckName: string }>();
 
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [tags, setTags] = useState('');
-
-  const handleSave = () => {
-    console.log({ front, back, tags });
-    // Firestore などに保存する処理
-  };
 
   const handleAddFlashCard = async () => {
     if (!front.trim() || !back.trim()) {
@@ -51,11 +46,6 @@ const AddCard= (): JSX.Element => {
       alert("カードの追加に失敗しました");
     }
   };
-
-  // useEffect(() => {
-  //   console.log("選ばれたデッキ名:", deckName);
-  //   console.log("デッキID:", deckId);
-  // }, [deckId, deckName]);
 
   return (
     <SafeAreaView style={styles.container}>
