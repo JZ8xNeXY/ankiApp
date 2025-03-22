@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Header from "../components/header";
 import ReviewButton from "../components/ReviewButton";
 import AnswerButton from "../components/AnswerButton";
+import { useLocalSearchParams } from "expo-router";
 
 const FlashcardScreen = (): JSX.Element => {
+  const { deckId, deckName } = useLocalSearchParams<{ deckId: string; deckName: string }>();
+  
   const [, setShowAnswer] = useState(false);
   const [showReviewButtons, setShowReviewButtons] = useState(false);
   const [currentCard, setCurrentCard] = useState(0);
@@ -25,6 +28,13 @@ const FlashcardScreen = (): JSX.Element => {
     { question: "What is the capital of France?", answer: "Paris" },
     // 追加のカード
   ];
+
+  useEffect(() => {
+    console.log("選ばれたデッキ名:", deckName);
+    console.log("デッキID:", deckId);
+
+    // Firestoreからカードを読み込む処理へ
+  }, [deckId, deckName]);
 
 
   return (

@@ -100,9 +100,10 @@ const DeckScreen = (): JSX.Element => {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.deckItem}>
-              <TouchableOpacity
-                onPress={() => router.push("/memo/flashcardScreen")}
-              >
+            <TouchableOpacity onPress={() => router.push({
+              pathname: "/memo/flashcardScreen",
+              params: { deckId: item.id, deckName: item.name }
+            })}>
                 <Text style={styles.deckTitle}>{item.name}</Text>
               </TouchableOpacity>
               <Text style={styles.deckCount}>{item.cardCount}</Text>

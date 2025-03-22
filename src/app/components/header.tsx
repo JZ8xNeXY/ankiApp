@@ -1,11 +1,13 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity,Alert } from "react-native";
-import { useRouter } from "expo-router";
 import { auth } from "../../config";
 import { signOut } from 'firebase/auth'
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 const Header = (): JSX.Element => {
   const router = useRouter();
+  const { deckId, deckName } = useLocalSearchParams<{ deckId: string; deckName: string }>();
+
 
   const handlePress = ():void => {
     signOut(auth)
@@ -15,15 +17,25 @@ const Header = (): JSX.Element => {
     .catch(() => {
       Alert.alert('ログアウトに失敗しました')
     })
-  
   }
+
+  const handleAddPress = () => {
+    router.push({
+      pathname: "/memo/add",
+      params: {
+        deckId,
+        deckName,
+      },
+    });
+    console.log(deckId,deckName)
+  };
 
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={() => router.push("/")}>
         <Text style={styles.headerText}>Decks</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/../memo/add")}>
+      <TouchableOpacity onPress={handleAddPress}>
         <Text style={styles.headerText}>Add</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push("/../memo/edit")}>

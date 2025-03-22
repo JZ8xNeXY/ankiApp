@@ -1,5 +1,4 @@
-import Header from "../components/header";
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,8 +9,13 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native';
+import { router,useLocalSearchParams } from "expo-router";
+import { collection,addDoc,serverTimestamp  } from "firebase/firestore"
+import { auth,db } from "../../config"
 
 const AddCard= (): JSX.Element => {
+  const { deckId, deckName } = useLocalSearchParams<{ deckId: string; deckName: string }>();
+
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [tags, setTags] = useState('');
@@ -20,6 +24,38 @@ const AddCard= (): JSX.Element => {
     console.log({ front, back, tags });
     // Firestore などに保存する処理
   };
+
+  const handleAddFlashCard = async () => {
+    if (!front.trim() || !back.trim()) {
+      alert("FRONTとBACKを入力してください");
+      return;
+    }
+    if (!auth.currentUser) {
+      alert("ログインしてください");
+      return;
+    }
+  
+    try {
+      const ref = collection(db, `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`);
+      await addDoc(ref, {
+        front,
+        back,
+        tags,
+        createdAt: serverTimestamp(),
+      });
+  
+      alert("カードを追加しました");
+      router.back(); 
+    } catch (error) {
+      console.error("カード追加エラー: ", error);
+      alert("カードの追加に失敗しました");
+    }
+  };
+
+  // useEffect(() => {
+  //   console.log("選ばれたデッキ名:", deckName);
+  //   console.log("デッキID:", deckId);
+  // }, [deckId, deckName]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -32,7 +68,7 @@ const AddCard= (): JSX.Element => {
             <Text style={styles.headerText}>Cancel</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>新規カード</Text>
-          <TouchableOpacity onPress={handleSave}>
+          <TouchableOpacity onPress={handleAddFlashCard}>
             <Text style={styles.headerText}>Save</Text>
           </TouchableOpacity>
         </View>
