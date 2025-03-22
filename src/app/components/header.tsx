@@ -4,10 +4,23 @@ import { auth } from "../../config";
 import { signOut } from 'firebase/auth'
 import { useRouter, useLocalSearchParams } from "expo-router";
 
-const Header = (): JSX.Element => {
-  const router = useRouter();
-  const { deckId, deckName } = useLocalSearchParams<{ deckId: string; deckName: string }>();
+interface HeaderProps {
+  deckId?: string;
+  deckName?: string;
+  flashcardId?: string;
+  flashcardFront?: string;
+  flashcardBack?: string;
+  tags?: string;
+}
 
+const Header = ({   
+  deckId,
+  deckName,
+  flashcardId,
+  flashcardFront,
+  flashcardBack,
+  tags, }: HeaderProps): JSX.Element => {
+  const router = useRouter();
 
   const handlePress = ():void => {
     signOut(auth)
@@ -25,9 +38,28 @@ const Header = (): JSX.Element => {
       params: {
         deckId,
         deckName,
+        flashcardId,
+        flashcardFront,
+        flashcardBack,
+        tags,
       },
     });
     console.log(deckId,deckName)
+  };
+
+
+  const handleEditPress = () => {
+    router.push({
+      pathname: "/memo/edit",
+      params: {
+        deckId,
+        deckName,
+        flashcardId,
+        flashcardFront,
+        flashcardBack,
+        tags,
+      },
+    });
   };
 
   return (
@@ -35,15 +67,27 @@ const Header = (): JSX.Element => {
       <TouchableOpacity onPress={() => router.push("/")}>
         <Text style={styles.headerText}>Decks</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={handleAddPress}>
+      {flashcardId && (
+       <TouchableOpacity onPress={handleAddPress}>
         <Text style={styles.headerText}>Add</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/../memo/edit")}>
+       </TouchableOpacity> 
+      )}
+      {flashcardId && (
+        <TouchableOpacity onPress={handleEditPress}>
         <Text style={styles.headerText}>Edit</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/../memo/find")}>
-        <Text style={styles.headerText}>Find</Text>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      )}
+      {flashcardId && (
+        <TouchableOpacity onPress={() =>{}}>
+        <Text style={styles.headerText}>Delete</Text>
+        </TouchableOpacity>
+      )}
+      {!flashcardId && (
+        <TouchableOpacity onPress={() => router.push("/../memo/find")}>
+         <Text style={styles.headerText}>Find</Text>
+        </TouchableOpacity>
+ 
+      )}
       <TouchableOpacity onPress={() => {handlePress()}}>
         <Text style={styles.headerText}>Log Out</Text>
       </TouchableOpacity>

@@ -16,7 +16,22 @@ interface Flashcard {
 }
 
 const FlashcardScreen = (): JSX.Element => {
-  const { deckId, deckName } = useLocalSearchParams<{ deckId: string; deckName: string }>();
+  const {
+    deckId,
+    deckName,
+    flashcardId,
+    flashcardFront,
+    flashcardBack,
+    tags,
+  } = useLocalSearchParams<{
+    deckId: string;
+    deckName: string;
+    flashcardId: string;
+    flashcardFront: string;
+    flashcardBack: string;
+    tags: string; // 配列は文字列で渡される可能性あり
+  }>();
+
   
   const [, setShowAnswer] = useState(false);
   const [showReviewButtons, setShowReviewButtons] = useState(false);
@@ -33,11 +48,6 @@ const FlashcardScreen = (): JSX.Element => {
     setShowReviewButtons(false);
     setCurrentCard((prev) => (prev + 1) % flashcards.length);
   };
-
-  // const flashcards:Flashcard[] = [
-  //   { question: "What is the capital of Japan?", answer: "Tokyo" },
-  //   { question: "What is the capital of France?", answer: "Paris" },
-  // ];
 
   const fetchFlashCard = async () => {
     if (!auth.currentUser) return;
@@ -56,24 +66,35 @@ const FlashcardScreen = (): JSX.Element => {
     });
   
     setFlashCards(flashCardList);
-    console.log(flashCardList)
   };
-
-  useEffect(() => {
-    console.log("選ばれたデッキ名:", deckName);
-    console.log("デッキID:", deckId);
-
-    // Firestoreからカードを読み込む処理へ
-  }, [deckId, deckName]);
 
   useEffect(() => {
     fetchFlashCard();
   }, []);
 
+  useEffect(() => {
+    console.log("選ばれたデッキ名:", deckName);
+    console.log("デッキID:", deckId)
+
+    // Firestoreからカードを読み込む処理へ
+  }, [deckId, deckName]);
+
+  useEffect(() => {
+    if (flashcards && flashcards.length > 0) {
+      console.log("最初のカードID:", flashcards[0].id);
+    }
+  }, [flashcards]);
+
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header
+        deckId={deckId}
+        deckName={deckName}
+        flashcardId={flashcards?.[currentCard]?.id}
+        flashcardFront={flashcards?.[currentCard]?.question}
+        flashcardBack={flashcards?.[currentCard]?.answer}
+      />
 
       {/* Question & Answer */}
       <View style={styles.cardContainer}>

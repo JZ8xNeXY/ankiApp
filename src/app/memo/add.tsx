@@ -54,7 +54,7 @@ const AddCard= (): JSX.Element => {
         style={styles.inner}
       >
         <View style={styles.header}>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/")}>
             <Text style={styles.headerText}>Cancel</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>新規カード</Text>

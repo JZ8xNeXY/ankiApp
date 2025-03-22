@@ -4,7 +4,7 @@ import Header from "../components/header";
 import { useRouter } from "expo-router";
 import AddDeckModal from "../components/AddDeckModal";
 import EditDeckModal from "../components/EditDeckModal";
-import { collection,doc,getDocs,deleteDoc} from "firebase/firestore"
+import { collection,doc,getDocs,deleteDoc,Timestamp} from "firebase/firestore"
 import { auth,db } from "../../config"
 import ActionSheetComponent from "../components/ActionSheet";
 
@@ -13,7 +13,7 @@ interface Deck {
   id: string;
   name: string;
   cardCount: number;
-  createdAt?: Date;
+  createdAt?: Timestamp
 }
 
 const DeckScreen = (): JSX.Element => {
@@ -43,7 +43,7 @@ const DeckScreen = (): JSX.Element => {
   
     const deckList: Deck[] = await Promise.all(
       snapshot.docs.map(async (doc) => {
-        if (auth.currentUser){
+  
           const flashcardsRef = collection(db, `users/${auth.currentUser.uid}/decks/${doc.id}/flashcards`);
           const flashcardsSnap = await getDocs(flashcardsRef);
           const cardCount = flashcardsSnap.size;
@@ -54,7 +54,6 @@ const DeckScreen = (): JSX.Element => {
             cardCount:cardCount,
             createdAt: doc.data().createdAt?.toDate() || new Date(),
           };  
-        }
       })
     );
   
