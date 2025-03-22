@@ -1,10 +1,27 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity,Alert } from "react-native";
-import { useRouter } from "expo-router";
-import { auth } from "../../config";
+import { View, Text, StyleSheet, TouchableOpacity,Alert } from "react-native"
 import { signOut } from 'firebase/auth'
+import { useRouter } from "expo-router";
+import { doc, deleteDoc } from "firebase/firestore";
+import { auth, db } from "../../config";
 
-const Header = (): JSX.Element => {
+
+interface HeaderProps {
+  deckId?: string;
+  deckName?: string;
+  flashcardId?: string;
+  flashcardFront?: string;
+  flashcardBack?: string;
+  tags?: string;
+}
+
+const Header = ({   
+  deckId,
+  deckName,
+  flashcardId,
+  flashcardFront,
+  flashcardBack,
+  tags, }: HeaderProps): JSX.Element => {
   const router = useRouter();
 
   const handlePress = ():void => {
@@ -15,23 +32,85 @@ const Header = (): JSX.Element => {
     .catch(() => {
       Alert.alert('ログアウトに失敗しました')
     })
-  
   }
+
+  const handleAddPress = () => {
+    router.push({
+      pathname: "/memo/add",
+      params: {
+        deckId,
+        deckName,
+        flashcardId,
+        flashcardFront,
+        flashcardBack,
+        tags,
+      },
+    });
+    console.log(deckId,deckName)
+  };
+
+
+  const handleEditPress = () => {
+    router.push({
+      pathname: "/memo/edit",
+      params: {
+        deckId,
+        deckName,
+        flashcardId,
+        flashcardFront,
+        flashcardBack,
+        tags,
+      },
+    });
+  };
+
+  const handleDeleteFlashcard = async () => {
+    if (!auth.currentUser || !deckId || !flashcardId) {
+      alert("削除に必要な情報が足りません");
+      return;
+    }
+
+    try {
+      const flashcardRef = doc(
+        db,
+        `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
+        flashcardId
+      );
+      await deleteDoc(flashcardRef);
+      alert("フラッシュカードを削除しました");
+      router.back(); 
+    } catch (error) {
+      console.error("フラッシュカード削除エラー: ", error);
+      alert("削除に失敗しました");
+    }
+  };
 
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={() => router.push("/")}>
         <Text style={styles.headerText}>Decks</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/../memo/add")}>
+      {deckId && (
+       <TouchableOpacity onPress={handleAddPress}>
         <Text style={styles.headerText}>Add</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/../memo/edit")}>
+       </TouchableOpacity> 
+      )}
+      {flashcardId && (
+        <TouchableOpacity onPress={handleEditPress}>
         <Text style={styles.headerText}>Edit</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/../memo/find")}>
-        <Text style={styles.headerText}>Find</Text>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      )}
+      {flashcardId && (
+        <TouchableOpacity onPress={handleDeleteFlashcard}>
+        <Text style={styles.headerText}>Delete</Text>
+        </TouchableOpacity>
+      )}
+      {/* {!flashcardId && (
+        <TouchableOpacity onPress={() => router.push("/../memo/find")}>
+         <Text style={styles.headerText}>Find</Text>
+        </TouchableOpacity>
+ 
+      )} */}
       <TouchableOpacity onPress={() => {handlePress()}}>
         <Text style={styles.headerText}>Log Out</Text>
       </TouchableOpacity>

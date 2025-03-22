@@ -4,7 +4,7 @@ import Header from "../components/header";
 import { useRouter } from "expo-router";
 import AddDeckModal from "../components/AddDeckModal";
 import EditDeckModal from "../components/EditDeckModal";
-import { collection,doc,getDocs,deleteDoc} from "firebase/firestore"
+import { collection,doc,getDocs,deleteDoc,Timestamp} from "firebase/firestore"
 import { auth,db } from "../../config"
 import ActionSheetComponent from "../components/ActionSheet";
 
@@ -13,7 +13,7 @@ interface Deck {
   id: string;
   name: string;
   cardCount: number;
-  createdAt?: Date;
+  createdAt?: Timestamp
 }
 
 const DeckScreen = (): JSX.Element => {
@@ -30,22 +30,33 @@ const DeckScreen = (): JSX.Element => {
   const handleAddDeck = (deckName: string, deckId: string) => {
     setDecks((prevDecks) => [
       ...prevDecks,
-      { id: deckId, name: deckName, cardCount: 0 },
+      { id: deckId, name: deckName, cardCount: decks.length },
     ]);
   };
 
+
   const fetchDecks = async () => {
     if (!auth.currentUser) return;
-    
-    const ref = collection(db, `users/${auth.currentUser.uid}/decks`);
-    const snapshot = await getDocs(ref);
   
-    const deckList: Deck[] = snapshot.docs.map(doc => ({
-      id: doc.id,
-      name: doc.data().name,
-      cardCount: doc.data().cardCount || 0,
-      createdAt: doc.data().createdAt?.toDate() || new Date(),
-    }));  
+    const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`);
+    const snapshot = await getDocs(deckRef);
+  
+    const deckList: Deck[] = await Promise.all(
+      snapshot.docs.map(async (doc) => {
+  
+          const flashcardsRef = collection(db, `users/${auth.currentUser.uid}/decks/${doc.id}/flashcards`);
+          const flashcardsSnap = await getDocs(flashcardsRef);
+          const cardCount = flashcardsSnap.size;
+  
+          return {
+            id: doc.id,
+            name: doc.data().name,
+            cardCount:cardCount,
+            createdAt: doc.data().createdAt?.toDate() || new Date(),
+          };  
+      })
+    );
+  
     setDecks(deckList);
   };
 
@@ -61,6 +72,12 @@ const DeckScreen = (): JSX.Element => {
   const handleRename = (deckId:string, currentName:string) => {
     setSelectedDeck({ id: deckId, name: currentName });
     setEditModalVisible(true);
+  };
+
+  const handleUpdateDeck = (deckId:string, newName:string) => {
+    setDecks((prevDecks) =>
+      prevDecks.map((deck) => (deck.id === deckId ? { ...deck, name: newName } : deck))
+    );
   };
 
   const handleDelete = async(deckId:string) => {
@@ -79,12 +96,6 @@ const DeckScreen = (): JSX.Element => {
     }
   };
 
-  const handleUpdateDeck = (deckId:string, newName:string) => {
-    setDecks((prevDecks) =>
-      prevDecks.map((deck) => (deck.id === deckId ? { ...deck, name: newName } : deck))
-    );
-  };
-
   useEffect(() => {
     fetchDecks();
   }, []);
@@ -100,9 +111,10 @@ const DeckScreen = (): JSX.Element => {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <View style={styles.deckItem}>
-              <TouchableOpacity
-                onPress={() => router.push("/memo/flashcardScreen")}
-              >
+            <TouchableOpacity onPress={() => router.push({
+              pathname: "/memo/flashcardScreen",
+              params: { deckId: item.id, deckName: item.name }
+            })}>
                 <Text style={styles.deckTitle}>{item.name}</Text>
               </TouchableOpacity>
               <Text style={styles.deckCount}>{item.cardCount}</Text>
