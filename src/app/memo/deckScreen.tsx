@@ -30,22 +30,34 @@ const DeckScreen = (): JSX.Element => {
   const handleAddDeck = (deckName: string, deckId: string) => {
     setDecks((prevDecks) => [
       ...prevDecks,
-      { id: deckId, name: deckName, cardCount: 0 },
+      { id: deckId, name: deckName, cardCount: decks.length },
     ]);
   };
 
+
   const fetchDecks = async () => {
     if (!auth.currentUser) return;
-    
-    const ref = collection(db, `users/${auth.currentUser.uid}/decks`);
-    const snapshot = await getDocs(ref);
   
-    const deckList: Deck[] = snapshot.docs.map(doc => ({
-      id: doc.id,
-      name: doc.data().name,
-      cardCount: doc.data().cardCount || 0,
-      createdAt: doc.data().createdAt?.toDate() || new Date(),
-    }));  
+    const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`);
+    const snapshot = await getDocs(deckRef);
+  
+    const deckList: Deck[] = await Promise.all(
+      snapshot.docs.map(async (doc) => {
+        if (auth.currentUser){
+          const flashcardsRef = collection(db, `users/${auth.currentUser.uid}/decks/${doc.id}/flashcards`);
+          const flashcardsSnap = await getDocs(flashcardsRef);
+          const cardCount = flashcardsSnap.size;
+  
+          return {
+            id: doc.id,
+            name: doc.data().name,
+            cardCount:cardCount,
+            createdAt: doc.data().createdAt?.toDate() || new Date(),
+          };  
+        }
+      })
+    );
+  
     setDecks(deckList);
   };
 
@@ -63,6 +75,12 @@ const DeckScreen = (): JSX.Element => {
     setEditModalVisible(true);
   };
 
+  const handleUpdateDeck = (deckId:string, newName:string) => {
+    setDecks((prevDecks) =>
+      prevDecks.map((deck) => (deck.id === deckId ? { ...deck, name: newName } : deck))
+    );
+  };
+
   const handleDelete = async(deckId:string) => {
     console.log(`Delete deck: ${deckId}`);
     
@@ -77,12 +95,6 @@ const DeckScreen = (): JSX.Element => {
       console.error("デッキ削除エラー: ", error);
       alert("デッキの削除に失敗しました");
     }
-  };
-
-  const handleUpdateDeck = (deckId:string, newName:string) => {
-    setDecks((prevDecks) =>
-      prevDecks.map((deck) => (deck.id === deckId ? { ...deck, name: newName } : deck))
-    );
   };
 
   useEffect(() => {
