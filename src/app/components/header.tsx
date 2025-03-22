@@ -1,8 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity,Alert } from "react-native";
-import { auth } from "../../config";
+import { View, Text, StyleSheet, TouchableOpacity,Alert } from "react-native"
 import { signOut } from 'firebase/auth'
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
+import { doc, deleteDoc } from "firebase/firestore";
+import { auth, db } from "../../config";
+
 
 interface HeaderProps {
   deckId?: string;
@@ -62,12 +64,33 @@ const Header = ({
     });
   };
 
+  const handleDeleteFlashcard = async () => {
+    if (!auth.currentUser || !deckId || !flashcardId) {
+      alert("削除に必要な情報が足りません");
+      return;
+    }
+
+    try {
+      const flashcardRef = doc(
+        db,
+        `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
+        flashcardId
+      );
+      await deleteDoc(flashcardRef);
+      alert("フラッシュカードを削除しました");
+      router.back(); 
+    } catch (error) {
+      console.error("フラッシュカード削除エラー: ", error);
+      alert("削除に失敗しました");
+    }
+  };
+
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={() => router.push("/")}>
         <Text style={styles.headerText}>Decks</Text>
       </TouchableOpacity>
-      {flashcardId && (
+      {deckId && (
        <TouchableOpacity onPress={handleAddPress}>
         <Text style={styles.headerText}>Add</Text>
        </TouchableOpacity> 
@@ -78,7 +101,7 @@ const Header = ({
         </TouchableOpacity>
       )}
       {flashcardId && (
-        <TouchableOpacity onPress={() =>{}}>
+        <TouchableOpacity onPress={handleDeleteFlashcard}>
         <Text style={styles.headerText}>Delete</Text>
         </TouchableOpacity>
       )}
