@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState,useEffect,useRef } from "react";
 import { View, Text, StyleSheet,Modal,TouchableOpacity } from "react-native";
 import Header from "../components/header";
 import ReviewButton from "../components/ReviewButton";
@@ -22,6 +22,8 @@ interface Flashcard {
   createdAt:Timestamp
 }
 
+type Language = 'en' | 'ja' | 'zh';
+
 const FlashcardScreen = (): JSX.Element => {
   const {
     deckId,
@@ -41,6 +43,7 @@ const FlashcardScreen = (): JSX.Element => {
   const [currentCard, setCurrentCard] = useState(0);
   const [flashcards,setFlashCards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false);
+  const currentLanguageRef = useRef<string>('ja');
 
   const fetchFlashCard = async () => {
     if (!auth.currentUser) return;
@@ -69,17 +72,32 @@ const FlashcardScreen = (): JSX.Element => {
     setFlashCards(dueFlashCardList);
   };
 
-  //読み上げ機能
-  const detectLanguage = (text: string): 'en' | 'ja' => {
+  const detectLanguage = (text: string): 'en' | 'ja' | 'zh' => {
     const hasEnglish = /[a-zA-Z]/.test(text);
-    return hasEnglish ? 'en' : 'ja';
+    const hasHiraganaOrKatakana = /[\u3040-\u30FF]/.test(text);
+    const hasChineseCharacters = /[\u4E00-\u9FFF]/.test(text);
+
+    if (hasEnglish) return 'en';
+    if (hasHiraganaOrKatakana) return 'ja';
+    if (hasChineseCharacters) return 'zh';
+    return 'ja'
   };
-  
+
   const speakQuestion = (text: string) => {
-    const language = detectLanguage(text);
-  
+    const lang = detectLanguage(text);
+    currentLanguageRef.current = lang;
+
     Speech.speak(text, {
-      language: language === 'en' ? 'en-US' : 'ja-JP',
+      language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
+      rate: 1.0,
+      pitch: 1.0,
+    });
+  };
+
+  const speakAnswer = (text: string) => {
+    const lang = currentLanguageRef.current;
+    Speech.speak(text, {
+      language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
       rate: 1.0,
       pitch: 1.0,
     });
@@ -130,21 +148,19 @@ const FlashcardScreen = (): JSX.Element => {
     fetchFlashCard();
   }, []);
 
+  // 問題表示時
   useEffect(() => {
-    if (
-      flashcards &&
-      flashcards.length > 0 &&
-      currentCard < flashcards.length
-    ) {
-      const current = flashcards[currentCard];
-  
-      if (!showReviewButtons) {
-        speakQuestion(current.question);
-      } else {
-        speakQuestion(current.answer);
-      }
+    if (flashcards && flashcards.length > 0 && currentCard < flashcards.length) {
+      speakQuestion(flashcards[currentCard].question);
     }
-  }, [currentCard, flashcards, showReviewButtons]);
+  }, [currentCard, flashcards]);
+
+  // 回答表示時
+  useEffect(() => {
+    if (showReviewButtons && flashcards && flashcards.length > 0 && currentCard < flashcards.length) {
+      speakAnswer(flashcards[currentCard].answer);
+    }
+  }, [showReviewButtons]);
 
   useEffect(() => {
     if (flashcards && currentCard >= flashcards.length) {
