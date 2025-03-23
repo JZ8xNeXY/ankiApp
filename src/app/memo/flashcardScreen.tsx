@@ -7,6 +7,8 @@ import { useLocalSearchParams } from "expo-router";
 import { collection,doc,getDocs,updateDoc,Timestamp,query,where} from "firebase/firestore"
 import { auth,db } from "../../config"
 import { calculateSM2 } from "../utils/srs";
+import CircleButton from "../components/CircleButton";
+import * as Speech from 'expo-speech'
 
 
 interface Flashcard {
@@ -67,7 +69,21 @@ const FlashcardScreen = (): JSX.Element => {
     setFlashCards(dueFlashCardList);
   };
 
-
+  //読み上げ機能
+  const detectLanguage = (text: string): 'en' | 'ja' => {
+    const hasEnglish = /[a-zA-Z]/.test(text);
+    return hasEnglish ? 'en' : 'ja';
+  };
+  
+  const speakQuestion = (text: string) => {
+    const language = detectLanguage(text);
+  
+    Speech.speak(text, {
+      language: language === 'en' ? 'en-US' : 'ja-JP',
+      rate: 1.0,
+      pitch: 1.0,
+    });
+  };
 
   const handleShowAnswer = () => {
     setShowAnswer(true);
@@ -115,6 +131,22 @@ const FlashcardScreen = (): JSX.Element => {
   }, []);
 
   useEffect(() => {
+    if (
+      flashcards &&
+      flashcards.length > 0 &&
+      currentCard < flashcards.length
+    ) {
+      const current = flashcards[currentCard];
+  
+      if (!showReviewButtons) {
+        speakQuestion(current.question);
+      } else {
+        speakQuestion(current.answer);
+      }
+    }
+  }, [currentCard, flashcards, showReviewButtons]);
+
+  useEffect(() => {
     if (flashcards && currentCard >= flashcards.length) {
       setShowCongratsModal(true);
     }
@@ -150,6 +182,20 @@ const FlashcardScreen = (): JSX.Element => {
             <Text style={styles.cardText}>
               新しいカードを{'\n'}追加してみましょう
             </Text>
+        )}
+
+        {flashcards && flashcards.length > 0 && currentCard < flashcards.length && (
+          <CircleButton
+            onPress={() =>
+              speakQuestion(
+                showReviewButtons
+                  ? flashcards[currentCard].answer
+                  : flashcards[currentCard].question
+              )
+            }
+          >
+            <Text style={{ fontSize: 20 }}>🔊</Text>
+          </CircleButton>
         )}
       </View>
 
