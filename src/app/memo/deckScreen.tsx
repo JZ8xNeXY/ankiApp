@@ -4,7 +4,7 @@ import Header from "../components/header";
 import { useRouter } from "expo-router";
 import AddDeckModal from "../components/AddDeckModal";
 import EditDeckModal from "../components/EditDeckModal";
-import { collection,doc,getDocs,deleteDoc,Timestamp} from "firebase/firestore"
+import { collection,doc,getDocs,deleteDoc,Timestamp,query,where} from "firebase/firestore"
 import { auth,db } from "../../config"
 import ActionSheetComponent from "../components/ActionSheet";
 
@@ -37,6 +37,8 @@ const DeckScreen = (): JSX.Element => {
 
   const fetchDecks = async () => {
     if (!auth.currentUser) return;
+
+    const now = new Date();
   
     const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`);
     const snapshot = await getDocs(deckRef);
@@ -44,9 +46,11 @@ const DeckScreen = (): JSX.Element => {
     const deckList: Deck[] = await Promise.all(
       snapshot.docs.map(async (doc) => {
   
-          const flashcardsRef = collection(db, `users/${auth.currentUser.uid}/decks/${doc.id}/flashcards`);
-          const flashcardsSnap = await getDocs(flashcardsRef);
-          const cardCount = flashcardsSnap.size;
+          const ref = collection(db, `users/${auth.currentUser.uid}/decks/${doc.id}/flashcards`);
+          const q = query(ref, where("nextReview", "<=", Timestamp.fromDate(now)));//復習カードを抽出
+      
+          const snapshot = await getDocs(q);
+          const cardCount = snapshot.size;
   
           return {
             id: doc.id,
