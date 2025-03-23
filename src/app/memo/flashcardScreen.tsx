@@ -137,9 +137,6 @@ const FlashcardScreen = (): JSX.Element => {
               <Text style={styles.answerText}>
                 {flashcards[currentCard].answer}
               </Text>
-              <Text style={styles.nextReviewText}>
-                次の復習: {flashcards[currentCard].nextReview.toDate().toLocaleString()}
-              </Text>
             </View>
           )
         ) : (

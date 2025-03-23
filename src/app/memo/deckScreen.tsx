@@ -12,7 +12,8 @@ import ActionSheetComponent from "../components/ActionSheet";
 interface Deck {
   id: string;
   name: string;
-  cardCount: number;
+  cardCount: number; // 復習対象
+  totalCount: number; // 全体数
   createdAt?: Timestamp
 }
 
@@ -30,34 +31,43 @@ const DeckScreen = (): JSX.Element => {
   const handleAddDeck = (deckName: string, deckId: string) => {
     setDecks((prevDecks) => [
       ...prevDecks,
-      { id: deckId, name: deckName, cardCount: decks.length },
+      {
+        id: deckId,
+        name: deckName,
+        cardCount: 0,
+        totalCount: 0,   
+        createdAt: Timestamp.fromDate(new Date()), 
+      },
     ]);
   };
 
-
   const fetchDecks = async () => {
     if (!auth.currentUser) return;
-
-    const now = new Date();
   
+    const now = new Date();
     const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`);
     const snapshot = await getDocs(deckRef);
   
     const deckList: Deck[] = await Promise.all(
       snapshot.docs.map(async (doc) => {
+        const flashcardRef = collection(db, `users/${auth.currentUser.uid}/decks/${doc.id}/flashcards`);
   
-          const ref = collection(db, `users/${auth.currentUser.uid}/decks/${doc.id}/flashcards`);
-          const q = query(ref, where("nextReview", "<=", Timestamp.fromDate(now)));//復習カードを抽出
-      
-          const snapshot = await getDocs(q);
-          const cardCount = snapshot.size;
+        // 全体数
+        const allSnap = await getDocs(flashcardRef);
+        const totalCount = allSnap.size;
   
-          return {
-            id: doc.id,
-            name: doc.data().name,
-            cardCount:cardCount,
-            createdAt: doc.data().createdAt?.toDate() || new Date(),
-          };  
+        // 今日の復習対象
+        const q = query(flashcardRef, where("nextReview", "<=", Timestamp.fromDate(now)));
+        const reviewSnap = await getDocs(q);
+        const reviewCount = reviewSnap.size;
+  
+        return {
+          id: doc.id,
+          name: doc.data().name,
+          cardCount: reviewCount,
+          totalCount: totalCount,
+          createdAt: doc.data().createdAt?.toDate() || new Date(),
+        };
       })
     );
   
@@ -121,7 +131,7 @@ const DeckScreen = (): JSX.Element => {
             })}>
                 <Text style={styles.deckTitle}>{item.name}</Text>
               </TouchableOpacity>
-              <Text style={styles.deckCount}>{item.cardCount}</Text>
+              <Text style={styles.deckCount}> {item.cardCount} / {item.totalCount}</Text>
               <TouchableOpacity style={styles.actionButton} onPress={() => handleShowActionSheet(item.id)}>
                 {/* ActionSheet */}
                 <ActionSheetComponent
@@ -205,7 +215,8 @@ const styles = StyleSheet.create({
   },
   deckCount: {
     fontSize: 16,
-    color: "#333",
+    fontWeight:'bold',
+    color: "#467FD3",
   },
   actionButton: {
     padding: 5,
