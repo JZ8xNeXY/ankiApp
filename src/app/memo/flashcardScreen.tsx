@@ -4,14 +4,19 @@ import Header from "../components/header";
 import ReviewButton from "../components/ReviewButton";
 import AnswerButton from "../components/AnswerButton";
 import { useLocalSearchParams } from "expo-router";
-import { collection,getDocs,Timestamp} from "firebase/firestore"
+import { collection,doc,getDocs,updateDoc,Timestamp,query,where} from "firebase/firestore"
 import { auth,db } from "../../config"
+import { calculateSM2 } from "../utils/srs";
 
 
 interface Flashcard {
   id:string
   question: string;
   answer: string;
+  repetition: number
+  interval: number
+  efactor: number 
+  nextReview:Timestamp
   createdAt:Timestamp
 }
 
@@ -34,35 +39,75 @@ const FlashcardScreen = (): JSX.Element => {
   const [currentCard, setCurrentCard] = useState(0);
   const [flashcards,setFlashCards] = useState<Flashcard[]>()
 
+  const fetchFlashCard = async () => {
+    if (!auth.currentUser) return;
+  
+    const now = new Date();
+
+    const ref = collection(db, `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`);
+    const q = query(ref, where("nextReview", "<=", Timestamp.fromDate(now)));//復習カードを抽出
+  
+    const snapshot = await getDocs(q);
+  
+    const dueFlashCardList: Flashcard[] = snapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        question: data.front,       
+        answer: data.back,
+        repetition:data.repetition,
+        interval:data.interval,
+        efactor:data.efactor,
+        nextReview:data.nextReview,
+        createdAt: data.createdAt || Timestamp.now(),
+      };
+    });
+  
+    setFlashCards(dueFlashCardList);
+  };
+
+
+
   const handleShowAnswer = () => {
     setShowAnswer(true);
     setShowReviewButtons(true);
   };
 
-  const handleNextCard = () => {
+
+  const calculateNextInterval = async (score: number) => {
+    const currentCardData = flashcards?.[currentCard];
+    if (!currentCardData) return;
+    const { id, repetition, interval, efactor } = currentCardData;
+  
+    const { repetition: newRepetition, interval: newInterval, efactor: newEfactor } = calculateSM2(
+      score,
+      repetition || 0,
+      interval || 1,
+      efactor || 2.5
+    );
+  
+    const nextReviewDate = new Date();
+    nextReviewDate.setDate(nextReviewDate.getDate() + newInterval);
+  
+    if (auth.currentUser && deckId && id) {
+      const ref = doc(db, `users/${auth.currentUser.uid}/decks/${deckId}/flashcards/${id}`);
+      await updateDoc(ref, {
+        repetition: newRepetition,
+        interval: newInterval,
+        efactor: newEfactor,
+        nextReview: Timestamp.fromDate(nextReviewDate),
+      });
+    }
+  };
+
+
+  const handleNextCard = async(score:number) => {
+    await calculateNextInterval(score)
     setShowAnswer(false);
     setShowReviewButtons(false);
     setCurrentCard((prev) => prev + 1); 
   };
 
-  const fetchFlashCard = async () => {
-    if (!auth.currentUser) return;
-  
-    const ref = collection(db, `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`);
-    const snapshot = await getDocs(ref);
-  
-    const flashCardList: Flashcard[] = snapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        question: data.front,       
-        answer: data.back,         
-        createdAt: data.createdAt || Timestamp.now(),
-      };
-    });
-  
-    setFlashCards(flashCardList);
-  };
 
   useEffect(() => {
     fetchFlashCard();
@@ -88,9 +133,14 @@ const FlashcardScreen = (): JSX.Element => {
               {flashcards[currentCard].question}
             </Text>
           ) : (
-            <Text style={styles.answerText}>
-              {flashcards[currentCard].answer}
-            </Text>
+            <View style={styles.answerWrapper}>
+              <Text style={styles.answerText}>
+                {flashcards[currentCard].answer}
+              </Text>
+              <Text style={styles.nextReviewText}>
+                次の復習: {flashcards[currentCard].nextReview.toDate().toLocaleString()}
+              </Text>
+            </View>
           )
         ) : (
           <Text style={styles.cardText}>カードがありません</Text>
@@ -103,9 +153,9 @@ const FlashcardScreen = (): JSX.Element => {
           <AnswerButton label="Show Answer" onPress={handleShowAnswer} />
         ) : (
           <View style={styles.buttonContainer}>
-            <ReviewButton label="Again" time="1m" color="#B90101" onPress={handleNextCard} />
-            <ReviewButton label="Good" time="10m" color="#26B502" onPress={handleNextCard} />
-            <ReviewButton label="Easy" time="4d" color="#2F79E7" onPress={handleNextCard} />
+            <ReviewButton label="Again" time="1m" color="#B90101" onPress={() => handleNextCard(1)} />
+            <ReviewButton label="Good" time="10m" color="#26B502" onPress={() => handleNextCard(4)} />
+            <ReviewButton label="Easy" time="4d" color="#2F79E7" onPress={() => handleNextCard(5)} />
           </View>
         )
       )}
@@ -128,7 +178,7 @@ const styles = StyleSheet.create({
     marginBottom:100
   },
   cardText: {
-    fontSize: 18,
+    fontSize: 32,
     textAlign: "center",
   },
   hiddenText: {
@@ -136,10 +186,19 @@ const styles = StyleSheet.create({
     color: "#467FD3",
     fontWeight: "bold",
   },
+  answerWrapper: {
+    alignItems: "center",
+  },
   answerText: {
-    fontSize: 18,
+    fontSize: 32,
     color: "#467FD3",
     fontWeight: "bold",
+    textAlign:'center'
+  },
+  nextReviewText: {
+    fontSize: 16,
+    color: "#888", 
+    marginTop: 10,
   },
   answerButton: {
     position: "absolute",  

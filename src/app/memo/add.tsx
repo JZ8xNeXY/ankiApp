@@ -10,7 +10,7 @@ import {
   Platform
 } from 'react-native';
 import { router,useLocalSearchParams } from "expo-router";
-import { collection,addDoc,serverTimestamp,Timestamp } from "firebase/firestore"
+import { collection,addDoc,serverTimestamp} from "firebase/firestore"
 import { auth,db } from "../../config"
 
 const AddCard= (): JSX.Element => {
