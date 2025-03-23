@@ -10,7 +10,7 @@ import {
   Platform
 } from 'react-native';
 import { router,useLocalSearchParams } from "expo-router";
-import { collection,addDoc,serverTimestamp  } from "firebase/firestore"
+import { collection,addDoc,serverTimestamp,Timestamp } from "firebase/firestore"
 import { auth,db } from "../../config"
 
 const AddCard= (): JSX.Element => {
@@ -19,6 +19,12 @@ const AddCard= (): JSX.Element => {
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [tags, setTags] = useState('');
+
+  // SM2関連
+  const [repetition, setRepetition] = useState(0);       // 繰り返し回数
+  const [interval, setInterval] = useState(0);           // 前回の復習間隔（分や日）
+  const [efactor, setEfactor] = useState(2.5);           // 初期値は2.5（覚えやすさ係数）
+  const [nextReview, setNextReview] = useState(new Date()); // 次回の復習予定日
 
   const handleAddFlashCard = async () => {
     if (!front.trim() || !back.trim()) {
@@ -29,13 +35,17 @@ const AddCard= (): JSX.Element => {
       alert("ログインしてください");
       return;
     }
-  
+    const now = new Date();
     try {
       const ref = collection(db, `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`);
       await addDoc(ref, {
         front,
         back,
         tags,
+        repetition: 0,
+        interval: 1,
+        efactor: 2.5,
+        nextReview: new Date(now.getTime() + interval * 24 * 60 * 60 * 1000),
         createdAt: serverTimestamp(),
       });
   
