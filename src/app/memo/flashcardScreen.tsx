@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from "react";
+import React, { useState,useEffect,useRef } from "react";
 import { View, Text, StyleSheet,Modal,TouchableOpacity } from "react-native";
 import Header from "../components/header";
 import ReviewButton from "../components/ReviewButton";
@@ -7,6 +7,8 @@ import { useLocalSearchParams } from "expo-router";
 import { collection,doc,getDocs,updateDoc,Timestamp,query,where} from "firebase/firestore"
 import { auth,db } from "../../config"
 import { calculateSM2 } from "../utils/srs";
+import CircleButton from "../components/CircleButton";
+import * as Speech from 'expo-speech'
 
 
 interface Flashcard {
@@ -19,6 +21,8 @@ interface Flashcard {
   nextReview:Timestamp
   createdAt:Timestamp
 }
+
+type Language = 'en' | 'ja' | 'zh';
 
 const FlashcardScreen = (): JSX.Element => {
   const {
@@ -39,6 +43,7 @@ const FlashcardScreen = (): JSX.Element => {
   const [currentCard, setCurrentCard] = useState(0);
   const [flashcards,setFlashCards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false);
+  const currentLanguageRef = useRef<string>('ja');
 
   const fetchFlashCard = async () => {
     if (!auth.currentUser) return;
@@ -67,7 +72,36 @@ const FlashcardScreen = (): JSX.Element => {
     setFlashCards(dueFlashCardList);
   };
 
+  const detectLanguage = (text: string): 'en' | 'ja' | 'zh' => {
+    const hasEnglish = /[a-zA-Z]/.test(text);
+    const hasHiraganaOrKatakana = /[\u3040-\u30FF]/.test(text);
+    const hasChineseCharacters = /[\u4E00-\u9FFF]/.test(text);
 
+    if (hasEnglish) return 'en';
+    if (hasHiraganaOrKatakana) return 'ja';
+    if (hasChineseCharacters) return 'zh';
+    return 'ja'
+  };
+
+  const speakQuestion = (text: string) => {
+    const lang = detectLanguage(text);
+    currentLanguageRef.current = lang;
+
+    Speech.speak(text, {
+      language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
+      rate: 1.0,
+      pitch: 1.0,
+    });
+  };
+
+  const speakAnswer = (text: string) => {
+    const lang = currentLanguageRef.current;
+    Speech.speak(text, {
+      language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
+      rate: 1.0,
+      pitch: 1.0,
+    });
+  };
 
   const handleShowAnswer = () => {
     setShowAnswer(true);
@@ -102,17 +136,38 @@ const FlashcardScreen = (): JSX.Element => {
   };
 
 
-  const handleNextCard = async(score:number) => {
-    await calculateNextInterval(score)
-    setShowAnswer(false);
-    setShowReviewButtons(false);
-    setCurrentCard((prev) => prev + 1); 
+  const handleNextCard = async (score: number) => {
+    if (score === 1) {
+      // Again の場合：スコアを 0 にして、nextReview は今のまま or 1分後に設定
+      await calculateNextInterval(0); 
+      setShowAnswer(false);
+      setShowReviewButtons(false);
+    } else {
+      await calculateNextInterval(score);
+      setShowAnswer(false);
+      setShowReviewButtons(false);
+      setCurrentCard((prev) => prev + 1); 
+    }
   };
 
 
   useEffect(() => {
     fetchFlashCard();
   }, []);
+
+  // 問題表示時
+  useEffect(() => {
+    if (flashcards && flashcards.length > 0 && currentCard < flashcards.length) {
+      speakQuestion(flashcards[currentCard].question);
+    }
+  }, [currentCard, flashcards]);
+
+  // 回答表示時
+  useEffect(() => {
+    if (showReviewButtons && flashcards && flashcards.length > 0 && currentCard < flashcards.length) {
+      speakAnswer(flashcards[currentCard].answer);
+    }
+  }, [showReviewButtons]);
 
   useEffect(() => {
     if (flashcards && currentCard >= flashcards.length) {
@@ -150,6 +205,20 @@ const FlashcardScreen = (): JSX.Element => {
             <Text style={styles.cardText}>
               新しいカードを{'\n'}追加してみましょう
             </Text>
+        )}
+
+        {flashcards && flashcards.length > 0 && currentCard < flashcards.length && (
+          <CircleButton
+            onPress={() =>
+              speakQuestion(
+                showReviewButtons
+                  ? flashcards[currentCard].answer
+                  : flashcards[currentCard].question
+              )
+            }
+          >
+            <Text style={{ fontSize: 20 }}>🔊</Text>
+          </CircleButton>
         )}
       </View>
 
