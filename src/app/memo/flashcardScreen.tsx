@@ -136,11 +136,18 @@ const FlashcardScreen = (): JSX.Element => {
   };
 
 
-  const handleNextCard = async(score:number) => {
-    await calculateNextInterval(score)
-    setShowAnswer(false);
-    setShowReviewButtons(false);
-    setCurrentCard((prev) => prev + 1); 
+  const handleNextCard = async (score: number) => {
+    if (score === 1) {
+      // Again の場合：スコアを 0 にして、nextReview は今のまま or 1分後に設定
+      await calculateNextInterval(0); 
+      setShowAnswer(false);
+      setShowReviewButtons(false);
+    } else {
+      await calculateNextInterval(score);
+      setShowAnswer(false);
+      setShowReviewButtons(false);
+      setCurrentCard((prev) => prev + 1); 
+    }
   };
 
 
