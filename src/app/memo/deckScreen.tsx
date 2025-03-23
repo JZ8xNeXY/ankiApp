@@ -4,15 +4,16 @@ import Header from "../components/header";
 import { useRouter } from "expo-router";
 import AddDeckModal from "../components/AddDeckModal";
 import EditDeckModal from "../components/EditDeckModal";
-import { collection,doc,getDocs,deleteDoc,Timestamp} from "firebase/firestore"
+import { collection,doc,getDocs,deleteDoc,Timestamp,query,where} from "firebase/firestore"
 import { auth,db } from "../../config"
 import ActionSheetComponent from "../components/ActionSheet";
-
+import ProgressBar from "../components/ProgressBar";
 
 interface Deck {
   id: string;
   name: string;
-  cardCount: number;
+  cardCount: number; // 復習対象
+  totalCount: number; // 全体数
   createdAt?: Timestamp
 }
 
@@ -30,30 +31,43 @@ const DeckScreen = (): JSX.Element => {
   const handleAddDeck = (deckName: string, deckId: string) => {
     setDecks((prevDecks) => [
       ...prevDecks,
-      { id: deckId, name: deckName, cardCount: decks.length },
+      {
+        id: deckId,
+        name: deckName,
+        cardCount: 0,
+        totalCount: 0,   
+        createdAt: Timestamp.fromDate(new Date()), 
+      },
     ]);
   };
-
 
   const fetchDecks = async () => {
     if (!auth.currentUser) return;
   
+    const now = new Date();
     const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`);
     const snapshot = await getDocs(deckRef);
   
     const deckList: Deck[] = await Promise.all(
       snapshot.docs.map(async (doc) => {
+        const flashcardRef = collection(db, `users/${auth.currentUser.uid}/decks/${doc.id}/flashcards`);
   
-          const flashcardsRef = collection(db, `users/${auth.currentUser.uid}/decks/${doc.id}/flashcards`);
-          const flashcardsSnap = await getDocs(flashcardsRef);
-          const cardCount = flashcardsSnap.size;
+        // 全体数
+        const allSnap = await getDocs(flashcardRef);
+        const totalCount = allSnap.size;
   
-          return {
-            id: doc.id,
-            name: doc.data().name,
-            cardCount:cardCount,
-            createdAt: doc.data().createdAt?.toDate() || new Date(),
-          };  
+        // 今日の復習対象
+        const q = query(flashcardRef, where("nextReview", "<=", Timestamp.fromDate(now)));
+        const reviewSnap = await getDocs(q);
+        const reviewCount = reviewSnap.size;
+  
+        return {
+          id: doc.id,
+          name: doc.data().name,
+          cardCount: reviewCount,
+          totalCount: totalCount,
+          createdAt: doc.data().createdAt?.toDate() || new Date(),
+        };
       })
     );
   
@@ -102,34 +116,50 @@ const DeckScreen = (): JSX.Element => {
 
   return (
     <View style={styles.container}>
-      <Header />
+     <Header showBackToDecks={false} />
 
       {/* デッキ一覧 */}
       <View style={styles.deck}>
-        <FlatList
-          data={decks}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.deckItem}>
-            <TouchableOpacity onPress={() => router.push({
-              pathname: "/memo/flashcardScreen",
-              params: { deckId: item.id, deckName: item.name }
-            })}>
-                <Text style={styles.deckTitle}>{item.name}</Text>
-              </TouchableOpacity>
-              <Text style={styles.deckCount}>{item.cardCount}</Text>
-              <TouchableOpacity style={styles.actionButton} onPress={() => handleShowActionSheet(item.id)}>
-                {/* ActionSheet */}
-                <ActionSheetComponent
-                  deckId={item.id} 
-                  deckName={item.name}
-                  onRename={(id:string,name:string) => handleRename(id,name)}
-                  onDelete={(id:string) => handleDelete(id)}
-               />
-              </TouchableOpacity>
-            </View>
-          )}
-        />
+      <FlatList
+        data={decks}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => {
+          const reviewedCount = item.totalCount - item.cardCount;
+          const progress = item.totalCount > 0 ? reviewedCount / item.totalCount : 0;
+
+          return (
+                <View style={styles.deckItem}>
+                  <TouchableOpacity
+                    style={styles.deckNameArea}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/memo/flashcardScreen",
+                        params: { deckId: item.id, deckName: item.name },
+                      })
+                    }
+                  >
+                    <Text style={styles.deckTitle}>{item.name}</Text>
+                  </TouchableOpacity>
+
+                  <View style={styles.progressWrapper}>
+                    <ProgressBar progress={progress} />
+                    <Text style={styles.deckCount}>
+                      {reviewedCount} / {item.totalCount}（完了）
+                    </Text>
+                  </View>
+
+                  <TouchableOpacity style={styles.actionButton} onPress={() => handleShowActionSheet(item.id)}>
+                    <ActionSheetComponent
+                      deckId={item.id}
+                      deckName={item.name}
+                      onRename={(id, name) => handleRename(id, name)}
+                      onDelete={(id) => handleDelete(id)}
+                    />
+                  </TouchableOpacity>
+                </View>
+          );
+        }}
+      />
       </View>
       
       <View style={styles.addDeckButton}>
@@ -161,7 +191,7 @@ const DeckScreen = (): JSX.Element => {
 
 export default DeckScreen;
 
-const screenWidth = Dimensions.get("window").width;
+
 
 const styles = StyleSheet.create({
   container: {
@@ -171,7 +201,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "flex-end",
     paddingVertical: 15,
   },
   headerText: {
@@ -195,13 +225,19 @@ const styles = StyleSheet.create({
   deckTitle: {
     fontSize: 18,
     color: "#467FD3",
-    width: screenWidth/3,
     flexShrink: 1,
     overflow: "hidden",
   },
+  progressWrapper: {
+    flex: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
   deckCount: {
-    fontSize: 16,
-    color: "#333",
+    fontSize: 12,
+    color: "#888",
+    marginTop: 4,
   },
   actionButton: {
     padding: 5,

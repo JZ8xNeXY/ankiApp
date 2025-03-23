@@ -13,6 +13,7 @@ interface HeaderProps {
   flashcardFront?: string;
   flashcardBack?: string;
   tags?: string;
+  showBackToDecks?: boolean; 
 }
 
 const Header = ({   
@@ -21,7 +22,9 @@ const Header = ({
   flashcardId,
   flashcardFront,
   flashcardBack,
-  tags, }: HeaderProps): JSX.Element => {
+  tags,
+  showBackToDecks = true,
+ }: HeaderProps): JSX.Element => {
   const router = useRouter();
 
   const handlePress = ():void => {
@@ -87,33 +90,41 @@ const Header = ({
 
   return (
     <View style={styles.header}>
-      <TouchableOpacity onPress={() => router.push("/")}>
-        <Text style={styles.headerText}>Decks</Text>
-      </TouchableOpacity>
-      {deckId && (
-       <TouchableOpacity onPress={handleAddPress}>
-        <Text style={styles.headerText}>Add</Text>
-       </TouchableOpacity> 
-      )}
-      {flashcardId && (
-        <TouchableOpacity onPress={handleEditPress}>
-        <Text style={styles.headerText}>Edit</Text>
-        </TouchableOpacity>
-      )}
-      {flashcardId && (
-        <TouchableOpacity onPress={handleDeleteFlashcard}>
-        <Text style={styles.headerText}>Delete</Text>
-        </TouchableOpacity>
-      )}
-      {/* {!flashcardId && (
-        <TouchableOpacity onPress={() => router.push("/../memo/find")}>
-         <Text style={styles.headerText}>Find</Text>
-        </TouchableOpacity>
- 
-      )} */}
-      <TouchableOpacity onPress={() => {handlePress()}}>
-        <Text style={styles.headerText}>Log Out</Text>
-      </TouchableOpacity>
+        {showBackToDecks && (
+          <TouchableOpacity onPress={() => router.push("/")}>
+            <Text style={styles.headerText}>Decks</Text>
+          </TouchableOpacity>
+        )}
+
+        {deckId && (
+        <TouchableOpacity onPress={handleAddPress}>
+          <Text style={styles.headerText}>Add</Text>
+        </TouchableOpacity> 
+        )}
+        {flashcardId && (
+          <TouchableOpacity onPress={handleEditPress}>
+          <Text style={styles.headerText}>Edit</Text>
+          </TouchableOpacity>
+        )}
+        {flashcardId && (
+          <TouchableOpacity onPress={handleDeleteFlashcard}>
+          <Text style={styles.headerText}>Delete</Text>
+          </TouchableOpacity>
+        )}
+        {/* {!flashcardId && (
+          <TouchableOpacity onPress={() => router.push("/../memo/find")}>
+          <Text style={styles.headerText}>Find</Text>
+          </TouchableOpacity>
+  
+        )} */}
+
+        {!deckId && (
+          <View style={{ flex: 1, alignItems: 'flex-end' }}>
+            <TouchableOpacity onPress={handlePress}>
+              <Text style={styles.headerText}>Log Out</Text>
+            </TouchableOpacity>
+          </View>
+        )}
     </View>
   );
 };
@@ -128,8 +139,9 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: 'space-between',
     paddingVertical: 15,
+    paddingHorizontal:15
   },
   headerText: {
     fontSize: 18,
