@@ -143,7 +143,10 @@ const FlashcardScreen = (): JSX.Element => {
             </View>
           )
         ) : (
-          <Text style={styles.cardText}>カードがありません</Text>
+            <Text style={styles.cardText}>
+              本日の復習する{'\n'}カードはありません{'\n'}{'\n'}
+              新しいカードを{'\n'}追加してみましょう ✨
+            </Text>
         )}
       </View>
 

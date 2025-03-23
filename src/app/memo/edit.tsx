@@ -51,7 +51,7 @@ const EditDeck = (): JSX.Element => {
       });
   
       alert("カードを更新しました");
-      router.back(); 
+      router.push("/"); 
     } catch (error) {
       console.error("カード追加エラー: ", error);
       alert("カードの追加に失敗しました");
