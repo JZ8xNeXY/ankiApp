@@ -1,5 +1,5 @@
 import React, { useState,useEffect } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet,Modal,TouchableOpacity } from "react-native";
 import Header from "../components/header";
 import ReviewButton from "../components/ReviewButton";
 import AnswerButton from "../components/AnswerButton";
@@ -38,6 +38,7 @@ const FlashcardScreen = (): JSX.Element => {
   const [showReviewButtons, setShowReviewButtons] = useState(false);
   const [currentCard, setCurrentCard] = useState(0);
   const [flashcards,setFlashCards] = useState<Flashcard[]>()
+  const [showCongratsModal, setShowCongratsModal] = useState(false);
 
   const fetchFlashCard = async () => {
     if (!auth.currentUser) return;
@@ -113,6 +114,12 @@ const FlashcardScreen = (): JSX.Element => {
     fetchFlashCard();
   }, []);
 
+  useEffect(() => {
+    if (flashcards && currentCard >= flashcards.length) {
+      setShowCongratsModal(true);
+    }
+  }, [currentCard, flashcards]);
+
   return (
     <View style={styles.container}>
       <Header
@@ -127,7 +134,7 @@ const FlashcardScreen = (): JSX.Element => {
       <View style={styles.cardContainer}>
         {flashcards && flashcards.length > 0 ? (
           currentCard >= flashcards.length ? (
-            <Text style={styles.cardText}>全てのカードを終了しました 🎉</Text>
+            <Text style={styles.cardText}>全てのカードを{'\n'}終了しました 🎉</Text>
           ) : !showReviewButtons ? (
             <Text style={styles.cardText}>
               {flashcards[currentCard].question}
@@ -141,11 +148,24 @@ const FlashcardScreen = (): JSX.Element => {
           )
         ) : (
             <Text style={styles.cardText}>
-              本日の復習する{'\n'}カードはありません{'\n'}{'\n'}
-              新しいカードを{'\n'}追加してみましょう ✨
+              新しいカードを{'\n'}追加してみましょう
             </Text>
         )}
       </View>
+
+      <Modal visible={showCongratsModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}> 全てのカードを終了しました</Text>
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => setShowCongratsModal(false)}
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* answerButton & reviewButton */}
       {flashcards && currentCard < flashcards.length && (
@@ -216,6 +236,41 @@ const styles = StyleSheet.create({
   answerButtonText: {
     fontSize: 18,
     color: "#fff",
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    width: '80%',
+  },
+  modalText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#467FD3',
+    marginBottom: 10,
+  },
+  modalSubText: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 20,
+  },
+  modalButton: {
+    backgroundColor: '#467FD3',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  modalButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   buttonContainer: {
     flexDirection: "row",
