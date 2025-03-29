@@ -7,7 +7,8 @@ import {
   StyleSheet,
   SafeAreaView,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Alert
 } from 'react-native';
 import { router,useLocalSearchParams } from "expo-router";
 import { collection,addDoc,serverTimestamp} from "firebase/firestore"
@@ -21,7 +22,7 @@ const AddCard= (): JSX.Element => {
   const [tags, setTags] = useState('');
 
   // SM2関連
-  const [interval, setInterval] = useState(0);           // 前回の復習間隔（分や日）
+  const [interval, ] = useState(0);           // 前回の復習間隔（分や日）
 
 
   const handleAddFlashCard = async () => {
@@ -47,8 +48,26 @@ const AddCard= (): JSX.Element => {
         createdAt: serverTimestamp(),
       });
   
-      alert("カードを追加しました");
-      router.push("/");
+      Alert.alert(
+        "カードを追加しました！",
+        "続けて登録しますか？",
+        [
+          {
+            text: "戻る",
+            onPress: () => router.push("/"),
+            style: "cancel",
+          },
+          {
+            text: "続けて追加",
+            onPress: () => {
+              setFront('');
+              setBack('');
+              setTags('');
+            },
+          },
+        ],
+        { cancelable: false }
+      );
     } catch (error) {
       console.error("カード追加エラー: ", error);
       alert("カードの追加に失敗しました");
