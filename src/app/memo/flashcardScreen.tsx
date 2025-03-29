@@ -65,6 +65,12 @@ const FlashcardScreen = (): JSX.Element => {
         createdAt: data.createdAt || Timestamp.now(),
       };
     });
+
+    // 🔀 Fisher-Yatesアルゴリズムでシャッフル
+    for (let i = dueFlashCardList.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+     [dueFlashCardList[i], dueFlashCardList[j]] = [dueFlashCardList[j], dueFlashCardList[i]];
+    }
   
     setFlashCards(dueFlashCardList);
   };
