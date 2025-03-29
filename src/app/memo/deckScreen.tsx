@@ -130,7 +130,6 @@ const DeckScreen = (): JSX.Element => {
           return (
                 <View style={styles.deckItem}>
                   <TouchableOpacity
-                    style={styles.deckNameArea}
                     onPress={() =>
                       router.push({
                         pathname: "/memo/flashcardScreen",

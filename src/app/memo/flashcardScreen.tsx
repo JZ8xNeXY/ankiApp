@@ -1,4 +1,4 @@
-import React, { useState,useEffect,useRef } from "react";
+import React, { useState,useEffect } from "react";
 import { View, Text, StyleSheet,Modal,TouchableOpacity } from "react-native";
 import Header from "../components/header";
 import ReviewButton from "../components/ReviewButton";
@@ -22,8 +22,6 @@ interface Flashcard {
   createdAt:Timestamp
 }
 
-type Language = 'en' | 'ja' | 'zh';
-
 const FlashcardScreen = (): JSX.Element => {
   const {
     deckId,
@@ -40,11 +38,9 @@ const FlashcardScreen = (): JSX.Element => {
   
   const [, setShowAnswer] = useState(false);
   const [showReviewButtons, setShowReviewButtons] = useState(false);
-  const [failedCards, setFailedCards] = useState<Flashcard[]>([]);
   const [currentCard, setCurrentCard] = useState(0);
   const [flashcards,setFlashCards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false);
-  const currentLanguageRef = useRef<string>('ja');
 
   const fetchFlashCard = async () => {
     if (!auth.currentUser) return;
