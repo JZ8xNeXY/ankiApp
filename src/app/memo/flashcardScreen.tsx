@@ -40,6 +40,7 @@ const FlashcardScreen = (): JSX.Element => {
   
   const [, setShowAnswer] = useState(false);
   const [showReviewButtons, setShowReviewButtons] = useState(false);
+  const [failedCards, setFailedCards] = useState<Flashcard[]>([]);
   const [currentCard, setCurrentCard] = useState(0);
   const [flashcards,setFlashCards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false);
@@ -142,6 +143,7 @@ const FlashcardScreen = (): JSX.Element => {
       await calculateNextInterval(0); 
       setShowAnswer(false);
       setShowReviewButtons(false);
+      setCurrentCard((prev) => prev + 1);
     } else {
       await calculateNextInterval(score);
       setShowAnswer(false);

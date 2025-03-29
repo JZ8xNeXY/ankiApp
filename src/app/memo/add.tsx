@@ -21,10 +21,8 @@ const AddCard= (): JSX.Element => {
   const [tags, setTags] = useState('');
 
   // SM2関連
-  const [repetition, setRepetition] = useState(0);       // 繰り返し回数
   const [interval, setInterval] = useState(0);           // 前回の復習間隔（分や日）
-  const [efactor, setEfactor] = useState(2.5);           // 初期値は2.5（覚えやすさ係数）
-  const [nextReview, setNextReview] = useState(new Date()); // 次回の復習予定日
+
 
   const handleAddFlashCard = async () => {
     if (!front.trim() || !back.trim()) {
@@ -74,16 +72,18 @@ const AddCard= (): JSX.Element => {
         </View>
 
         <View style={styles.form}>
-          <Text style={styles.label}>FRONT</Text>
+          <Text style={styles.label}>Question</Text>
           <TextInput
             style={styles.input}
+            multiline={true}
             placeholder="例: What is the capital of Japan"
             value={front}
             onChangeText={setFront}
           />
-          <Text style={styles.label}>BACK</Text>
+          <Text style={styles.label}>Answer</Text>
           <TextInput
             style={styles.input}
+            multiline={true}
             placeholder="例: Tokyo"
             value={back}
             onChangeText={setBack}
@@ -147,6 +147,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   input: {
+    height: 100,
     backgroundColor: '#fff',
     borderRadius: 6,
     padding: 10,
