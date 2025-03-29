@@ -103,15 +103,17 @@ const EditDeck = (): JSX.Element => {
         </View>
 
         <View style={styles.form}>
-          <Text style={styles.label}>FRONT</Text>
+          <Text style={styles.label}>Question</Text>
           <TextInput
             style={styles.input}
+            multiline={true}
             value={front}
             onChangeText={setFront}
           />
-          <Text style={styles.label}>BACK</Text>
+          <Text style={styles.label}>Answer</Text>
           <TextInput
             style={styles.input}
+            multiline={true}
             value={back}
             onChangeText={setBack}
           />
@@ -175,6 +177,7 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: '#fff',
+    height: 100,
     borderRadius: 6,
     padding: 10,
     borderColor: '#ccc',

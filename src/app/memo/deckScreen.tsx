@@ -130,7 +130,6 @@ const DeckScreen = (): JSX.Element => {
           return (
                 <View style={styles.deckItem}>
                   <TouchableOpacity
-                    style={styles.deckNameArea}
                     onPress={() =>
                       router.push({
                         pathname: "/memo/flashcardScreen",
@@ -191,7 +190,7 @@ const DeckScreen = (): JSX.Element => {
 
 export default DeckScreen;
 
-
+const screenWidth = Dimensions.get('window').width;
 
 const styles = StyleSheet.create({
   container: {
@@ -223,6 +222,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ccc",
   },
   deckTitle: {
+    width:screenWidth * 0.4, 
     fontSize: 18,
     color: "#467FD3",
     flexShrink: 1,

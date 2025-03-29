@@ -1,4 +1,4 @@
-import React, { useState,useEffect,useRef } from "react";
+import React, { useState,useEffect } from "react";
 import { View, Text, StyleSheet,Modal,TouchableOpacity } from "react-native";
 import Header from "../components/header";
 import ReviewButton from "../components/ReviewButton";
@@ -22,8 +22,6 @@ interface Flashcard {
   createdAt:Timestamp
 }
 
-type Language = 'en' | 'ja' | 'zh';
-
 const FlashcardScreen = (): JSX.Element => {
   const {
     deckId,
@@ -43,7 +41,6 @@ const FlashcardScreen = (): JSX.Element => {
   const [currentCard, setCurrentCard] = useState(0);
   const [flashcards,setFlashCards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false);
-  const currentLanguageRef = useRef<string>('ja');
 
   const fetchFlashCard = async () => {
     if (!auth.currentUser) return;
@@ -68,6 +65,12 @@ const FlashcardScreen = (): JSX.Element => {
         createdAt: data.createdAt || Timestamp.now(),
       };
     });
+
+    // 🔀 Fisher-Yatesアルゴリズムでシャッフル
+    for (let i = dueFlashCardList.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+     [dueFlashCardList[i], dueFlashCardList[j]] = [dueFlashCardList[j], dueFlashCardList[i]];
+    }
   
     setFlashCards(dueFlashCardList);
   };
@@ -85,7 +88,6 @@ const FlashcardScreen = (): JSX.Element => {
 
   const speakQuestion = (text: string) => {
     const lang = detectLanguage(text);
-    currentLanguageRef.current = lang;
 
     Speech.speak(text, {
       language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
@@ -95,7 +97,7 @@ const FlashcardScreen = (): JSX.Element => {
   };
 
   const speakAnswer = (text: string) => {
-    const lang = currentLanguageRef.current;
+    const lang = detectLanguage(text);
     Speech.speak(text, {
       language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
       rate: 1.0,
@@ -142,6 +144,7 @@ const FlashcardScreen = (): JSX.Element => {
       await calculateNextInterval(0); 
       setShowAnswer(false);
       setShowReviewButtons(false);
+      setCurrentCard((prev) => prev + 1);
     } else {
       await calculateNextInterval(score);
       setShowAnswer(false);

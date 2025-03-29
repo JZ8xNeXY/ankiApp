@@ -15,7 +15,7 @@ export function calculateSM2(
   if (score < 3) {
     return {
       repetition: 0,
-      interval: 1,
+      interval: 0.0001,
       efactor,
     };
   }
