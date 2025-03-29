@@ -81,7 +81,7 @@ const Header = ({
       );
       await deleteDoc(flashcardRef);
       alert("フラッシュカードを削除しました");
-      router.back(); 
+      router.push("/"); 
     } catch (error) {
       console.error("フラッシュカード削除エラー: ", error);
       alert("削除に失敗しました");
