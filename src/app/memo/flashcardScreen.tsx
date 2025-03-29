@@ -86,7 +86,6 @@ const FlashcardScreen = (): JSX.Element => {
 
   const speakQuestion = (text: string) => {
     const lang = detectLanguage(text);
-    currentLanguageRef.current = lang;
 
     Speech.speak(text, {
       language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
@@ -96,7 +95,7 @@ const FlashcardScreen = (): JSX.Element => {
   };
 
   const speakAnswer = (text: string) => {
-    const lang = currentLanguageRef.current;
+    const lang = detectLanguage(text);
     Speech.speak(text, {
       language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
       rate: 1.0,
