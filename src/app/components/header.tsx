@@ -95,8 +95,7 @@ const Header = ({
             <Text style={styles.headerText}>Decks</Text>
           </TouchableOpacity>
         )}
-
-        {deckId && (
+        {showBackToDecks  && (
         <TouchableOpacity onPress={handleAddPress}>
           <Text style={styles.headerText}>Add</Text>
         </TouchableOpacity> 
@@ -118,7 +117,7 @@ const Header = ({
   
         )} */}
 
-        {!deckId && (
+        {!showBackToDecks && (
           <View style={{ flex: 1, alignItems: 'flex-end' }}>
             <TouchableOpacity onPress={handlePress}>
               <Text style={styles.headerText}>Log Out</Text>

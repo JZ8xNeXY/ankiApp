@@ -58,7 +58,7 @@ describe('DeckScreen', () => {
       expect(screen.getByText(' Action ▼')).toBeTruthy()
       expect(screen.getByText('Add Deck')).toBeTruthy();
 
-      screen.debug()
+      // screen.debug()
     });
   });
 });
