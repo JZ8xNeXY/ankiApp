@@ -7,15 +7,33 @@ jest.mock('firebase/auth', () => ({
 }));
 
 jest.mock('firebase/firestore', () => ({
-  doc: jest.fn(),
-  deleteDoc: jest.fn(() => Promise.resolve()),
-  getDocs: jest.fn(() => Promise.resolve({ docs: [] })),
   collection: jest.fn(),
+  doc: jest.fn(),
+  getDocs: jest.fn(() =>
+    Promise.resolve({
+      docs: [
+        {
+          id: 'test-deck-id',
+          data: () => ({
+            name: 'Test Deck',
+            createdAt: { toDate: () => new Date() },
+            cardCount: 2,
+            totalCount: 3, 
+          }),
+
+        },
+      ],
+    })
+  ),
+  deleteDoc: jest.fn(),
   Timestamp: {
-    fromDate: jest.fn(() => new Date()),
-    now: jest.fn(() => new Date()),
+    fromDate: () => new Date(),
+    now: () => new Date(),
   },
+  query: jest.fn(),
+  where: jest.fn(),
 }));
+
 
 jest.mock('../src/config', () => ({
   auth: { currentUser: { uid: 'test-user' } },
@@ -31,8 +49,12 @@ describe('DeckScreen', () => {
     render(<DeckScreen />);
     
     await waitFor(() => {
-      expect(screen.getByText('Add Deck')).toBeTruthy();
+
       expect(screen.getByText('Log Out')).toBeTruthy();
+      expect(screen.getByText(/NaN\s*\/\s*（完了）/)).toBeTruthy();
+      expect(screen.getByText(' Action ▼')).toBeTruthy();
+      expect(screen.getByText('Add Deck')).toBeTruthy();
+      screen.debug()
     });
   });
 });
