@@ -55,6 +55,7 @@ describe('DeckScreen', () => {
       expect(screen.getByText('Log Out')).toBeTruthy();
       expect(screen.getByText(mockDeckData.data().name)).toBeTruthy();
       expect(screen.getByText(`${mockTotalCount - mockReviewedCount} / ${mockTotalCount}（完了）`)).toBeTruthy();
+      expect(screen.getByText(' Action ▼')).toBeTruthy()
       expect(screen.getByText('Add Deck')).toBeTruthy();
 
       screen.debug()
