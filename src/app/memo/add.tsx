@@ -13,6 +13,7 @@ import {
 import { router,useLocalSearchParams } from "expo-router";
 import { collection,addDoc,serverTimestamp} from "firebase/firestore"
 import { auth,db } from "../../config"
+import AddFlashcardModal from '../components/AddFlashcardModal';
 
 const AddCard= (): JSX.Element => {
   const { deckId } = useLocalSearchParams<{ deckId: string; deckName: string }>();
@@ -20,6 +21,7 @@ const AddCard= (): JSX.Element => {
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [tags, setTags] = useState('');
+  const [addModalVisible, setAddModalVisible] = useState(false);
 
   // SM2関連
   const [interval, ] = useState(0);           // 前回の復習間隔（分や日）
@@ -118,13 +120,21 @@ const AddCard= (): JSX.Element => {
 
         {/* TODO 補助ツールエリア */}
         <View style={styles.tools}>
-          <TouchableOpacity style={styles.toolButton}>
+          <TouchableOpacity style={styles.toolButton} onPress={() => setAddModalVisible(true)}>
             <Text style={styles.toolText}>例文生成</Text>
           </TouchableOpacity>
           {/* <TouchableOpacity style={styles.toolButton}>
             <Text style={styles.toolText}>翻訳</Text>
           </TouchableOpacity> */}
         </View>
+
+
+        {/* モーダルを表示 */}
+        <AddFlashcardModal
+          visible={addModalVisible}
+          onClose={() => setAddModalVisible(false)}
+          onAddCard={handleAddFlashCard}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
