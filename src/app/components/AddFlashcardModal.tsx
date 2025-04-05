@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
 import { auth,db } from "../../config"
+import generateFlashcard from "../utils/chatgptApi";
 
 interface AddFlashcardModalProps {
   visible: boolean;  
   onClose: () => void;  
-  onAddCard: (front: string, back: string, tags: string) => void; 
+  onCreateFlashcard: (front: string, back: string,tag:string) => void; 
 }
-const AddFlashcardModal: React.FC<AddFlashcardModalProps> = ({ visible, onClose, onAddCard }) => {
+const AddFlashcardModal: React.FC<AddFlashcardModalProps> = ({ visible, onClose, onCreateFlashcard }) => {
   const [keyword, setKeyword] = useState("");
 
   const handleAddFlashcard = async () => {
     if (!keyword.trim()) {
-      alert("KeyWordを入力してください");
+      alert("キーワードを入力してください");
       return;
     }
     if (!auth.currentUser) {
@@ -20,6 +21,13 @@ const AddFlashcardModal: React.FC<AddFlashcardModalProps> = ({ visible, onClose,
       return;
     }
     try {
+
+      const result = await generateFlashcard(keyword);
+      if (result) {
+        onCreateFlashcard(result.front, result.back,result.tag); 
+      } else {
+        alert("フラッシュカードの生成に失敗しました");
+      }
       setKeyword("");
       onClose();
     } catch (error) {

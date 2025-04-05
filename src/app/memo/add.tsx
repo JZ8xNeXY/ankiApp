@@ -76,6 +76,14 @@ const AddCard= (): JSX.Element => {
     }
   };
 
+  const handleCreateFlashCard = async (front: string, back: string, tags: string) => {
+    setFront(front);
+    setBack(back);
+    setTags(tags);
+    setAddModalVisible(false);                                        
+  }
+
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
@@ -133,7 +141,7 @@ const AddCard= (): JSX.Element => {
         <AddFlashcardModal
           visible={addModalVisible}
           onClose={() => setAddModalVisible(false)}
-          onAddCard={handleAddFlashCard}
+          onCreateFlashcard={handleCreateFlashCard}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
