@@ -108,6 +108,11 @@ const AddFlashcardModal: React.FC<AddFlashcardModalProps> = ({ visible, onClose,
               <Text style={styles.buttonText}>Create</Text>
             </TouchableOpacity>
           </View>
+          <View>
+          <Text style={styles.notice}>
+            ※フラッシュカードはキーワードをもとにAIが自動生成します。内容は必ずご自身でご確認・修正ください。
+          </Text>
+          </View>
         </View>
       </View>
     </Modal>
@@ -130,11 +135,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
-  radioContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 15,
-  },
   title: {
     fontSize: 18,
     fontWeight: "bold",
@@ -147,6 +147,9 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 5,
     marginBottom: 15,
+  },
+  radioContainer: {
+    marginVertical: 10,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -169,5 +172,11 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  notice: {
+    fontSize: 16,
+    color: '#888',
+    marginTop: 10,
+    textAlign: 'left',
   },
 });
