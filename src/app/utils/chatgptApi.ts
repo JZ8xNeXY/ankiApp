@@ -4,7 +4,7 @@ const API_URL = 'https://api.openai.com/v1/';
 const MODEL = 'gpt-4o-mini';
 const API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
 
-export const generateFlashcard = async (keyword: string) => {
+export const generateFlashcard = async (prompt: string) => {
   try {
     const response = await axios.post(
       `${API_URL}chat/completions`,
@@ -17,11 +17,9 @@ export const generateFlashcard = async (keyword: string) => {
           },
           {
             role: 'user',
-            content: `Create a flashcard for the English word: "${keyword}".\n
-        - "question": just the keyword itself.\n
-        - "answer": one simple English sentence using the word.\n
-        - Format: {"question": "keyword", "answer": "example sentence"}\n
-        Return only valid JSON.`,
+            content: ` "${prompt}".\n
+                     - Format: {"question": "keyword", "answer": "example sentence"}\n
+                        Return only valid JSON.`,
           },
         ],
       },

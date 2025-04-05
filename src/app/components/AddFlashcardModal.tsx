@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { auth,db } from "../../config"
+import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native"
+import { auth} from "../../config"
 import generateFlashcard from "../utils/chatgptApi";
+import CustomRadioButton from "./CustomRadioButton";
+
 
 interface AddFlashcardModalProps {
   visible: boolean;  
@@ -10,6 +12,8 @@ interface AddFlashcardModalProps {
 }
 const AddFlashcardModal: React.FC<AddFlashcardModalProps> = ({ visible, onClose, onCreateFlashcard }) => {
   const [keyword, setKeyword] = useState("");
+  const [selectedOption, setSelectedOption] = useState<null | 'en' | 'zh' | 'explain' | 'blank'>(null);
+
 
   const handleAddFlashcard = async () => {
     if (!keyword.trim()) {
@@ -22,7 +26,34 @@ const AddFlashcardModal: React.FC<AddFlashcardModalProps> = ({ visible, onClose,
     }
     try {
 
-      const result = await generateFlashcard(keyword);
+      // 指示を付加
+      let prompt = "";
+
+      switch (selectedOption) {
+        case 'en':
+          prompt = `Create a flashcard that translates the Japanese word "${keyword}" into English.\n`;
+          break;
+        case 'zh':
+          prompt = `Create a flashcard that translates the Japanese word "${keyword}" into Chinese.\n`;
+          break;
+        case 'explain':
+          prompt = `Create a flashcard that explains the term "${keyword}" in Japanese.\n`;
+          break;
+        // case 'blank':
+        //   prompt = `Create a fill-in-the-blank flashcard using the word "${keyword}".\n`;
+        //   break;
+        default:
+          prompt = `Create a general learning flashcard for the word "${keyword}".\n`;
+      }
+      
+      if (!prompt) {
+        prompt = `Create a general learning flashcard for the word "${keyword}".\n` +
+                 `Format: {"question": "...", "answer": "..."}\n` +
+                 `Return only valid pure JSON.`;
+      }
+
+      const result = await generateFlashcard(prompt);
+      console.log("生成されたprompt: ", prompt);
       if (result) {
         onCreateFlashcard(result.front, result.back,result.tag); 
       } else {
@@ -47,6 +78,28 @@ const AddFlashcardModal: React.FC<AddFlashcardModalProps> = ({ visible, onClose,
             value={keyword}
             onChangeText={setKeyword}
           />
+          <View style={styles.radioContainer}>
+            <CustomRadioButton
+              label="日→英 翻訳"
+              selected={selectedOption === 'en'}
+              onSelect={() => setSelectedOption('en')}
+            />
+            <CustomRadioButton
+              label="日→中 翻訳"
+              selected={selectedOption === 'zh'}
+              onSelect={() => setSelectedOption('zh')}
+            />
+            <CustomRadioButton
+              label="用語解説"
+              selected={selectedOption === 'explain'}
+              onSelect={() => setSelectedOption('explain')}
+            />
+            {/* <CustomRadioButton
+              label="穴埋め"
+              selected={selectedOption === 'blank'}
+              onSelect={() => setSelectedOption('blank')}
+            /> */}
+          </View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={[styles.button, styles.cancel]} onPress={onClose}>
               <Text style={styles.buttonText}>Cancel</Text>
