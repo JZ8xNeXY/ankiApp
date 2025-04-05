@@ -130,6 +130,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
+  radioContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 15,
+  },
   title: {
     fontSize: 18,
     fontWeight: "bold",

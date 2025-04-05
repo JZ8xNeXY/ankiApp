@@ -129,7 +129,7 @@ const AddCard= (): JSX.Element => {
         {/* TODO 補助ツールエリア */}
         <View style={styles.tools}>
           <TouchableOpacity style={styles.toolButton} onPress={() => setAddModalVisible(true)}>
-            <Text style={styles.toolText}>AIでカード生成支援</Text>
+            <Text style={styles.toolText}>AIでカード作成支援</Text>
           </TouchableOpacity>
           {/* <TouchableOpacity style={styles.toolButton}>
             <Text style={styles.toolText}>翻訳</Text>
