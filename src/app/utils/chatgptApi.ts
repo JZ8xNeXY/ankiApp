@@ -1,8 +1,8 @@
-import axios from 'axios';
+import axios from 'axios'
 
-const API_URL = 'https://api.openai.com/v1/';
-const MODEL = 'gpt-4o-mini';
-const API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+const API_URL = 'https://api.openai.com/v1/'
+const MODEL = 'gpt-4o-mini'
+const API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY
 
 export const generateFlashcard = async (prompt: string) => {
   try {
@@ -13,7 +13,8 @@ export const generateFlashcard = async (prompt: string) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an AI that helps learners create flashcards for studying English vocabulary. Return only pure JSON (no markdown or code block).',
+            content:
+              'You are an AI that helps learners create flashcards for studying English vocabulary. Return only pure JSON (no markdown or code block).',
           },
           {
             role: 'user',
@@ -28,19 +29,19 @@ export const generateFlashcard = async (prompt: string) => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${API_KEY}`,
         },
-      }
-    );
-    const result = response.data.choices[0].message.content;
-    const parsed = JSON.parse(result);
+      },
+    )
+    const result = response.data.choices[0].message.content
+    const parsed = JSON.parse(result)
     return {
       front: parsed.question,
       back: parsed.answer,
-      tag:'',
-    };;
+      tag: '',
+    }
   } catch (error) {
-    console.error('OpenAI Error:', error);
-    return null;
+    console.error('OpenAI Error:', error)
+    return null
   }
-};
+}
 
-export default generateFlashcard;
+export default generateFlashcard

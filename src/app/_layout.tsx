@@ -1,8 +1,8 @@
-import { Stack } from 'expo-router';
-import React from 'react';
+import { Stack } from 'expo-router'
+import React from 'react'
 
 // stack型ナビゲーション
-const Layout = () : JSX.Element => {
+const Layout = (): JSX.Element => {
   return (
     <Stack>
       {/* トップ画面（例: index.tsx）には戻るボタンを非表示 */}
@@ -14,7 +14,7 @@ const Layout = () : JSX.Element => {
         }}
       />
     </Stack>
-  );
-};
+  )
+}
 
-export default Layout;
+export default Layout

@@ -1,52 +1,63 @@
-import React, { useState, useEffect } from "react";
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { doc, updateDoc } from "firebase/firestore";
-import { auth, db } from "../../config";
+import { doc, updateDoc } from 'firebase/firestore'
+import React, { useState, useEffect } from 'react'
+import {
+  Modal,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native'
+import { auth, db } from '../../config'
 
 interface EditDeckModalProps {
-  visible: boolean  
-  onClose: () => void  
-  deckId:string
+  visible: boolean
+  onClose: () => void
+  deckId: string
   currentName: string
-  onUpdateDeck:(deckId: string, newName: string) => void
+  onUpdateDeck: (deckId: string, newName: string) => void
 }
 
-const EditDeckModal : React.FC<EditDeckModalProps>= (
-  { visible, onClose, deckId, currentName, onUpdateDeck }
-) => {
-  const [newDeckName, setNewDeckName] = useState("");
+const EditDeckModal: React.FC<EditDeckModalProps> = ({
+  visible,
+  onClose,
+  deckId,
+  currentName,
+  onUpdateDeck,
+}) => {
+  const [newDeckName, setNewDeckName] = useState('')
 
   const handleUpdateDeck = async () => {
     if (!newDeckName.trim()) {
-      alert("デッキ名を入力してください");
-      return;
+      alert('デッキ名を入力してください')
+      return
     }
     if (!auth.currentUser) {
-      alert("ログインしてください");
-      return;
+      alert('ログインしてください')
+      return
     }
     if (!deckId) {
-      alert("編集するデッキが見つかりません");
-      return;
+      alert('編集するデッキが見つかりません')
+      return
     }
 
     try {
-      const deckRef = doc(db, `users/${auth.currentUser.uid}/decks`, deckId);
-      await updateDoc(deckRef, { name: newDeckName });
+      const deckRef = doc(db, `users/${auth.currentUser.uid}/decks`, deckId)
+      await updateDoc(deckRef, { name: newDeckName })
 
-      onUpdateDeck(deckId, newDeckName);
-      setNewDeckName("")
+      onUpdateDeck(deckId, newDeckName)
+      setNewDeckName('')
 
-      onClose();
+      onClose()
     } catch (error) {
-      console.error("デッキ編集エラー: ", error);
-      alert("デッキの編集に失敗しました");
+      console.error('デッキ編集エラー: ', error)
+      alert('デッキの編集に失敗しました')
     }
-  };
+  }
 
   useEffect(() => {
-    setNewDeckName(currentName);
-  }, [currentName,visible]);
+    setNewDeckName(currentName)
+  }, [currentName, visible])
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -60,68 +71,74 @@ const EditDeckModal : React.FC<EditDeckModalProps>= (
             onChangeText={setNewDeckName}
           />
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={[styles.button, styles.cancel]} onPress={onClose}>
+            <TouchableOpacity
+              style={[styles.button, styles.cancel]}
+              onPress={onClose}
+            >
               <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.button, styles.save]} onPress={handleUpdateDeck}>
+            <TouchableOpacity
+              style={[styles.button, styles.save]}
+              onPress={handleUpdateDeck}
+            >
               <Text style={styles.buttonText}>Save</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
     </Modal>
-  );
-};
+  )
+}
 
-export default EditDeckModal;
+export default EditDeckModal
 
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalContainer: {
-    width: "80%",
-    backgroundColor: "#fff",
+    width: '80%',
+    backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
-    alignItems: "center",
+    alignItems: 'center',
   },
   title: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 10,
   },
   input: {
-    width: "100%",
+    width: '100%',
     padding: 10,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderRadius: 5,
     marginBottom: 15,
   },
   buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
   },
   button: {
     flex: 1,
     padding: 10,
-    alignItems: "center",
+    alignItems: 'center',
     borderRadius: 5,
     marginHorizontal: 5,
   },
   cancel: {
-    backgroundColor: "#ccc",
+    backgroundColor: '#ccc',
   },
   save: {
-    backgroundColor: "#467FD3",
+    backgroundColor: '#467FD3',
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    color: '#fff',
+    fontWeight: 'bold',
   },
-});
+})

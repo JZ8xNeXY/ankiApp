@@ -1,13 +1,17 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import React from 'react'
+import { View, Text, Pressable, StyleSheet } from 'react-native'
 
 type CustomRadioButtonProps = {
-  label: string;
-  selected: boolean;
-  onSelect: () => void;
-};
+  label: string
+  selected: boolean
+  onSelect: () => void
+}
 
-const CustomRadioButton: React.FC<CustomRadioButtonProps> = ({ label, selected, onSelect }) => {
+const CustomRadioButton: React.FC<CustomRadioButtonProps> = ({
+  label,
+  selected,
+  onSelect,
+}) => {
   return (
     <Pressable onPress={onSelect} style={styles.radioRow}>
       <View style={[styles.outerCircle, selected && styles.selectedOuter]}>
@@ -15,8 +19,8 @@ const CustomRadioButton: React.FC<CustomRadioButtonProps> = ({ label, selected, 
       </View>
       <Text style={styles.label}>{label}</Text>
     </Pressable>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   radioRow: {
@@ -46,6 +50,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
   },
-});
+})
 
-export default CustomRadioButton;
+export default CustomRadioButton

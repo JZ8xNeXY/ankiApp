@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import * as Progress from 'react-native-progress';
+import React from 'react'
+import { View, StyleSheet } from 'react-native'
+import * as Progress from 'react-native-progress'
 
 interface ProgressBarProps {
-  progress: number; // 0 ~ 1 の間の値
+  progress: number // 0 ~ 1 の間の値
 }
 
 const ProgressBar = ({ progress }: ProgressBarProps): JSX.Element => {
@@ -18,14 +18,14 @@ const ProgressBar = ({ progress }: ProgressBarProps): JSX.Element => {
         animated={true}
       />
     </View>
-  );
-};
+  )
+}
 
-export default ProgressBar;
+export default ProgressBar
 
 const styles = StyleSheet.create({
   container: {
     marginTop: 8,
     alignItems: 'center',
   },
-});
+})
