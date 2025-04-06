@@ -1,6 +1,6 @@
 import React, { useState,useEffect } from "react";
 import { View, Text, StyleSheet,Modal,TouchableOpacity } from "react-native";
-import Header from "../components/header";
+import Header from "../components/Header";
 import ReviewButton from "../components/ReviewButton";
 import AnswerButton from "../components/AnswerButton";
 import { useLocalSearchParams } from "expo-router";

@@ -1,6 +1,6 @@
 import React, { useState,useEffect,useRef } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet ,Dimensions} from "react-native";
-import Header from "../components/header";
+import Header from "../components/Header";
 import { useRouter } from "expo-router";
 import AddDeckModal from "../components/AddDeckModal";
 import EditDeckModal from "../components/EditDeckModal";
