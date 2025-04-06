@@ -104,6 +104,16 @@ const FlashcardScreen = (): JSX.Element => {
     }
   }
 
+  const speakQuestion = React.useCallback((text: string) => {
+    const lang = detectLanguage(text)
+
+    Speech.speak(text, {
+      language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
+      rate: 1.0,
+      pitch: 1.0,
+    })
+  }, [])
+
   useEffect(() => {
     const fetchFlashCard = async () => {
       if (!auth.currentUser) return
@@ -149,16 +159,6 @@ const FlashcardScreen = (): JSX.Element => {
 
   // 問題表示時
   useEffect(() => {
-    const speakQuestion = (text: string) => {
-      const lang = detectLanguage(text)
-
-      Speech.speak(text, {
-        language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
-        rate: 1.0,
-        pitch: 1.0,
-      })
-    }
-
     if (
       flashcards &&
       flashcards.length > 0 &&
@@ -166,7 +166,7 @@ const FlashcardScreen = (): JSX.Element => {
     ) {
       speakQuestion(flashcards[currentCard].question)
     }
-  }, [currentCard, flashcards])
+  }, [currentCard, flashcards, speakQuestion])
 
   // 回答表示時
   useEffect(() => {
