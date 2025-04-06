@@ -1,22 +1,22 @@
 module.exports = {
-  preset: "jest-expo",
+  preset: 'jest-expo',
   transform: {
-    "^.+\\.[jt]sx?$": "babel-jest",
+    '^.+\\.[jt]sx?$': 'babel-jest',
   },
-  setupFiles: ["<rootDir>/jest.setup.js"],
+  setupFiles: ['<rootDir>/jest.setup.js'],
   transformIgnorePatterns: [
-    "node_modules/(?!(jest-)?react-native" +
-      "|@react-native(-community)?" +
-      "|expo(nent)?" +
-      "|@expo(nent)?/.*" +
-      "|@expo-google-fonts/.*" +
-      "|react-navigation" +
-      "|@react-navigation/.*" +
-      "|@sentry/react-native" +
-      "|native-base" +
-      "|react-native-svg" +
-      "|firebase" +
-      "|@firebase)",
+    'node_modules/(?!(jest-)?react-native' +
+      '|@react-native(-community)?' +
+      '|expo(nent)?' +
+      '|@expo(nent)?/.*' +
+      '|@expo-google-fonts/.*' +
+      '|react-navigation' +
+      '|@react-navigation/.*' +
+      '|@sentry/react-native' +
+      '|native-base' +
+      '|react-native-svg' +
+      '|firebase' +
+      '|@firebase)',
   ],
-  moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
-};
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+}

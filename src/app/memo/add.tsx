@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import React, { useState } from 'react'
 import {
   View,
   Text,
@@ -8,37 +10,40 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
-  Alert
-} from 'react-native';
-import { router,useLocalSearchParams } from "expo-router";
-import { collection,addDoc,serverTimestamp} from "firebase/firestore"
-import { auth,db } from "../../config"
-import AddFlashcardModal from '../components/AddFlashcardModal';
+  Alert,
+} from 'react-native'
+import { auth, db } from '../../config'
+import AddFlashcardModal from '../components/AddFlashcardModal'
 
-const AddCard= (): JSX.Element => {
-  const { deckId } = useLocalSearchParams<{ deckId: string; deckName: string }>();
+const AddCard = (): JSX.Element => {
+  const { deckId } = useLocalSearchParams<{
+    deckId: string
+    deckName: string
+  }>()
 
-  const [front, setFront] = useState('');
-  const [back, setBack] = useState('');
-  const [tags, setTags] = useState('');
-  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [front, setFront] = useState('')
+  const [back, setBack] = useState('')
+  const [tags, setTags] = useState('')
+  const [addModalVisible, setAddModalVisible] = useState(false)
 
   // SM2関連
-  const [interval, ] = useState(0);           // 前回の復習間隔（分や日）
-
+  const [interval] = useState(0) // 前回の復習間隔（分や日）
 
   const handleAddFlashCard = async () => {
     if (!front.trim() || !back.trim()) {
-      alert("FRONTとBACKを入力してください");
-      return;
+      alert('FRONTとBACKを入力してください')
+      return
     }
     if (!auth.currentUser) {
-      alert("ログインしてください");
-      return;
+      alert('ログインしてください')
+      return
     }
-    const now = new Date();
+    const now = new Date()
     try {
-      const ref = collection(db, `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`);
+      const ref = collection(
+        db,
+        `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
+      )
       await addDoc(ref, {
         front,
         back,
@@ -48,41 +53,44 @@ const AddCard= (): JSX.Element => {
         efactor: 2.5,
         nextReview: new Date(now.getTime() + interval * 24 * 60 * 60 * 1000),
         createdAt: serverTimestamp(),
-      });
-  
+      })
+
       Alert.alert(
-        "カードを追加しました！",
-        "続けて登録しますか？",
+        'カードを追加しました！',
+        '続けて登録しますか？',
         [
           {
-            text: "戻る",
-            onPress: () => router.push("/"),
-            style: "cancel",
+            text: '戻る',
+            onPress: () => router.push('/'),
+            style: 'cancel',
           },
           {
-            text: "続けて追加",
+            text: '続けて追加',
             onPress: () => {
-              setFront('');
-              setBack('');
-              setTags('');
+              setFront('')
+              setBack('')
+              setTags('')
             },
           },
         ],
-        { cancelable: false }
-      );
+        { cancelable: false },
+      )
     } catch (error) {
-      console.error("カード追加エラー: ", error);
-      alert("カードの追加に失敗しました");
+      console.error('カード追加エラー: ', error)
+      alert('カードの追加に失敗しました')
     }
-  };
-
-  const handleCreateFlashCard = async (front: string, back: string, tags: string) => {
-    setFront(front);
-    setBack(back);
-    setTags(tags);
-    setAddModalVisible(false);                                        
   }
 
+  const handleCreateFlashCard = async (
+    front: string,
+    back: string,
+    tags: string,
+  ) => {
+    setFront(front)
+    setBack(back)
+    setTags(tags)
+    setAddModalVisible(false)
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -91,7 +99,7 @@ const AddCard= (): JSX.Element => {
         style={styles.inner}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.push("/")}>
+          <TouchableOpacity onPress={() => router.push('/')}>
             <Text style={styles.headerText}>Cancel</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>新規カード</Text>
@@ -128,14 +136,16 @@ const AddCard= (): JSX.Element => {
 
         {/* TODO 補助ツールエリア */}
         <View style={styles.tools}>
-          <TouchableOpacity style={styles.toolButton} onPress={() => setAddModalVisible(true)}>
+          <TouchableOpacity
+            style={styles.toolButton}
+            onPress={() => setAddModalVisible(true)}
+          >
             <Text style={styles.toolText}>AIでカード作成支援</Text>
           </TouchableOpacity>
           {/* <TouchableOpacity style={styles.toolButton}>
             <Text style={styles.toolText}>翻訳</Text>
           </TouchableOpacity> */}
         </View>
-
 
         {/* モーダルを表示 */}
         <AddFlashcardModal
@@ -145,10 +155,10 @@ const AddCard= (): JSX.Element => {
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
-};
+  )
+}
 
-export default AddCard;
+export default AddCard
 
 const styles = StyleSheet.create({
   container: {
@@ -172,7 +182,7 @@ const styles = StyleSheet.create({
   headerText: {
     color: '#467FD3',
     fontSize: 16,
-    fontWeight:'bold'
+    fontWeight: 'bold',
   },
   form: {
     flex: 1,
@@ -206,4 +216,4 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-});
+})

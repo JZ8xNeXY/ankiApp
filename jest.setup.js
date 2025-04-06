@@ -1,1 +1,1 @@
-process.env.EXPO_OS = "ios";
+process.env.EXPO_OS = 'ios'

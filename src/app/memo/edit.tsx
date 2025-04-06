@@ -1,4 +1,12 @@
-import React, { useState,useEffect } from 'react';
+import { router, useLocalSearchParams } from 'expo-router'
+import {
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
+  Timestamp,
+} from 'firebase/firestore'
+import React, { useState, useEffect } from 'react'
 import {
   View,
   Text,
@@ -7,84 +15,92 @@ import {
   StyleSheet,
   SafeAreaView,
   KeyboardAvoidingView,
-  Platform
-} from 'react-native';
-import { router,useLocalSearchParams } from "expo-router";
-import { doc,getDoc,setDoc,serverTimestamp,Timestamp  } from "firebase/firestore"
-import { auth,db } from "../../config"
-
+  Platform,
+} from 'react-native'
+import { auth, db } from '../../config'
 
 interface Flashcard {
-  id:string
-  question: string;
-  answer: string;
-  createdAt:Timestamp
+  id: string
+  question: string
+  answer: string
+  createdAt: Timestamp
 }
 
-
 const EditDeck = (): JSX.Element => {
-  const { deckId } = useLocalSearchParams<{ deckId: string; deckName: string }>();
-  const { flashcardId } = useLocalSearchParams<{ flashcardId: string; front: string; back:string; tags:string[] }>();
+  const { deckId } = useLocalSearchParams<{
+    deckId: string
+    deckName: string
+  }>()
+  const { flashcardId } = useLocalSearchParams<{
+    flashcardId: string
+    front: string
+    back: string
+    tags: string[]
+  }>()
 
-  const [front, setFront] = useState('');
-  const [back, setBack] = useState('');
-  const [tags, setTags] = useState('');
-  const [,setFlashCard] = useState<Flashcard>()
+  const [front, setFront] = useState('')
+  const [back, setBack] = useState('')
+  const [tags, setTags] = useState('')
+  const [, setFlashCard] = useState<Flashcard>()
 
   const handleEditFlashCard = async () => {
     if (!front.trim() || !back.trim()) {
-      alert("FRONTとBACKを入力してください");
-      return;
+      alert('FRONTとBACKを入力してください')
+      return
     }
     if (!auth.currentUser) {
-      alert("ログインしてください");
-      return;
+      alert('ログインしてください')
+      return
     }
-  
+
     try {
-      const ref = doc(db, `users/${auth.currentUser.uid}/decks/${deckId}/flashcards/${flashcardId}`);
+      const ref = doc(
+        db,
+        `users/${auth.currentUser.uid}/decks/${deckId}/flashcards/${flashcardId}`,
+      )
       await setDoc(ref, {
         front,
         back,
         tags,
         createdAt: serverTimestamp(),
-      });
-  
-      alert("カードを更新しました");
-      router.push("/"); 
+      })
+
+      alert('カードを更新しました')
+      router.push('/')
     } catch (error) {
-      console.error("カード追加エラー: ", error);
-      alert("カードの追加に失敗しました");
+      console.error('カード追加エラー: ', error)
+      alert('カードの追加に失敗しました')
     }
-  };
-
-
-  const fetchFlashCard = async () => {
-    if (!auth.currentUser || !deckId || !flashcardId) return;
-  
-    const ref = doc(db, `users/${auth.currentUser.uid}/decks/${deckId}/flashcards/${flashcardId}`);
-    console.log('test',ref)
-    const snapshot = await getDoc(ref);
-  
-    const data = snapshot.data();
-    if (data) {
-      const flashcard: Flashcard = {
-        id: snapshot.id,
-        question: data.front,
-        answer: data.back,
-        createdAt: data.createdAt || Timestamp.now(),
-      };
-      setFlashCard(flashcard);
-      setFront(data.front);
-      setBack(data.back);
-      setTags(data.tags || '');
-      console.log('test')
-    }
-  };
+  }
 
   useEffect(() => {
-    fetchFlashCard();
-  }, []);
+    const fetchFlashCard = async () => {
+      if (!auth.currentUser || !deckId || !flashcardId) return
+
+      const ref = doc(
+        db,
+        `users/${auth.currentUser.uid}/decks/${deckId}/flashcards/${flashcardId}`,
+      )
+      console.log('test', ref)
+      const snapshot = await getDoc(ref)
+      const data = snapshot.data()
+      if (data) {
+        const flashcard: Flashcard = {
+          id: snapshot.id,
+          question: data.front,
+          answer: data.back,
+          createdAt: data.createdAt || Timestamp.now(),
+        }
+        setFlashCard(flashcard)
+        setFront(data.front)
+        setBack(data.back)
+        setTags(data.tags || '')
+        console.log('test')
+      }
+    }
+
+    fetchFlashCard()
+  }, [deckId, flashcardId])
 
   return (
     <SafeAreaView style={styles.container}>
@@ -93,7 +109,7 @@ const EditDeck = (): JSX.Element => {
         style={styles.inner}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.push("/")}>
+          <TouchableOpacity onPress={() => router.push('/')}>
             <Text style={styles.headerText}>Cancel</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>カードの修正</Text>
@@ -118,11 +134,7 @@ const EditDeck = (): JSX.Element => {
             onChangeText={setBack}
           />
           <Text style={styles.label}>TAGS</Text>
-          <TextInput
-            style={styles.input}
-            value={tags}
-            onChangeText={setTags}
-          />
+          <TextInput style={styles.input} value={tags} onChangeText={setTags} />
         </View>
 
         {/* TODO 補助ツールエリア */}
@@ -136,11 +148,10 @@ const EditDeck = (): JSX.Element => {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
-  );
-};
+  )
+}
 
-export default EditDeck;
-
+export default EditDeck
 
 const styles = StyleSheet.create({
   container: {
@@ -164,7 +175,7 @@ const styles = StyleSheet.create({
   headerText: {
     color: '#467FD3',
     fontSize: 16,
-    fontWeight:'bold'
+    fontWeight: 'bold',
   },
   form: {
     flex: 1,
@@ -198,4 +209,4 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-});
+})
