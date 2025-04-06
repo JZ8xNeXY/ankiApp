@@ -7,6 +7,7 @@ import {
   Timestamp,
   query,
   where,
+  onSnapshot,
 } from 'firebase/firestore'
 import React, { useState, useEffect, useRef } from 'react'
 import {
@@ -59,45 +60,6 @@ const DeckScreen = (): JSX.Element => {
     ])
   }
 
-  const fetchDecks = async () => {
-    if (!auth.currentUser) return
-
-    const now = new Date()
-    const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
-    const snapshot = await getDocs(deckRef)
-
-    const deckList: Deck[] = await Promise.all(
-      snapshot.docs.map(async (doc) => {
-        const flashcardRef = collection(
-          db,
-          `users/${auth.currentUser.uid}/decks/${doc.id}/flashcards`,
-        )
-
-        // 全体数
-        const allSnap = await getDocs(flashcardRef)
-        const totalCount = allSnap.size
-
-        // 今日の復習対象
-        const q = query(
-          flashcardRef,
-          where('nextReview', '<=', Timestamp.fromDate(now)),
-        )
-        const reviewSnap = await getDocs(q)
-        const reviewCount = reviewSnap.size
-
-        return {
-          id: doc.id,
-          name: doc.data().name,
-          cardCount: reviewCount,
-          totalCount: totalCount,
-          createdAt: doc.data().createdAt?.toDate() || new Date(),
-        }
-      }),
-    )
-
-    setDecks(deckList)
-  }
-
   const handleShowActionSheet = (deckId: string) => {
     if (selectedDeckId) {
       selectedDeckId.current = deckId
@@ -137,7 +99,46 @@ const DeckScreen = (): JSX.Element => {
   }
 
   useEffect(() => {
-    fetchDecks()
+    if (!auth.currentUser) return
+
+    const now = new Date()
+    const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
+
+    // 🔁 リアルタイムで監視
+    const unsubscribe = onSnapshot(deckRef, async (snapshot) => {
+      const deckList: Deck[] = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const flashcardRef = collection(
+            db,
+            `users/${auth.currentUser?.uid}/decks/${doc.id}/flashcards`,
+          )
+
+          // 全体数
+          const allSnap = await getDocs(flashcardRef)
+          const totalCount = allSnap.size
+
+          // 今日の復習対象
+          const q = query(
+            flashcardRef,
+            where('nextReview', '<=', Timestamp.fromDate(now)),
+          )
+          const reviewSnap = await getDocs(q)
+          const reviewCount = reviewSnap.size
+
+          return {
+            id: doc.id,
+            name: doc.data().name,
+            cardCount: reviewCount,
+            totalCount: totalCount,
+            createdAt: doc.data().createdAt?.toDate() || new Date(),
+          }
+        }),
+      )
+
+      setDecks(deckList)
+    })
+
+    return () => unsubscribe()
   }, [])
 
   return (
