@@ -1,6 +1,8 @@
 import React, { useRef } from 'react'
 import { View, Text, TouchableOpacity } from 'react-native'
 import ActionSheet from 'react-native-actionsheet'
+import { MaterialIcons } from '@expo/vector-icons'
+
 
 interface ActionSheetProps {
   deckId: string
@@ -15,17 +17,19 @@ const ActionSheetComponent: React.FC<ActionSheetProps> = ({
   onRename,
   onDelete,
 }) => {
-  const actionSheetRef = useRef(null)
+  const actionSheetRef = useRef<ActionSheet | null>(null)
 
   const showActionSheet = () => {
-    actionSheetRef.current.show()
+    if (actionSheetRef.current) {
+      actionSheetRef.current.show()
+    }
   }
 
   return (
     <View>
       {/* Action ボタン */}
       <TouchableOpacity onPress={showActionSheet}>
-        <Text style={{ color: 'blue', fontSize: 16 }}>Action ▼</Text>
+        <MaterialIcons name="more-vert" size={24} color="#666" />
       </TouchableOpacity>
 
       {/* ActionSheet */}

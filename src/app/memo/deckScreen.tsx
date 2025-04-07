@@ -22,12 +22,15 @@ import { auth, db } from '../../config'
 import ActionSheetComponent from '../components/ActionSheet'
 import AddDeckModal from '../components/AddDeckModal'
 import EditDeckModal from '../components/EditDeckModal'
-import Header from '../components/Header'
+// import Header from '../components/Header's
 import ProgressBar from '../components/ProgressBar'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
+import Footer from '../components/Footer'
 
 interface Deck {
   id: string
   name: string
+  tag:string | null
   cardCount: number // 復習対象
   totalCount: number // 全体数
   createdAt?: Timestamp
@@ -47,12 +50,13 @@ const DeckScreen = (): JSX.Element => {
   const actionSheetRef = useRef<{ show: () => void } | null>(null)
   const selectedDeckId = useRef<string | null>(null)
 
-  const handleAddDeck = (deckName: string, deckId: string) => {
+  const handleAddDeck = (deckName: string, deckId: string,deckTag:string) => {
     setDecks((prevDecks) => [
       ...prevDecks,
       {
         id: deckId,
         name: deckName,
+        tag:deckTag,
         cardCount: 0,
         totalCount: 0,
         createdAt: Timestamp.fromDate(new Date()),
@@ -69,8 +73,8 @@ const DeckScreen = (): JSX.Element => {
     }
   }
 
-  const handleRename = (deckId: string, currentName: string) => {
-    setSelectedDeck({ id: deckId, name: currentName })
+  const handleRename = (deckId: string, currentName: string,currentTag:string) => {
+    setSelectedDeck({ id: deckId, name: currentName,tag:currentTag })
     setEditModalVisible(true)
   }
 
@@ -128,6 +132,7 @@ const DeckScreen = (): JSX.Element => {
           return {
             id: doc.id,
             name: doc.data().name,
+            tag:doc.data().tag,
             cardCount: reviewCount,
             totalCount: totalCount,
             createdAt: doc.data().createdAt?.toDate() || new Date(),
@@ -143,11 +148,36 @@ const DeckScreen = (): JSX.Element => {
 
   return (
     <View style={styles.container}>
-      <Header showBackToDecks={false} />
+      {/* TODO : Headerの表示を修正 */}
+      {/* <Header showBackToDecks={false} /> */}
+
+      <View>
+        <Text style={styles.headerTitle}>Home</Text>
+      </View>
+
+      <View style={styles.tipCard}>
+        <MaterialCommunityIcons
+          name="lightbulb-on-outline"
+          size={48}
+          color="white"
+          style={styles.tipIcon}
+        />
+        <View style={styles.tipTextContainer}>
+          <Text style={styles.tipTitle}>Today's Tip</Text>
+          <Text style={styles.tipText}>
+            Set a daily goal to build
+          </Text>
+          <Text style={styles.tipText}>
+            a vocabulary habit
+          </Text>
+        </View>
+      </View>
+     
 
       {/* デッキ一覧 */}
       <View style={styles.deck}>
         <FlatList
+          contentContainerStyle={{ paddingBottom: 120 }}
           data={decks}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => {
@@ -157,6 +187,10 @@ const DeckScreen = (): JSX.Element => {
 
             return (
               <View style={styles.deckItem}>
+                <Text style={styles.tag}>
+                  {item.tag ? item.tag.toUpperCase() : ''}
+                </Text> 
+
                 <TouchableOpacity
                   onPress={() =>
                     router.push({
@@ -170,9 +204,9 @@ const DeckScreen = (): JSX.Element => {
 
                 <View style={styles.progressWrapper}>
                   <ProgressBar progress={progress} />
-                  <Text style={styles.deckCount}>
+                  {/* <Text style={styles.deckCount}>
                     {reviewedCount} / {item.totalCount}（完了）
-                  </Text>
+                  </Text> */}
                 </View>
 
                 <TouchableOpacity
@@ -192,14 +226,19 @@ const DeckScreen = (): JSX.Element => {
         />
       </View>
 
-      <View style={styles.addDeckButton}>
+      <Footer current="Home" onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)} />
+      
+      {/* TODO adddeckボタン修正 */}
+      {/* <View style={styles.addDeckButton}>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => setAddModalVisible(true)}
         >
           <Text style={styles.addButtonText}>Add Deck</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
+
+
 
       {/* モーダルを表示 */}
       <AddDeckModal
@@ -228,8 +267,40 @@ const screenWidth = Dimensions.get('window').width
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F8F8',
-    paddingTop: 50,
+    backgroundColor: '#FFFDE7',
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#000',
+    marginTop: 20,
+    marginHorizontal: 20,
+  },
+  tipCard: {
+    backgroundColor: '#2C64C6',
+    margin: 10,
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'flex-start', 
+    gap: 12, 
+  },
+  tipIcon: {
+    marginTop: 4,
+  },
+  tipTextContainer: {
+    flex: 1,
+  },  
+  tipTitle: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  tipText: {
+    color: '#fff',
+    fontSize: 16,
+    lineHeight: 20,
   },
   header: {
     flexDirection: 'row',
@@ -239,34 +310,53 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#467FD3',
+    color: '#0000',
   },
   deck: {
-    marginTop: 15,
+    flex: 1,
   },
   deckItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingVertical: 15,
+    backgroundColor: '#FDFDFD',
+    paddingVertical: 25,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    marginBottom: 10,
+    marginHorizontal: 10,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  tag: {
+    backgroundColor: '#E5EFFF', 
+    color: '#2C64C6',
+    fontSize: 12,
+    fontWeight: 'bold',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginRight: 8,
   },
   deckTitle: {
     width: screenWidth * 0.4,
     fontSize: 18,
-    color: '#467FD3',
+    fontWeight: 'bold',
+    color: '#333333',
     flexShrink: 1,
     overflow: 'hidden',
   },
   progressWrapper: {
     flex: 2,
-    alignItems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'center',
   },
-
   deckCount: {
     fontSize: 12,
     color: '#888',
