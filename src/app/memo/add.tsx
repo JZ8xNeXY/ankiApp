@@ -11,6 +11,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native'
 import { auth, db } from '../../config'
 import AddFlashcardModal from '../components/AddFlashcardModal'
@@ -94,6 +96,7 @@ const AddCard = (): JSX.Element => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.inner}
@@ -110,6 +113,7 @@ const AddCard = (): JSX.Element => {
 
         <View style={styles.form}>
           <Text style={styles.label}>Question</Text>
+
           <TextInput
             style={styles.input}
             multiline={true}
@@ -132,6 +136,7 @@ const AddCard = (): JSX.Element => {
             value={tags}
             onChangeText={setTags}
           />
+
         </View>
 
         {/* TODO 補助ツールエリア */}
@@ -154,6 +159,7 @@ const AddCard = (): JSX.Element => {
           onCreateFlashcard={handleCreateFlashCard}
         />
       </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   )
 }
