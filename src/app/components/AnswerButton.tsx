@@ -22,7 +22,7 @@ const screenWidth = Dimensions.get('window').width
 const styles = StyleSheet.create({
   answerButton: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 50,
     left: screenWidth * 0.15,
     width: screenWidth * 0.7,
     backgroundColor: '#2C64C6',

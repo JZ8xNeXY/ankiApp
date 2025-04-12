@@ -276,7 +276,7 @@ const FlashcardScreen = (): JSX.Element => {
                 )
               }
               name="volume-high-outline" 
-              size={56} 
+              size={40} 
               color="#2C64C6"/>
               </View>
           )}
@@ -340,6 +340,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 20,
+    marginTop:25,
     marginBottom: 125,
     padding: 24, 
     borderWidth: 2, 
@@ -387,8 +388,8 @@ const styles = StyleSheet.create({
   },
   SoundIcon: {
     position: 'absolute',
-    bottom: -20,
-    right: 0,
+    bottom: -50,
+    right: -10,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
