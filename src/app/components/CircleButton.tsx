@@ -28,7 +28,6 @@ const styles = StyleSheet.create({
   circleButton: {
     width: 64,
     height: 64,
-    backgroundColor: '#467FD3',
     borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',

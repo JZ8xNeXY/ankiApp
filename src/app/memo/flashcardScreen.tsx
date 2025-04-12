@@ -13,10 +13,10 @@ import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native'
 import { auth, db } from '../../config'
 import AnswerButton from '../components/AnswerButton'
-import CircleButton from '../components/CircleButton'
 import Header from '../components/Header'
 import ReviewButton from '../components/ReviewButton'
 import { calculateSM2 } from '../utils/srs'
+import { Ionicons ,Feather,MaterialIcons} from '@expo/vector-icons'
 
 interface Flashcard {
   id: string
@@ -55,6 +55,19 @@ const FlashcardScreen = (): JSX.Element => {
     if (hasChineseCharacters) return 'zh'
     return 'ja'
   }
+
+
+  const isBookmarked = true
+
+  const toggleBookmark = () => {
+
+  }
+
+  const handleMorePress = () => {
+    
+  }
+
+
 
   const handleShowAnswer = () => {
     setShowAnswer(true)
@@ -205,8 +218,29 @@ const FlashcardScreen = (): JSX.Element => {
         flashcardBack={flashcards?.[currentCard]?.answer}
       />
 
+
+
+
       {/* Question & Answer */}
       <View style={styles.cardContainer}>
+        
+        {/* cardHeader */}
+        <View style={styles.cardHeader}>
+          {/* お気に入り（スター） */}
+          <TouchableOpacity onPress={toggleBookmark}>
+            <Feather
+              name={isBookmarked ? 'bookmark' : 'bookmark'}
+              size={32}
+              color={isBookmarked ? '#467FD3' : '#aaa'}
+            />
+          </TouchableOpacity>
+
+          {/* 三点メニュー */}
+          <TouchableOpacity onPress={handleMorePress}>
+            <Feather name="more-vertical" size={32} color="#444" />
+          </TouchableOpacity>
+        </View>
+
         {flashcards && flashcards.length > 0 ? (
           currentCard >= flashcards.length ? (
             <Text style={styles.cardText}>
@@ -232,17 +266,19 @@ const FlashcardScreen = (): JSX.Element => {
         {flashcards &&
           flashcards.length > 0 &&
           currentCard < flashcards.length && (
-            <CircleButton
-              onPress={() =>
+              <View  
+              style={styles.SoundIcon}>
+                <Ionicons onPress={() =>
                 speakQuestion(
                   showReviewButtons
                     ? flashcards[currentCard].answer
                     : flashcards[currentCard].question,
                 )
               }
-            >
-              <Text style={{ fontSize: 20 }}>🔊</Text>
-            </CircleButton>
+              name="volume-high-outline" 
+              size={56} 
+              color="#2C64C6"/>
+              </View>
           )}
       </View>
 
@@ -296,14 +332,35 @@ export default FlashcardScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F8F8',
+    backgroundColor: '#FFFDE7',
     paddingTop: 50,
   },
   cardContainer: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 100,
+    marginHorizontal: 20,
+    marginBottom: 125,
+    padding: 24, 
+    borderWidth: 2, 
+    borderColor: '#DDD', 
+    borderRadius: 16, 
+    backgroundColor: '#F9F9F9', 
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4, 
+  },
+  cardHeader: {
+    position: 'absolute',
+    top: 16,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   cardText: {
     fontSize: 32,
@@ -327,6 +384,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#888',
     marginTop: 10,
+  },
+  SoundIcon: {
+    position: 'absolute',
+    bottom: -20,
+    right: 0,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginBottom: 30,
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   answerButton: {
     position: 'absolute',
