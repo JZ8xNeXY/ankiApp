@@ -36,55 +36,55 @@ const Header = ({
       })
   }
 
-  const handleAddPress = () => {
-    router.push({
-      pathname: '/memo/add',
-      params: {
-        deckId,
-        deckName,
-        flashcardId,
-        flashcardFront,
-        flashcardBack,
-        tags,
-      },
-    })
-    console.log(deckId, deckName)
-  }
+  // const handleAddPress = () => {
+  //   router.push({
+  //     pathname: '/memo/add',
+  //     params: {
+  //       deckId,
+  //       deckName,
+  //       flashcardId,
+  //       flashcardFront,
+  //       flashcardBack,
+  //       tags,
+  //     },
+  //   })
+  //   console.log(deckId, deckName)
+  // }
 
-  const handleEditPress = () => {
-    router.push({
-      pathname: '/memo/edit',
-      params: {
-        deckId,
-        deckName,
-        flashcardId,
-        flashcardFront,
-        flashcardBack,
-        tags,
-      },
-    })
-  }
+  // const handleEditPress = () => {
+  //   router.push({
+  //     pathname: '/memo/edit',
+  //     params: {
+  //       deckId,
+  //       deckName,
+  //       flashcardId,
+  //       flashcardFront,
+  //       flashcardBack,
+  //       tags,
+  //     },
+  //   })
+  // }
 
-  const handleDeleteFlashcard = async () => {
-    if (!auth.currentUser || !deckId || !flashcardId) {
-      alert('削除に必要な情報が足りません')
-      return
-    }
+  // const handleDeleteFlashcard = async () => {
+  //   if (!auth.currentUser || !deckId || !flashcardId) {
+  //     alert('削除に必要な情報が足りません')
+  //     return
+  //   }
 
-    try {
-      const flashcardRef = doc(
-        db,
-        `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
-        flashcardId,
-      )
-      await deleteDoc(flashcardRef)
-      alert('フラッシュカードを削除しました')
-      router.push('/')
-    } catch (error) {
-      console.error('フラッシュカード削除エラー: ', error)
-      alert('削除に失敗しました')
-    }
-  }
+  //   try {
+  //     const flashcardRef = doc(
+  //       db,
+  //       `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
+  //       flashcardId,
+  //     )
+  //     await deleteDoc(flashcardRef)
+  //     alert('フラッシュカードを削除しました')
+  //     router.push('/')
+  //   } catch (error) {
+  //     console.error('フラッシュカード削除エラー: ', error)
+  //     alert('削除に失敗しました')
+  //   }
+  // }
 
   return (
     <View style={styles.header}>
@@ -93,7 +93,7 @@ const Header = ({
           <Text style={styles.headerText}>Decks</Text>
         </TouchableOpacity>
       )}
-      {showBackToDecks && (
+      {/* {showBackToDecks && (
         <TouchableOpacity onPress={handleAddPress}>
           <Text style={styles.headerText}>Add</Text>
         </TouchableOpacity>
@@ -107,7 +107,7 @@ const Header = ({
         <TouchableOpacity onPress={handleDeleteFlashcard}>
           <Text style={styles.headerText}>Delete</Text>
         </TouchableOpacity>
-      )}
+      )} */}
       {/* {!flashcardId && (
           <TouchableOpacity onPress={() => router.push("/../memo/find")}>
           <Text style={styles.headerText}>Find</Text>

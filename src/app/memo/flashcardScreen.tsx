@@ -17,6 +17,8 @@ import Header from '../components/Header'
 import ReviewButton from '../components/ReviewButton'
 import { calculateSM2 } from '../utils/srs'
 import { Ionicons ,Feather,MaterialIcons} from '@expo/vector-icons'
+import FlashcardActionSheetComponent from '../components/FlashcardModal'
+
 
 interface Flashcard {
   id: string
@@ -40,10 +42,18 @@ const FlashcardScreen = (): JSX.Element => {
   }>()
 
   const [, setShowAnswer] = useState(false)
+  const [flashcardModalVisible, setFlashcardModalVisible] = useState(false)
   const [showReviewButtons, setShowReviewButtons] = useState(false)
   const [currentCard, setCurrentCard] = useState(0)
   const [flashcards, setFlashCards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false)
+  const [selectedCard, setSelectedCard] = useState<{
+    deckId: string
+    deckName: string
+    flashcardId: string
+    flashcardFront: string
+    flashcardBack: string
+    }>()
 
   const detectLanguage = (text: string): 'en' | 'ja' | 'zh' => {
     const hasEnglish = /[a-zA-Z]/.test(text)
@@ -63,8 +73,26 @@ const FlashcardScreen = (): JSX.Element => {
 
   }
 
-  const handleMorePress = () => {
-    
+  const handleMorePress = (
+    deckId: string,
+    deckName: string,
+    flashcardId: string,
+    flashcardFront: string,
+    flashcardBack: string
+  ) => {
+
+    console.log('start')
+    setSelectedCard({
+      deckId:deckId,
+      deckName:deckName,
+      flashcardId: flashcardId,
+      flashcardFront: flashcardFront,
+      flashcardBack: flashcardBack,
+    })
+  
+    setFlashcardModalVisible(true)
+  
+    console.log(flashcardModalVisible)
   }
 
 
@@ -208,6 +236,10 @@ const FlashcardScreen = (): JSX.Element => {
     }
   }, [currentCard, flashcards])
 
+  useEffect(() => {
+    console.log('Modal Visible 状態:', flashcardModalVisible)
+  }, [flashcardModalVisible])
+
   return (
     <View style={styles.container}>
       <Header
@@ -236,9 +268,20 @@ const FlashcardScreen = (): JSX.Element => {
           </TouchableOpacity>
 
           {/* 三点メニュー */}
-          <TouchableOpacity onPress={handleMorePress}>
+          <TouchableOpacity
+            onPress={() =>
+              handleMorePress(
+                deckId,
+                deckName,
+                flashcards[currentCard].id,
+                flashcards[currentCard].question,
+                flashcards[currentCard].answer
+              )
+            }
+          >
             <Feather name="more-vertical" size={32} color="#444" />
           </TouchableOpacity>
+
         </View>
 
         {flashcards && flashcards.length > 0 ? (
@@ -295,6 +338,18 @@ const FlashcardScreen = (): JSX.Element => {
           </View>
         </View>
       </Modal>
+
+      {flashcardModalVisible && (
+        <FlashcardActionSheetComponent
+          visible={flashcardModalVisible} 
+          onClose={() => setFlashcardModalVisible(false)} 
+          deckId={deckId}
+          deckName={deckName}
+          flashcardId={selectedCard?.flashcardId}
+          flashcardFront={selectedCard?.flashcardFront}
+          flashcardBack={selectedCard?.flashcardBack}
+        />  
+      )}
 
       {/* answerButton & reviewButton */}
       {flashcards &&
