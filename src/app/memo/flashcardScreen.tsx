@@ -17,9 +17,10 @@ import AnswerButton from '../components/AnswerButton'
 import Header from '../components/Header'
 import ReviewButton from '../components/ReviewButton'
 import { calculateSM2 } from '../utils/srs'
-import { Ionicons ,Feather,MaterialIcons} from '@expo/vector-icons'
+import { Ionicons ,Feather} from '@expo/vector-icons'
 import FlashcardActionSheetComponent from '../components/FlashcardModal'
 import ProgressBar from '../components/ProgressBar'
+import CircleButton from '../components/CircleButton'
 
 interface Deck {
   id: string
@@ -368,7 +369,7 @@ const FlashcardScreen = (): JSX.Element => {
           </Text>
         )}
 
-        {flashcards &&
+        {/* {flashcards &&
           flashcards.length > 0 &&
           currentCard < flashcards.length && (
               <View  
@@ -384,7 +385,23 @@ const FlashcardScreen = (): JSX.Element => {
               size={40} 
               color="#2C64C6"/>
               </View>
-          )}
+          )} */}
+        {flashcards &&
+          flashcards.length > 0 &&
+          currentCard < flashcards.length && (
+            <CircleButton
+            
+              onPress={() =>
+                speakQuestion(
+                  showReviewButtons
+                    ? flashcards[currentCard].answer
+                    : flashcards[currentCard].question,
+                )
+              }
+            >
+            <Ionicons name="volume-high-outline" size={40} color="#2C64C6" />
+          </CircleButton>
+        )}
       </View>
 
       <Modal visible={showCongratsModal} transparent animationType="fade">
@@ -454,7 +471,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 20,
-    marginTop:25,
+    marginTop:15,
     marginBottom: 125,
     padding: 24, 
     borderWidth: 2, 
