@@ -15,12 +15,16 @@ const getProgressColor = (progress: number) => {
 const ProgressBar = ({ progress }: ProgressBarProps): JSX.Element => {
   return (
     <View style={styles.container}>
-      <Progress.Bar
+      <Progress.Circle
         progress={progress}
-        width={300} 
-        height={10} 
-        borderRadius={5} 
-        color={getProgressColor(progress)} 
+        size={60} // 円のサイズ
+        thickness={6}
+        showsText={true}
+        formatText={() => `${Math.round(progress * 100)}%`}
+        color={getProgressColor(progress)}
+        unfilledColor="#E0E0E0"
+        borderWidth={0}
+        textStyle={styles.text}
       />
     </View>
   )
@@ -30,7 +34,6 @@ export default ProgressBar
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },

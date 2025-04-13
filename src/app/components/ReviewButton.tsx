@@ -3,14 +3,12 @@ import { TouchableOpacity, Text, StyleSheet } from 'react-native'
 
 interface ReviewButtonProps {
   label: string
-  time: string
   color: string
   onPress: () => void
 }
 
 const ReviewButton: React.FC<ReviewButtonProps> = ({
   label,
-  time,
   color,
   onPress,
 }) => {
@@ -20,7 +18,6 @@ const ReviewButton: React.FC<ReviewButtonProps> = ({
       onPress={onPress}
     >
       <Text style={styles.text}>
-        {time} {'\n'}
         {label}
       </Text>
     </TouchableOpacity>
@@ -32,7 +29,7 @@ export default ReviewButton
 const styles = StyleSheet.create({
   button: {
     width: 96,
-    paddingVertical: 5,
+    paddingVertical: 15,
     alignItems: 'center',
     borderRadius: 5,
   },

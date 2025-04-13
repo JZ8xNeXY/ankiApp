@@ -8,6 +8,7 @@ import {
   Timestamp,
   query,
   where,
+  onSnapshot
 } from 'firebase/firestore'
 import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native'
@@ -18,7 +19,16 @@ import ReviewButton from '../components/ReviewButton'
 import { calculateSM2 } from '../utils/srs'
 import { Ionicons ,Feather,MaterialIcons} from '@expo/vector-icons'
 import FlashcardActionSheetComponent from '../components/FlashcardModal'
+import ProgressBar from '../components/ProgressBar'
 
+interface Deck {
+  id: string
+  name: string
+  tag:string | null
+  cardCount: number // 復習対象
+  totalCount: number // 全体数
+  createdAt?: Timestamp
+}
 
 interface Flashcard {
   id: string
@@ -44,6 +54,7 @@ const FlashcardScreen = (): JSX.Element => {
   const [, setShowAnswer] = useState(false)
   const [flashcardModalVisible, setFlashcardModalVisible] = useState(false)
   const [showReviewButtons, setShowReviewButtons] = useState(false)
+  const [, setDecks] = useState<Deck[]>([])
   const [currentCard, setCurrentCard] = useState(0)
   const [flashcards, setFlashCards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false)
@@ -70,7 +81,6 @@ const FlashcardScreen = (): JSX.Element => {
   const isBookmarked = true
 
   const toggleBookmark = () => {
-
   }
 
   const handleMorePress = (
@@ -156,6 +166,49 @@ const FlashcardScreen = (): JSX.Element => {
   }, [])
 
   useEffect(() => {
+    if (!auth.currentUser) return
+
+    const now = new Date()
+    const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
+
+    // 🔁 リアルタイムで監視
+    const unsubscribe = onSnapshot(deckRef, async (snapshot) => {
+      const deckList: Deck[] = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const flashcardRef = collection(
+            db,
+            `users/${auth.currentUser?.uid}/decks/${doc.id}/flashcards`,
+          )
+
+          // 全体数
+          const allSnap = await getDocs(flashcardRef)
+          const totalCount = allSnap.size
+
+          // 今日の復習対象
+          const q = query(
+            flashcardRef,
+            where('nextReview', '<=', Timestamp.fromDate(now)),
+          )
+          const reviewSnap = await getDocs(q)
+          const reviewCount = reviewSnap.size
+
+          return {
+            id: doc.id,
+            name: doc.data().name,
+            tag:doc.data().tag,
+            cardCount: reviewCount,
+            totalCount: totalCount,
+            createdAt: doc.data().createdAt?.toDate() || new Date(),
+          }
+        }),
+      )
+      setDecks(deckList)
+    })
+
+    return () => unsubscribe()
+  }, [])
+
+  useEffect(() => {
     const fetchFlashCard = async () => {
       if (!auth.currentUser) return
 
@@ -236,10 +289,6 @@ const FlashcardScreen = (): JSX.Element => {
     }
   }, [currentCard, flashcards])
 
-  useEffect(() => {
-    console.log('Modal Visible 状態:', flashcardModalVisible)
-  }, [flashcardModalVisible])
-
   return (
     <View style={styles.container}>
       <Header
@@ -250,7 +299,20 @@ const FlashcardScreen = (): JSX.Element => {
         flashcardBack={flashcards?.[currentCard]?.answer}
       />
 
-
+      <View style={styles.progressWrapper}>
+        <ProgressBar
+          progress={
+            flashcards && flashcards.length > 0
+            ? currentCard / flashcards.length
+            : 0
+          }
+        />
+        <Text style={styles.nextReviewText}>
+          {flashcards && flashcards.length > 0
+            ? `${currentCard } / ${flashcards.length}（完了）`
+            : ''}
+        </Text>
+      </View>
 
 
       {/* Question & Answer */}
@@ -360,19 +422,16 @@ const FlashcardScreen = (): JSX.Element => {
           <View style={styles.buttonContainer}>
             <ReviewButton
               label="Again"
-              time="1m"
               color="#B90101"
               onPress={() => handleNextCard(1)}
             />
             <ReviewButton
               label="Good"
-              time="10m"
               color="#26B502"
               onPress={() => handleNextCard(4)}
             />
             <ReviewButton
               label="Easy"
-              time="4d"
               color="#2F79E7"
               onPress={() => handleNextCard(5)}
             />
@@ -407,6 +466,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4, 
+  },
+  progressWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardHeader: {
     position: 'absolute',
@@ -443,16 +506,19 @@ const styles = StyleSheet.create({
   },
   SoundIcon: {
     position: 'absolute',
-    bottom: -50,
-    right: -10,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginBottom: 30,
-    width: 100,
-    height: 100,
+    bottom: 10,
+    right: 10,
+    width: 72,
+    height: 72,
+    borderRadius: 999, // 完全な丸
+    backgroundColor: 'rgba(70, 127, 211, 0.2)', 
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // Android用の影
   },
   answerButton: {
     position: 'absolute',
@@ -470,6 +536,8 @@ const styles = StyleSheet.create({
   answerButtonText: {
     fontSize: 18,
     color: '#fff',
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
   modalOverlay: {
     flex: 1,

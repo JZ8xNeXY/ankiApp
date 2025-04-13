@@ -23,7 +23,7 @@ import ActionSheetComponent from '../components/ActionSheet'
 import AddDeckModal from '../components/AddDeckModal'
 import EditDeckModal from '../components/EditDeckModal'
 // import Header from '../components/Header's
-import ProgressBar from '../components/ProgressBar'
+import ProgressCircle from '../components/ProgressCircle'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import Footer from '../components/Footer'
 
@@ -203,7 +203,7 @@ const DeckScreen = (): JSX.Element => {
                 </TouchableOpacity>
 
                 <View style={styles.progressWrapper}>
-                  <ProgressBar progress={progress} />
+                  <ProgressCircle progress={progress} />
                   {/* <Text style={styles.deckCount}>
                     {reviewedCount} / {item.totalCount}（完了）
                   </Text> */}
@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     color: '#000',
-    marginTop: 20,
+    marginTop: 80,
     marginHorizontal: 20,
   },
   tipCard: {
