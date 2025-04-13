@@ -8,12 +8,13 @@ import {
   query,
   where,
   onSnapshot,
+  orderBy,
+  writeBatch,
 } from 'firebase/firestore'
 import React, { useState, useEffect, useRef } from 'react'
 import {
   View,
   Text,
-  // FlatList,s
   TouchableOpacity,
   StyleSheet,
   Dimensions,
@@ -37,6 +38,7 @@ interface Deck {
   cardCount: number // 復習対象
   totalCount: number // 全体数
   createdAt?: Timestamp
+  order?: number
 }
 
 const DeckScreen = (): JSX.Element => {
@@ -63,6 +65,7 @@ const DeckScreen = (): JSX.Element => {
         cardCount: 0,
         totalCount: 0,
         createdAt: Timestamp.fromDate(new Date()),
+        order: prevDecks.length,
       },
     ])
   }
@@ -105,6 +108,26 @@ const DeckScreen = (): JSX.Element => {
     }
   }
 
+  const handleDragEnd = async ({ data }: { data: Deck[] }) => {
+    setDecks(data)
+    try{
+      if (auth.currentUser) {
+        const batch = writeBatch(db)
+        data.forEach((deck, index) => {
+          const ref = auth.currentUser 
+            ? doc(db, `users/${auth.currentUser.uid}/decks/${deck.id}`) 
+            : null;
+          if (!ref) return;
+          batch.update(ref, { order: index })
+        })
+        await batch.commit()
+      }
+    }catch (error) {
+      console.error('Error updating deck order: ', error)
+      alert('デッキの順序更新に失敗しました')
+    }
+  }
+
   useEffect(() => {
     if (!auth.currentUser) return
 
@@ -112,7 +135,7 @@ const DeckScreen = (): JSX.Element => {
     const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
 
     // 🔁 リアルタイムで監視
-    const unsubscribe = onSnapshot(deckRef, async (snapshot) => {
+    const unsubscribe = onSnapshot(query(deckRef, orderBy('order')), async (snapshot) => {
       const deckList: Deck[] = await Promise.all(
         snapshot.docs.map(async (doc) => {
           const flashcardRef = collection(
@@ -139,6 +162,7 @@ const DeckScreen = (): JSX.Element => {
             cardCount: reviewCount,
             totalCount: totalCount,
             createdAt: doc.data().createdAt?.toDate() || new Date(),
+            order: doc.data().order || 0,
           }
         }),
       )
@@ -182,6 +206,7 @@ const DeckScreen = (): JSX.Element => {
         <DraggableFlatList
           contentContainerStyle={{ paddingBottom: 120 }}
           data={decks}
+          onDragEnd={({ data }) => handleDragEnd({ data })}
           keyExtractor={(item) => item.id}
           renderItem={({ item,drag }) => {
             const reviewedCount = item.totalCount - item.cardCount
