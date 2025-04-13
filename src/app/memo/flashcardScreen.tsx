@@ -329,9 +329,9 @@ const FlashcardScreen = (): JSX.Element => {
               handleMorePress(
                 deckId,
                 deckName,
-                flashcards[currentCard].id,
-                flashcards[currentCard].question,
-                flashcards[currentCard].answer,
+                flashcards?.[currentCard]?.id,
+                flashcards?.[currentCard]?.question,
+                flashcards?.[currentCard]?.answer,
               )
             }
           >
