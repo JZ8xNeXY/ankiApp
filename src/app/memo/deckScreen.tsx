@@ -13,7 +13,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import {
   View,
   Text,
-  FlatList,
+  // FlatList,s
   TouchableOpacity,
   StyleSheet,
   Dimensions,
@@ -26,6 +26,9 @@ import EditDeckModal from '../components/EditDeckModal'
 import ProgressCircle from '../components/ProgressCircle'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import Footer from '../components/Footer'
+import DraggableFlatList, {
+  ScaleDecorator,
+} from "react-native-draggable-flatlist";
 
 interface Deck {
   id: string
@@ -176,17 +179,21 @@ const DeckScreen = (): JSX.Element => {
 
       {/* デッキ一覧 */}
       <View style={styles.deck}>
-        <FlatList
+        <DraggableFlatList
           contentContainerStyle={{ paddingBottom: 120 }}
           data={decks}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => {
+          renderItem={({ item,drag }) => {
             const reviewedCount = item.totalCount - item.cardCount
             const progress =
               item.totalCount > 0 ? reviewedCount / item.totalCount : 0
 
             return (
-              <View style={styles.deckItem}>
+              <ScaleDecorator>
+              <TouchableOpacity 
+                onLongPress={drag} 
+                style={styles.deckItem}>
+                
                 <Text style={styles.tag}>
                   {item.tag ? item.tag.toUpperCase() : ''}
                 </Text> 
@@ -220,7 +227,8 @@ const DeckScreen = (): JSX.Element => {
                     onDelete={(id) => handleDelete(id)}
                   />
                 </TouchableOpacity>
-              </View>
+              </TouchableOpacity>
+              </ScaleDecorator>
             )
           }}
         />
