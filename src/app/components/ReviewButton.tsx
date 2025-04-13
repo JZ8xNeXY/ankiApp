@@ -17,9 +17,7 @@ const ReviewButton: React.FC<ReviewButtonProps> = ({
       style={[styles.button, { backgroundColor: color }]}
       onPress={onPress}
     >
-      <Text style={styles.text}>
-        {label}
-      </Text>
+      <Text style={styles.text}>{label}</Text>
     </TouchableOpacity>
   )
 }

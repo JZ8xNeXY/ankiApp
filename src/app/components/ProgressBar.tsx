@@ -17,10 +17,10 @@ const ProgressBar = ({ progress }: ProgressBarProps): JSX.Element => {
     <View style={styles.container}>
       <Progress.Bar
         progress={progress}
-        width={300} 
-        height={10} 
-        borderRadius={5} 
-        color={getProgressColor(progress)} 
+        width={300}
+        height={10}
+        borderRadius={5}
+        color={getProgressColor(progress)}
       />
     </View>
   )

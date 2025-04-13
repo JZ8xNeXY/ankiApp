@@ -1,9 +1,9 @@
+import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { signOut } from 'firebase/auth'
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native'
-import { auth, db } from '../../config'
-import { Ionicons} from '@expo/vector-icons'
+import { auth } from '../../config'
 
 interface HeaderProps {
   deckId?: string
@@ -15,9 +15,7 @@ interface HeaderProps {
   showBackToDecks?: boolean
 }
 
-const Header = ({
-  showBackToDecks = true,
-}: HeaderProps): JSX.Element => {
+const Header = ({ showBackToDecks = true }: HeaderProps): JSX.Element => {
   const router = useRouter()
 
   const handlePress = (): void => {
@@ -33,7 +31,10 @@ const Header = ({
   return (
     <View style={styles.header}>
       {showBackToDecks && (
-        <TouchableOpacity style={styles.navLink} onPress={() => router.push('/')}>
+        <TouchableOpacity
+          style={styles.navLink}
+          onPress={() => router.push('/')}
+        >
           <Ionicons name="home-outline" size={20} color="#467FD3" />
           <Text style={styles.headerText}>Home</Text>
         </TouchableOpacity>
@@ -83,5 +84,4 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     color: '#467FD3',
   },
-
 })

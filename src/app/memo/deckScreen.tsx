@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import {
   collection,
@@ -19,22 +20,21 @@ import {
   StyleSheet,
   Dimensions,
 } from 'react-native'
+import DraggableFlatList, {
+  ScaleDecorator,
+} from 'react-native-draggable-flatlist'
 import { auth, db } from '../../config'
 import ActionSheetComponent from '../components/ActionSheet'
 import AddDeckModal from '../components/AddDeckModal'
 import EditDeckModal from '../components/EditDeckModal'
 // import Header from '../components/Header's
-import ProgressCircle from '../components/ProgressCircle'
-import { MaterialCommunityIcons } from '@expo/vector-icons'
 import Footer from '../components/Footer'
-import DraggableFlatList, {
-  ScaleDecorator,
-} from "react-native-draggable-flatlist";
+import ProgressCircle from '../components/ProgressCircle'
 
 interface Deck {
   id: string
   name: string
-  tag:string | null
+  tag: string | null
   cardCount: number // 復習対象
   totalCount: number // 全体数
   createdAt?: Timestamp
@@ -55,13 +55,13 @@ const DeckScreen = (): JSX.Element => {
   const actionSheetRef = useRef<{ show: () => void } | null>(null)
   const selectedDeckId = useRef<string | null>(null)
 
-  const handleAddDeck = (deckName: string, deckId: string,deckTag:string) => {
+  const handleAddDeck = (deckName: string, deckId: string, deckTag: string) => {
     setDecks((prevDecks) => [
       ...prevDecks,
       {
         id: deckId,
         name: deckName,
-        tag:deckTag,
+        tag: deckTag,
         cardCount: 0,
         totalCount: 0,
         createdAt: Timestamp.fromDate(new Date()),
@@ -79,8 +79,12 @@ const DeckScreen = (): JSX.Element => {
     }
   }
 
-  const handleRename = (deckId: string, currentName: string,currentTag:string) => {
-    setSelectedDeck({ id: deckId, name: currentName,tag:currentTag })
+  const handleRename = (
+    deckId: string,
+    currentName: string,
+    currentTag: string,
+  ) => {
+    setSelectedDeck({ id: deckId, name: currentName, tag: currentTag })
     setEditModalVisible(true)
   }
 
@@ -110,19 +114,19 @@ const DeckScreen = (): JSX.Element => {
 
   const handleDragEnd = async ({ data }: { data: Deck[] }) => {
     setDecks(data)
-    try{
+    try {
       if (auth.currentUser) {
         const batch = writeBatch(db)
         data.forEach((deck, index) => {
-          const ref = auth.currentUser 
-            ? doc(db, `users/${auth.currentUser.uid}/decks/${deck.id}`) 
-            : null;
-          if (!ref) return;
+          const ref = auth.currentUser
+            ? doc(db, `users/${auth.currentUser.uid}/decks/${deck.id}`)
+            : null
+          if (!ref) return
           batch.update(ref, { order: index })
         })
         await batch.commit()
       }
-    }catch (error) {
+    } catch (error) {
       console.error('Error updating deck order: ', error)
       alert('デッキの順序更新に失敗しました')
     }
@@ -135,40 +139,43 @@ const DeckScreen = (): JSX.Element => {
     const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
 
     // 🔁 リアルタイムで監視
-    const unsubscribe = onSnapshot(query(deckRef, orderBy('order')), async (snapshot) => {
-      const deckList: Deck[] = await Promise.all(
-        snapshot.docs.map(async (doc) => {
-          const flashcardRef = collection(
-            db,
-            `users/${auth.currentUser?.uid}/decks/${doc.id}/flashcards`,
-          )
+    const unsubscribe = onSnapshot(
+      query(deckRef, orderBy('order')),
+      async (snapshot) => {
+        const deckList: Deck[] = await Promise.all(
+          snapshot.docs.map(async (doc) => {
+            const flashcardRef = collection(
+              db,
+              `users/${auth.currentUser?.uid}/decks/${doc.id}/flashcards`,
+            )
 
-          // 全体数
-          const allSnap = await getDocs(flashcardRef)
-          const totalCount = allSnap.size
+            // 全体数
+            const allSnap = await getDocs(flashcardRef)
+            const totalCount = allSnap.size
 
-          // 今日の復習対象
-          const q = query(
-            flashcardRef,
-            where('nextReview', '<=', Timestamp.fromDate(now)),
-          )
-          const reviewSnap = await getDocs(q)
-          const reviewCount = reviewSnap.size
+            // 今日の復習対象
+            const q = query(
+              flashcardRef,
+              where('nextReview', '<=', Timestamp.fromDate(now)),
+            )
+            const reviewSnap = await getDocs(q)
+            const reviewCount = reviewSnap.size
 
-          return {
-            id: doc.id,
-            name: doc.data().name,
-            tag:doc.data().tag,
-            cardCount: reviewCount,
-            totalCount: totalCount,
-            createdAt: doc.data().createdAt?.toDate() || new Date(),
-            order: doc.data().order || 0,
-          }
-        }),
-      )
+            return {
+              id: doc.id,
+              name: doc.data().name,
+              tag: doc.data().tag,
+              cardCount: reviewCount,
+              totalCount: totalCount,
+              createdAt: doc.data().createdAt?.toDate() || new Date(),
+              order: doc.data().order || 0,
+            }
+          }),
+        )
 
-      setDecks(deckList)
-    })
+        setDecks(deckList)
+      },
+    )
 
     return () => unsubscribe()
   }, [])
@@ -190,16 +197,11 @@ const DeckScreen = (): JSX.Element => {
           style={styles.tipIcon}
         />
         <View style={styles.tipTextContainer}>
-          <Text style={styles.tipTitle}>Today's Tip</Text>
-          <Text style={styles.tipText}>
-            Set a daily goal to build
-          </Text>
-          <Text style={styles.tipText}>
-            a vocabulary habit
-          </Text>
+          <Text style={styles.tipTitle}>Today&apos;s Tip</Text>
+          <Text style={styles.tipText}>Set a daily goal to build</Text>
+          <Text style={styles.tipText}>a vocabulary habit</Text>
         </View>
       </View>
-     
 
       {/* デッキ一覧 */}
       <View style={styles.deck}>
@@ -208,59 +210,59 @@ const DeckScreen = (): JSX.Element => {
           data={decks}
           onDragEnd={({ data }) => handleDragEnd({ data })}
           keyExtractor={(item) => item.id}
-          renderItem={({ item,drag }) => {
+          renderItem={({ item, drag }) => {
             const reviewedCount = item.totalCount - item.cardCount
             const progress =
               item.totalCount > 0 ? reviewedCount / item.totalCount : 0
 
             return (
               <ScaleDecorator>
-              <TouchableOpacity 
-                onLongPress={drag} 
-                style={styles.deckItem}>
-                
-                <Text style={styles.tag}>
-                  {item.tag ? item.tag.toUpperCase() : ''}
-                </Text> 
+                <TouchableOpacity onLongPress={drag} style={styles.deckItem}>
+                  <Text style={styles.tag}>
+                    {item.tag ? item.tag.toUpperCase() : ''}
+                  </Text>
 
-                <TouchableOpacity
-                  onPress={() =>
-                    router.push({
-                      pathname: '/memo/flashcardScreen',
-                      params: { deckId: item.id, deckName: item.name },
-                    })
-                  }
-                >
-                  <Text style={styles.deckTitle}>{item.name}</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push({
+                        pathname: '/memo/flashcardScreen',
+                        params: { deckId: item.id, deckName: item.name },
+                      })
+                    }
+                  >
+                    <Text style={styles.deckTitle}>{item.name}</Text>
+                  </TouchableOpacity>
 
-                <View style={styles.progressWrapper}>
-                  <ProgressCircle progress={progress} />
-                  {/* <Text style={styles.deckCount}>
+                  <View style={styles.progressWrapper}>
+                    <ProgressCircle progress={progress} />
+                    {/* <Text style={styles.deckCount}>
                     {reviewedCount} / {item.totalCount}（完了）
                   </Text> */}
-                </View>
+                  </View>
 
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => handleShowActionSheet(item.id)}
-                >
-                  <ActionSheetComponent
-                    deckId={item.id}
-                    deckName={item.name}
-                    onRename={(id, name) => handleRename(id, name)}
-                    onDelete={(id) => handleDelete(id)}
-                  />
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => handleShowActionSheet(item.id)}
+                  >
+                    <ActionSheetComponent
+                      deckId={item.id}
+                      deckName={item.name}
+                      onRename={(id, name) => handleRename(id, name)}
+                      onDelete={(id) => handleDelete(id)}
+                    />
+                  </TouchableOpacity>
                 </TouchableOpacity>
-              </TouchableOpacity>
               </ScaleDecorator>
             )
           }}
         />
       </View>
 
-      <Footer current="Home" onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)} />
-      
+      <Footer
+        current="Home"
+        onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
+      />
+
       {/* TODO adddeckボタン修正 */}
       {/* <View style={styles.addDeckButton}>
         <TouchableOpacity
@@ -270,8 +272,6 @@ const DeckScreen = (): JSX.Element => {
           <Text style={styles.addButtonText}>Add Deck</Text>
         </TouchableOpacity>
       </View> */}
-
-
 
       {/* モーダルを表示 */}
       <AddDeckModal
@@ -315,15 +315,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
-    alignItems: 'flex-start', 
-    gap: 12, 
+    alignItems: 'flex-start',
+    gap: 12,
   },
   tipIcon: {
     marginTop: 4,
   },
   tipTextContainer: {
     flex: 1,
-  },  
+  },
   tipTitle: {
     color: '#fff',
     fontSize: 24,
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   tag: {
-    backgroundColor: '#E5EFFF', 
+    backgroundColor: '#E5EFFF',
     color: '#2C64C6',
     fontSize: 12,
     fontWeight: 'bold',

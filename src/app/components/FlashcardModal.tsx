@@ -1,24 +1,18 @@
-import React, { useRef,useEffect } from 'react'
 import { useRouter } from 'expo-router'
-import { View, Modal, TouchableOpacity } from 'react-native'
-import ActionSheet from 'react-native-actionsheet'
-import { MaterialIcons } from '@expo/vector-icons'
 import { doc, deleteDoc } from 'firebase/firestore'
+import React, { useRef, useEffect } from 'react'
+import ActionSheet from 'react-native-actionsheet'
 import { auth, db } from '../../config'
-
-
 
 interface ActionSheetProps {
   visible: boolean
   onClose: () => void
   deckId: string
   deckName: string
-  flashcardId?:string
-  flashcardFront?:string
-  flashcardBack?:string
+  flashcardId?: string
+  flashcardFront?: string
+  flashcardBack?: string
 }
-
-
 
 const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
   visible,
@@ -92,8 +86,6 @@ const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
       actionSheetRef.current.show()
     }
   }, [visible])
-
-
 
   return (
     <ActionSheet

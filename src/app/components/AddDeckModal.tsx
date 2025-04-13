@@ -13,7 +13,7 @@ import { auth, db } from '../../config'
 interface AddDeckModalProps {
   visible: boolean
   onClose: () => void
-  onAddDeck: (deckName: string, deckId: string,decTag:string) => void
+  onAddDeck: (deckName: string, deckId: string, decTag: string) => void
 }
 
 const AddDeckModal: React.FC<AddDeckModalProps> = ({
@@ -22,7 +22,7 @@ const AddDeckModal: React.FC<AddDeckModalProps> = ({
   onAddDeck,
 }) => {
   const [deckName, setDeckName] = useState('')
-  const [deckTag, setDeckTag] = useState('')
+  const [deckTag] = useState('')
 
   const handleAddDeck = async () => {
     if (!deckName.trim()) {
@@ -38,12 +38,12 @@ const AddDeckModal: React.FC<AddDeckModalProps> = ({
       const ref = collection(db, `users/${auth.currentUser.uid}/decks`)
       const docRef = await addDoc(ref, {
         name: deckName,
-        tap:deckTag,
+        tap: deckTag,
         cardCount: 0,
         createdAt: serverTimestamp(),
       })
 
-      onAddDeck(deckName, docRef.id, deckTag) 
+      onAddDeck(deckName, docRef.id, deckTag)
 
       setDeckName('')
       onClose()

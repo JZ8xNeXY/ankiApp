@@ -1,8 +1,7 @@
-import React, { useRef } from 'react'
-import { View, Text, TouchableOpacity } from 'react-native'
-import ActionSheet from 'react-native-actionsheet'
 import { MaterialIcons } from '@expo/vector-icons'
-
+import React, { useRef } from 'react'
+import { View, TouchableOpacity } from 'react-native'
+import ActionSheet from 'react-native-actionsheet'
 
 interface ActionSheetProps {
   deckId: string

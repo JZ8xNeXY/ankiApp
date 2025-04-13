@@ -1,3 +1,4 @@
+import { Ionicons, Feather } from '@expo/vector-icons'
 import { useLocalSearchParams } from 'expo-router'
 import * as Speech from 'expo-speech'
 import {
@@ -8,24 +9,23 @@ import {
   Timestamp,
   query,
   where,
-  onSnapshot
+  onSnapshot,
 } from 'firebase/firestore'
 import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native'
 import { auth, db } from '../../config'
 import AnswerButton from '../components/AnswerButton'
+import CircleButton from '../components/CircleButton'
+import FlashcardActionSheetComponent from '../components/FlashcardModal'
 import Header from '../components/Header'
+import ProgressBar from '../components/ProgressBar'
 import ReviewButton from '../components/ReviewButton'
 import { calculateSM2 } from '../utils/srs'
-import { Ionicons ,Feather} from '@expo/vector-icons'
-import FlashcardActionSheetComponent from '../components/FlashcardModal'
-import ProgressBar from '../components/ProgressBar'
-import CircleButton from '../components/CircleButton'
 
 interface Deck {
   id: string
   name: string
-  tag:string | null
+  tag: string | null
   cardCount: number // 復習対象
   totalCount: number // 全体数
   createdAt?: Timestamp
@@ -65,7 +65,7 @@ const FlashcardScreen = (): JSX.Element => {
     flashcardId: string
     flashcardFront: string
     flashcardBack: string
-    }>()
+  }>()
 
   const detectLanguage = (text: string): 'en' | 'ja' | 'zh' => {
     const hasEnglish = /[a-zA-Z]/.test(text)
@@ -78,35 +78,30 @@ const FlashcardScreen = (): JSX.Element => {
     return 'ja'
   }
 
-
   const isBookmarked = true
 
-  const toggleBookmark = () => {
-  }
+  const toggleBookmark = () => {}
 
   const handleMorePress = (
     deckId: string,
     deckName: string,
     flashcardId: string,
     flashcardFront: string,
-    flashcardBack: string
+    flashcardBack: string,
   ) => {
-
     console.log('start')
     setSelectedCard({
-      deckId:deckId,
-      deckName:deckName,
+      deckId: deckId,
+      deckName: deckName,
       flashcardId: flashcardId,
       flashcardFront: flashcardFront,
       flashcardBack: flashcardBack,
     })
-  
+
     setFlashcardModalVisible(true)
-  
+
     console.log(flashcardModalVisible)
   }
-
-
 
   const handleShowAnswer = () => {
     setShowAnswer(true)
@@ -196,7 +191,7 @@ const FlashcardScreen = (): JSX.Element => {
           return {
             id: doc.id,
             name: doc.data().name,
-            tag:doc.data().tag,
+            tag: doc.data().tag,
             cardCount: reviewCount,
             totalCount: totalCount,
             createdAt: doc.data().createdAt?.toDate() || new Date(),
@@ -304,21 +299,19 @@ const FlashcardScreen = (): JSX.Element => {
         <ProgressBar
           progress={
             flashcards && flashcards.length > 0
-            ? currentCard / flashcards.length
-            : 0
+              ? currentCard / flashcards.length
+              : 0
           }
         />
         <Text style={styles.nextReviewText}>
           {flashcards && flashcards.length > 0
-            ? `${currentCard } / ${flashcards.length}（完了）`
+            ? `${currentCard} / ${flashcards.length}（完了）`
             : ''}
         </Text>
       </View>
 
-
       {/* Question & Answer */}
       <View style={styles.cardContainer}>
-        
         {/* cardHeader */}
         <View style={styles.cardHeader}>
           {/* お気に入り（スター） */}
@@ -338,13 +331,12 @@ const FlashcardScreen = (): JSX.Element => {
                 deckName,
                 flashcards[currentCard].id,
                 flashcards[currentCard].question,
-                flashcards[currentCard].answer
+                flashcards[currentCard].answer,
               )
             }
           >
             <Feather name="more-vertical" size={32} color="#444" />
           </TouchableOpacity>
-
         </View>
 
         {flashcards && flashcards.length > 0 ? (
@@ -390,7 +382,6 @@ const FlashcardScreen = (): JSX.Element => {
           flashcards.length > 0 &&
           currentCard < flashcards.length && (
             <CircleButton
-            
               onPress={() =>
                 speakQuestion(
                   showReviewButtons
@@ -399,9 +390,9 @@ const FlashcardScreen = (): JSX.Element => {
                 )
               }
             >
-            <Ionicons name="volume-high-outline" size={40} color="#2C64C6" />
-          </CircleButton>
-        )}
+              <Ionicons name="volume-high-outline" size={40} color="#2C64C6" />
+            </CircleButton>
+          )}
       </View>
 
       <Modal visible={showCongratsModal} transparent animationType="fade">
@@ -420,14 +411,14 @@ const FlashcardScreen = (): JSX.Element => {
 
       {flashcardModalVisible && (
         <FlashcardActionSheetComponent
-          visible={flashcardModalVisible} 
-          onClose={() => setFlashcardModalVisible(false)} 
+          visible={flashcardModalVisible}
+          onClose={() => setFlashcardModalVisible(false)}
           deckId={deckId}
           deckName={deckName}
           flashcardId={selectedCard?.flashcardId}
           flashcardFront={selectedCard?.flashcardFront}
           flashcardBack={selectedCard?.flashcardBack}
-        />  
+        />
       )}
 
       {/* answerButton & reviewButton */}
@@ -471,18 +462,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginHorizontal: 20,
-    marginTop:15,
+    marginTop: 15,
     marginBottom: 125,
-    padding: 24, 
-    borderWidth: 2, 
-    borderColor: '#DDD', 
-    borderRadius: 16, 
-    backgroundColor: '#F9F9F9', 
+    padding: 24,
+    borderWidth: 2,
+    borderColor: '#DDD',
+    borderRadius: 16,
+    backgroundColor: '#F9F9F9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
-    elevation: 4, 
+    elevation: 4,
   },
   progressWrapper: {
     alignItems: 'center',
@@ -528,7 +519,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 999, // 完全な丸
-    backgroundColor: 'rgba(70, 127, 211, 0.2)', 
+    backgroundColor: 'rgba(70, 127, 211, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
