@@ -48,6 +48,7 @@ const DeckScreen = (): JSX.Element => {
   const [selectedDeck, setSelectedDeck] = useState<{
     id: string
     name: string
+    tag: string | null
   } | null>(null)
 
   const actionSheetRef = useRef<{ show: () => void } | null>(null)
@@ -63,13 +64,13 @@ const DeckScreen = (): JSX.Element => {
   }
 
   const handleRename = (
-    deckId: string,
-    currentName: string,
-    currentTag: string,
-  ) => {
-    setSelectedDeck({ id: deckId, name: currentName, tag: currentTag })
-    setEditModalVisible(true)
-  }
+      deckId: string,
+      currentName: string,
+      currentTag: string | null,
+    ) => {
+      setSelectedDeck({ id: deckId, name: currentName, tag: currentTag })
+      setEditModalVisible(true)
+    }
 
   const handleUpdateDeck = (deckId: string, newName: string) => {
     setDecks((prevDecks) =>
@@ -220,7 +221,8 @@ const DeckScreen = (): JSX.Element => {
                     <ActionSheetComponent
                       deckId={item.id}
                       deckName={item.name}
-                      onRename={(id, name) => handleRename(id, name)}
+                      deckTag={item.tag}
+                      onRename={(id, name,tag) => handleRename(id, name,tag)}
                       onDelete={(id) => handleDelete(id)}
                     />
                   </TouchableOpacity>
@@ -242,8 +244,8 @@ const DeckScreen = (): JSX.Element => {
           onClose={() => setEditModalVisible(false)}
           deckId={selectedDeck.id}
           currentName={selectedDeck?.name || ''}
-          onUpdateDeck={handleUpdateDeck}
-        />
+          currentTag={selectedDeck?.tag || ''}
+          onUpdateDeck={handleUpdateDeck} />
       )}
     </View>
   )
