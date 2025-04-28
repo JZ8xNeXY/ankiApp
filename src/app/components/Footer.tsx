@@ -86,6 +86,15 @@ const Footer = ({
   return (
     <View>
       <View style={styles.container}>
+
+        <FooterButton
+          icon="home-outline"
+          label="Home"
+          size={current === 'Home' ? 28 : 24}
+          active={current === 'Home'}
+          onPress={current !== 'Home' ? () => router.replace('/') : () => {}}
+        />
+        
         {current == 'Home' && (
           <FooterButton
             icon="albums-outline"
@@ -114,21 +123,15 @@ const Footer = ({
           />
         )}
     
-        <FooterButton
+        {/* <FooterButton
           icon="search-outline"
           label="Search"
           size={24}
           active={current === 'Search'}
           onPress={() => onNavigate('Search')}
-        />
+        /> */}
         
-        <FooterButton
-          icon="home-outline"
-          label="Home"
-          size={current === 'Home' ? 28 : 24}
-          active={current === 'Home'}
-          onPress={current !== 'Home' ? () => router.replace('/') : () => {}}
-        />
+
 
         <FooterButton
           icon="star-outline"
