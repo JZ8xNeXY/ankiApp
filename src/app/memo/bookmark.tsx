@@ -5,6 +5,7 @@ import { auth, db } from '../../config'
 import { Ionicons,Feather } from '@expo/vector-icons'
 import Footer from '../components/Footer'
 import * as Speech from 'expo-speech'
+import { router } from 'expo-router'
 
 interface BookmarkedFlashcard {
   deckId: string
@@ -103,7 +104,12 @@ const Bookmark = (): JSX.Element => {
         renderItem={renderItem}
         ListEmptyComponent={<Text style={styles.emptyText}>ブックマークはまだありません</Text>}
       />
-      <TouchableOpacity style={styles.reviewButton} onPress={() => console.log('復習開始')}>
+      <TouchableOpacity
+        style={styles.reviewButton}
+        onPress={() => {
+          router.push('/memo/bookmarkReviewScreen');
+        }}
+      >
         <Text style={styles.reviewButtonText}>復習する</Text>
       </TouchableOpacity>
       <Footer current="Bookmark" onNavigate={(screen) => console.log(`Navigate to ${screen}`)} />
