@@ -15,7 +15,8 @@ interface EditDeckModalProps {
   onClose: () => void
   deckId: string
   currentName: string
-  onUpdateDeck: (deckId: string, newName: string) => void
+  currentTag: string| null
+  onUpdateDeck: (deckId: string, newName: string,newTags:string|null) => void
 }
 
 const EditDeckModal: React.FC<EditDeckModalProps> = ({
@@ -23,9 +24,11 @@ const EditDeckModal: React.FC<EditDeckModalProps> = ({
   onClose,
   deckId,
   currentName,
+  currentTag,
   onUpdateDeck,
 }) => {
   const [newDeckName, setNewDeckName] = useState('')
+  const [newDeckTag, setNewDeckTag] = useState<string | null | undefined>()
 
   const handleUpdateDeck = async () => {
     if (!newDeckName.trim()) {
@@ -43,10 +46,11 @@ const EditDeckModal: React.FC<EditDeckModalProps> = ({
 
     try {
       const deckRef = doc(db, `users/${auth.currentUser.uid}/decks`, deckId)
-      await updateDoc(deckRef, { name: newDeckName })
+      await updateDoc(deckRef, { name: newDeckName,tag: newDeckTag})
 
-      onUpdateDeck(deckId, newDeckName)
+      onUpdateDeck(deckId, newDeckName, newDeckTag ? newDeckTag.split(',').map(tag => tag.trim()) : [])
       setNewDeckName('')
+      setNewDeckTag('')
 
       onClose()
     } catch (error) {
@@ -57,7 +61,8 @@ const EditDeckModal: React.FC<EditDeckModalProps> = ({
 
   useEffect(() => {
     setNewDeckName(currentName)
-  }, [currentName, visible])
+    setNewDeckTag(currentTag)
+  }, [currentName,currentTag, visible])
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
@@ -69,6 +74,12 @@ const EditDeckModal: React.FC<EditDeckModalProps> = ({
             placeholder="Enter new deck name"
             value={newDeckName}
             onChangeText={setNewDeckName}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Enter new deck tag"
+            value={newDeckTag ?? ''}
+            onChangeText={setNewDeckTag}
           />
           <View style={styles.buttonContainer}>
             <TouchableOpacity

@@ -6,13 +6,15 @@ import ActionSheet from 'react-native-actionsheet'
 interface ActionSheetProps {
   deckId: string
   deckName: string
-  onRename: (id: string, name: string) => void
+  deckTag: string | null
+  onRename: (id: string, name: string,tag:string|null) => void
   onDelete: (id: string) => void
 }
 
 const ActionSheetComponent: React.FC<ActionSheetProps> = ({
   deckId,
   deckName,
+  deckTag,
   onRename,
   onDelete,
 }) => {
@@ -35,11 +37,11 @@ const ActionSheetComponent: React.FC<ActionSheetProps> = ({
       <ActionSheet
         ref={actionSheetRef}
         title={'Choose an action'}
-        options={['Rename', 'Delete', 'Cancel']}
+        options={['Edit', 'Delete', 'Cancel']}
         cancelButtonIndex={2}
         destructiveButtonIndex={1}
         onPress={(index: number) => {
-          if (index === 0) onRename(deckId, deckName)
+          if (index === 0) onRename(deckId, deckName, deckTag)
           if (index === 1) onDelete(deckId)
         }}
       />
