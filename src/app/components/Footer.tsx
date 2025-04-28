@@ -83,13 +83,26 @@ const Footer = ({
   }
 
   const handleSignOut = (): void => {
-    signOut(auth)
-      .then(() => {
-        router.replace('/auth/logIn')
-      })
-      .catch(() => {
-        Alert.alert('ログアウトに失敗しました')
-      })
+    Alert.alert(
+      'ログアウトしますか？',
+      'もう一度ログインするにはメールアドレスとパスワードが必要です。',
+      [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: 'ログアウト',
+          style: 'destructive',
+          onPress: () => {
+            signOut(auth)
+              .then(() => {
+                router.replace('/auth/logIn')
+              })
+              .catch(() => {
+                Alert.alert('ログアウトに失敗しました')
+              })
+          },
+        },
+      ]
+    )
   }
 
   return (
