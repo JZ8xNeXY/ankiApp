@@ -58,7 +58,6 @@ const FooterButton = ({
 
 const Footer = ({ 
   current, 
-  onNavigate,
   deckId,
   deckName,
 }: FooterProps) => {
@@ -159,7 +158,7 @@ const Footer = ({
           icon="star-outline"
           label="Bookmark"
           size={24}
-          active={current === 'bookmark'}
+          active={current === 'Bookmark'}
           onPress={() => {
             router.push({
               pathname: '/memo/bookmark',
