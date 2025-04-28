@@ -132,10 +132,14 @@ const Footer = ({
 
         <FooterButton
           icon="star-outline"
-          label="Favorites"
+          label="Bookmark"
           size={24}
-          active={current === 'Favorites'}
-          onPress={() => onNavigate('Favorites')}
+          active={current === 'bookmark'}
+          onPress={() => {
+            router.push({
+              pathname: '/memo/bookmark',
+            })
+          }}
         />
         <FooterButton
           icon="settings-outline"

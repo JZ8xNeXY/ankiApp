@@ -120,11 +120,9 @@ const FlashcardScreen = (): JSX.Element => {
       await updateDoc(ref, {
         isBookmarked: !currentBookmarked, // true → false、false → true
       })
-      console.log('Bookmark status updated!:',isBookmarked)
-      // 🟢 ここが大事！ ローカルの状態も更新する
+  
       setIsBookmarked(!currentBookmarked)
 
-      // 🟢 さらに、flashcards の配列も更新する（オプション）
       setFlashCards((prev) =>
         prev?.map((card) =>
           card.id === flashcardId ? { ...card, isBookmarked: !currentBookmarked } : card
@@ -271,7 +269,6 @@ const FlashcardScreen = (): JSX.Element => {
       }
 
       setFlashCards(dueFlashCardList)
-      console.log('BookMark:',isBookmarked)
     }
 
     fetchFlashCard()
