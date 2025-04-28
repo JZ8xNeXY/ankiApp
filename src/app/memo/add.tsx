@@ -11,6 +11,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native'
 import { auth, db } from '../../config'
 import AddFlashcardModal from '../components/AddFlashcardModal'
@@ -94,66 +96,69 @@ const AddCard = (): JSX.Element => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.inner}
-      >
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.push('/')}>
-            <Text style={styles.headerText}>Cancel</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>新規カード</Text>
-          <TouchableOpacity onPress={handleAddFlashCard}>
-            <Text style={styles.headerText}>Save</Text>
-          </TouchableOpacity>
-        </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.inner}
+        >
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.push('/')}>
+              <Text style={styles.headerText}>Cancel</Text>
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>新規カード</Text>
+            <TouchableOpacity onPress={handleAddFlashCard}>
+              <Text style={styles.headerText}>Save</Text>
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.form}>
-          <Text style={styles.label}>Question</Text>
-          <TextInput
-            style={styles.input}
-            multiline={true}
-            placeholder="例: What is the capital of Japan"
-            value={front}
-            onChangeText={setFront}
-          />
-          <Text style={styles.label}>Answer</Text>
-          <TextInput
-            style={styles.input}
-            multiline={true}
-            placeholder="例: Tokyo"
-            value={back}
-            onChangeText={setBack}
-          />
-          <Text style={styles.label}>TAGS</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="例: Country, Capitol"
-            value={tags}
-            onChangeText={setTags}
-          />
-        </View>
+          <View style={styles.form}>
+            <Text style={styles.label}>Question</Text>
 
-        {/* TODO 補助ツールエリア */}
-        <View style={styles.tools}>
-          <TouchableOpacity
-            style={styles.toolButton}
-            onPress={() => setAddModalVisible(true)}
-          >
-            <Text style={styles.toolText}>AIでカード作成支援</Text>
-          </TouchableOpacity>
-          {/* <TouchableOpacity style={styles.toolButton}>
+            <TextInput
+              style={styles.input}
+              multiline={true}
+              placeholder="例: What is the capital of Japan"
+              value={front}
+              onChangeText={setFront}
+            />
+            <Text style={styles.label}>Answer</Text>
+            <TextInput
+              style={styles.input}
+              multiline={true}
+              placeholder="例: Tokyo"
+              value={back}
+              onChangeText={setBack}
+            />
+            <Text style={styles.label}>TAGS</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="例: Country, Capitol"
+              value={tags}
+              onChangeText={setTags}
+            />
+          </View>
+
+          {/* TODO 補助ツールエリア */}
+          <View style={styles.tools}>
+            <TouchableOpacity
+              style={styles.toolButton}
+              onPress={() => setAddModalVisible(true)}
+            >
+              <Text style={styles.toolText}>AIでカード作成支援</Text>
+            </TouchableOpacity>
+            {/* <TouchableOpacity style={styles.toolButton}>
             <Text style={styles.toolText}>翻訳</Text>
           </TouchableOpacity> */}
-        </View>
+          </View>
 
-        {/* モーダルを表示 */}
-        <AddFlashcardModal
-          visible={addModalVisible}
-          onClose={() => setAddModalVisible(false)}
-          onCreateFlashcard={handleCreateFlashCard}
-        />
-      </KeyboardAvoidingView>
+          {/* モーダルを表示 */}
+          <AddFlashcardModal
+            visible={addModalVisible}
+            onClose={() => setAddModalVisible(false)}
+            onCreateFlashcard={handleCreateFlashCard}
+          />
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </SafeAreaView>
   )
 }

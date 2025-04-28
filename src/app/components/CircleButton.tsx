@@ -26,15 +26,15 @@ export default CircleButton
 
 const styles = StyleSheet.create({
   circleButton: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
     width: 64,
     height: 64,
-    backgroundColor: '#467FD3',
+    backgroundColor: 'rgba(70, 127, 211, 0.2)',
     borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'absolute',
-    right: 40,
-    bottom: 40,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   circleButtonLabel: {
-    color: '#ffffff',
+    color: '#000',
     fontSize: 40,
     lineHeight: 40,
   },

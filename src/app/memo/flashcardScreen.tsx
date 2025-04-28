@@ -1,3 +1,4 @@
+import { Ionicons, Feather } from '@expo/vector-icons'
 import { useLocalSearchParams } from 'expo-router'
 import * as Speech from 'expo-speech'
 import {
@@ -8,15 +9,27 @@ import {
   Timestamp,
   query,
   where,
+  onSnapshot,
 } from 'firebase/firestore'
 import React, { useState, useEffect } from 'react'
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native'
 import { auth, db } from '../../config'
 import AnswerButton from '../components/AnswerButton'
 import CircleButton from '../components/CircleButton'
+import FlashcardActionSheetComponent from '../components/FlashcardModal'
 import Header from '../components/Header'
+import ProgressBar from '../components/ProgressBar'
 import ReviewButton from '../components/ReviewButton'
 import { calculateSM2 } from '../utils/srs'
+
+interface Deck {
+  id: string
+  name: string
+  tag: string | null
+  cardCount: number // 復習対象
+  totalCount: number // 全体数
+  createdAt?: Timestamp
+}
 
 interface Flashcard {
   id: string
@@ -40,10 +53,19 @@ const FlashcardScreen = (): JSX.Element => {
   }>()
 
   const [, setShowAnswer] = useState(false)
+  const [flashcardModalVisible, setFlashcardModalVisible] = useState(false)
   const [showReviewButtons, setShowReviewButtons] = useState(false)
+  const [, setDecks] = useState<Deck[]>([])
   const [currentCard, setCurrentCard] = useState(0)
   const [flashcards, setFlashCards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false)
+  const [selectedCard, setSelectedCard] = useState<{
+    deckId: string
+    deckName: string
+    flashcardId: string
+    flashcardFront: string
+    flashcardBack: string
+  }>()
 
   const detectLanguage = (text: string): 'en' | 'ja' | 'zh' => {
     const hasEnglish = /[a-zA-Z]/.test(text)
@@ -54,6 +76,31 @@ const FlashcardScreen = (): JSX.Element => {
     if (hasHiraganaOrKatakana) return 'ja'
     if (hasChineseCharacters) return 'zh'
     return 'ja'
+  }
+
+  const isBookmarked = true
+
+  const toggleBookmark = () => {}
+
+  const handleMorePress = (
+    deckId: string,
+    deckName: string,
+    flashcardId: string,
+    flashcardFront: string,
+    flashcardBack: string,
+  ) => {
+    console.log('start')
+    setSelectedCard({
+      deckId: deckId,
+      deckName: deckName,
+      flashcardId: flashcardId,
+      flashcardFront: flashcardFront,
+      flashcardBack: flashcardBack,
+    })
+
+    setFlashcardModalVisible(true)
+
+    console.log(flashcardModalVisible)
   }
 
   const handleShowAnswer = () => {
@@ -112,6 +159,49 @@ const FlashcardScreen = (): JSX.Element => {
       rate: 1.0,
       pitch: 1.0,
     })
+  }, [])
+
+  useEffect(() => {
+    if (!auth.currentUser) return
+
+    const now = new Date()
+    const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
+
+    // 🔁 リアルタイムで監視
+    const unsubscribe = onSnapshot(deckRef, async (snapshot) => {
+      const deckList: Deck[] = await Promise.all(
+        snapshot.docs.map(async (doc) => {
+          const flashcardRef = collection(
+            db,
+            `users/${auth.currentUser?.uid}/decks/${doc.id}/flashcards`,
+          )
+
+          // 全体数
+          const allSnap = await getDocs(flashcardRef)
+          const totalCount = allSnap.size
+
+          // 今日の復習対象
+          const q = query(
+            flashcardRef,
+            where('nextReview', '<=', Timestamp.fromDate(now)),
+          )
+          const reviewSnap = await getDocs(q)
+          const reviewCount = reviewSnap.size
+
+          return {
+            id: doc.id,
+            name: doc.data().name,
+            tag: doc.data().tag,
+            cardCount: reviewCount,
+            totalCount: totalCount,
+            createdAt: doc.data().createdAt?.toDate() || new Date(),
+          }
+        }),
+      )
+      setDecks(deckList)
+    })
+
+    return () => unsubscribe()
   }, [])
 
   useEffect(() => {
@@ -205,8 +295,50 @@ const FlashcardScreen = (): JSX.Element => {
         flashcardBack={flashcards?.[currentCard]?.answer}
       />
 
+      <View style={styles.progressWrapper}>
+        <ProgressBar
+          progress={
+            flashcards && flashcards.length > 0
+              ? currentCard / flashcards.length
+              : 0
+          }
+        />
+        <Text style={styles.nextReviewText}>
+          {flashcards && flashcards.length > 0
+            ? `${currentCard} / ${flashcards.length}（完了）`
+            : ''}
+        </Text>
+      </View>
+
       {/* Question & Answer */}
       <View style={styles.cardContainer}>
+        {/* cardHeader */}
+        <View style={styles.cardHeader}>
+          {/* お気に入り（スター） */}
+          <TouchableOpacity onPress={toggleBookmark}>
+            <Feather
+              name={isBookmarked ? 'bookmark' : 'bookmark'}
+              size={32}
+              color={isBookmarked ? '#467FD3' : '#aaa'}
+            />
+          </TouchableOpacity>
+
+          {/* 三点メニュー */}
+          <TouchableOpacity
+            onPress={() =>
+              handleMorePress(
+                deckId,
+                deckName,
+                flashcards?.[currentCard]?.id,
+                flashcards?.[currentCard]?.question,
+                flashcards?.[currentCard]?.answer,
+              )
+            }
+          >
+            <Feather name="more-vertical" size={32} color="#444" />
+          </TouchableOpacity>
+        </View>
+
         {flashcards && flashcards.length > 0 ? (
           currentCard >= flashcards.length ? (
             <Text style={styles.cardText}>
@@ -229,6 +361,23 @@ const FlashcardScreen = (): JSX.Element => {
           </Text>
         )}
 
+        {/* {flashcards &&
+          flashcards.length > 0 &&
+          currentCard < flashcards.length && (
+              <View  
+              style={styles.SoundIcon}>
+                <Ionicons onPress={() =>
+                speakQuestion(
+                  showReviewButtons
+                    ? flashcards[currentCard].answer
+                    : flashcards[currentCard].question,
+                )
+              }
+              name="volume-high-outline" 
+              size={40} 
+              color="#2C64C6"/>
+              </View>
+          )} */}
         {flashcards &&
           flashcards.length > 0 &&
           currentCard < flashcards.length && (
@@ -241,7 +390,7 @@ const FlashcardScreen = (): JSX.Element => {
                 )
               }
             >
-              <Text style={{ fontSize: 20 }}>🔊</Text>
+              <Ionicons name="volume-high-outline" size={40} color="#2C64C6" />
             </CircleButton>
           )}
       </View>
@@ -260,6 +409,18 @@ const FlashcardScreen = (): JSX.Element => {
         </View>
       </Modal>
 
+      {flashcardModalVisible && (
+        <FlashcardActionSheetComponent
+          visible={flashcardModalVisible}
+          onClose={() => setFlashcardModalVisible(false)}
+          deckId={deckId}
+          deckName={deckName}
+          flashcardId={selectedCard?.flashcardId}
+          flashcardFront={selectedCard?.flashcardFront}
+          flashcardBack={selectedCard?.flashcardBack}
+        />
+      )}
+
       {/* answerButton & reviewButton */}
       {flashcards &&
         currentCard < flashcards.length &&
@@ -269,19 +430,16 @@ const FlashcardScreen = (): JSX.Element => {
           <View style={styles.buttonContainer}>
             <ReviewButton
               label="Again"
-              time="1m"
               color="#B90101"
               onPress={() => handleNextCard(1)}
             />
             <ReviewButton
               label="Good"
-              time="10m"
               color="#26B502"
               onPress={() => handleNextCard(4)}
             />
             <ReviewButton
               label="Easy"
-              time="4d"
               color="#2F79E7"
               onPress={() => handleNextCard(5)}
             />
@@ -296,14 +454,40 @@ export default FlashcardScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F8F8',
+    backgroundColor: '#FFFDE7',
     paddingTop: 50,
   },
   cardContainer: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 100,
+    marginHorizontal: 20,
+    marginTop: 15,
+    marginBottom: 125,
+    padding: 24,
+    borderWidth: 2,
+    borderColor: '#DDD',
+    borderRadius: 16,
+    backgroundColor: '#F9F9F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  progressWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardHeader: {
+    position: 'absolute',
+    top: 16,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   cardText: {
     fontSize: 32,
@@ -328,6 +512,22 @@ const styles = StyleSheet.create({
     color: '#888',
     marginTop: 10,
   },
+  SoundIcon: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    width: 72,
+    height: 72,
+    borderRadius: 999, // 完全な丸
+    backgroundColor: 'rgba(70, 127, 211, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // Android用の影
+  },
   answerButton: {
     position: 'absolute',
     bottom: 25,
@@ -344,6 +544,8 @@ const styles = StyleSheet.create({
   answerButtonText: {
     fontSize: 18,
     color: '#fff',
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
   modalOverlay: {
     flex: 1,
