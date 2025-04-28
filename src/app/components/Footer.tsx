@@ -165,6 +165,17 @@ const Footer = ({
             })
           }}
         />
+        {/* <FooterButton
+          icon="star-outline"
+          label="Edit"
+          size={24}
+          active={current === 'Bookmark'}
+          onPress={() => {
+            router.push({
+              pathname: '/auth/accountEdit',
+            })
+          }}
+        /> */}
         <FooterButton
           icon="settings-outline"
           label="Logout"
