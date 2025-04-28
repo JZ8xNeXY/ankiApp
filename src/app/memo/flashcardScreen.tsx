@@ -35,6 +35,7 @@ interface Flashcard {
   id: string
   question: string
   answer: string
+  isBookmarked: boolean
   repetition: number
   interval: number
   efactor: number
@@ -45,14 +46,7 @@ interface Flashcard {
 const FlashcardScreen = (): JSX.Element => {
   const router = useRouter()
 
-  const { deckId, deckName } = useLocalSearchParams<{
-    deckId: string
-    deckName: string
-    flashcardId: string
-    flashcardFront: string
-    flashcardBack: string
-    tags: string // 配列は文字列で渡される可能性あり
-  }>()
+  const { deckId, deckName } = useLocalSearchParams()
 
   const [, setShowAnswer] = useState(false)
   const [flashcardModalVisible, setFlashcardModalVisible] = useState(false)
@@ -61,12 +55,14 @@ const FlashcardScreen = (): JSX.Element => {
   const [currentCard, setCurrentCard] = useState(0)
   const [flashcards, setFlashCards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false)
+  const [isBookmarked, setIsBookmarked] = useState<boolean>(false)
   const [selectedCard, setSelectedCard] = useState<{
     deckId: string
     deckName: string
     flashcardId: string
     flashcardFront: string
     flashcardBack: string
+    flashcardBookmarked: boolean
   }>()
 
   const detectLanguage = (text: string): 'en' | 'ja' | 'zh' => {
@@ -80,7 +76,6 @@ const FlashcardScreen = (): JSX.Element => {
     return 'ja'
   }
 
-  const isBookmarked = true
 
   const toggleBookmark = () => {}
 
@@ -90,6 +85,7 @@ const FlashcardScreen = (): JSX.Element => {
     flashcardId: string,
     flashcardFront: string,
     flashcardBack: string,
+    flashcardBookmarked: boolean
   ) => {
     setSelectedCard({
       deckId: deckId,
@@ -97,6 +93,7 @@ const FlashcardScreen = (): JSX.Element => {
       flashcardId: flashcardId,
       flashcardFront: flashcardFront,
       flashcardBack: flashcardBack,
+      flashcardBookmarked: flashcardBookmarked,
     })
 
     setFlashcardModalVisible(true)
@@ -107,6 +104,36 @@ const FlashcardScreen = (): JSX.Element => {
   const handleShowAnswer = () => {
     setShowAnswer(true)
     setShowReviewButtons(true)
+  }
+
+  const handleToggleBookmark = async (deckId: string, flashcardId: string, currentBookmarked: boolean) => {
+    if (!auth.currentUser) {
+      alert('ログインしてください')
+      return
+    }
+  
+    try {
+      const ref = doc(
+        db,
+        `users/${auth.currentUser.uid}/decks/${deckId}/flashcards/${flashcardId}`
+      )
+      await updateDoc(ref, {
+        isBookmarked: !currentBookmarked, // true → false、false → true
+      })
+      console.log('Bookmark status updated!:',isBookmarked)
+      // 🟢 ここが大事！ ローカルの状態も更新する
+      setIsBookmarked(!currentBookmarked)
+
+      // 🟢 さらに、flashcards の配列も更新する（オプション）
+      setFlashCards((prev) =>
+        prev?.map((card) =>
+          card.id === flashcardId ? { ...card, isBookmarked: !currentBookmarked } : card
+        )
+      )
+    } catch (error) {
+      console.error('ブックマーク更新エラー: ', error)
+      alert('ブックマークの更新に失敗しました')
+    }
   }
 
   const calculateNextInterval = async (score: number) => {
@@ -225,6 +252,7 @@ const FlashcardScreen = (): JSX.Element => {
           id: doc.id,
           question: data.front,
           answer: data.back,
+          isBookmarked: data.isBookmarked,
           repetition: data.repetition,
           interval: data.interval,
           efactor: data.efactor,
@@ -243,10 +271,11 @@ const FlashcardScreen = (): JSX.Element => {
       }
 
       setFlashCards(dueFlashCardList)
+      console.log('BookMark:',isBookmarked)
     }
 
     fetchFlashCard()
-  }, [deckId])
+  }, [deckId,isBookmarked])
 
   // 問題表示時
   useEffect(() => {
@@ -256,6 +285,7 @@ const FlashcardScreen = (): JSX.Element => {
       currentCard < flashcards.length
     ) {
       speakQuestion(flashcards[currentCard].question)
+      setIsBookmarked(flashcards[currentCard].isBookmarked || false)//setIsBookmarked(flashcards[currentCard].isBookmarked || false)
     }
   }, [currentCard, flashcards, speakQuestion])
 
@@ -309,11 +339,12 @@ const FlashcardScreen = (): JSX.Element => {
         <View style={styles.cardHeader}>
           {/* お気に入り（スター） */}
           <TouchableOpacity onPress={toggleBookmark}>
-            <Feather
-              name={isBookmarked ? 'bookmark' : 'bookmark'}
-              size={32}
-              color={isBookmarked ? '#467FD3' : '#aaa'}
-            />
+          <Ionicons
+            name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
+            size={40}
+            color={isBookmarked ? '#467FD3' : '#aaa'}
+            onPress={() => handleToggleBookmark(deckId, flashcards?.[currentCard]?.id, isBookmarked)}
+          />
           </TouchableOpacity>
 
           {/* 三点メニュー */}
@@ -325,6 +356,7 @@ const FlashcardScreen = (): JSX.Element => {
                 flashcards?.[currentCard]?.id,
                 flashcards?.[currentCard]?.question,
                 flashcards?.[currentCard]?.answer,
+                flashcards?.[currentCard]?.isBookmarked,
               )
             }
           >
