@@ -1,12 +1,11 @@
 import { Ionicons } from '@expo/vector-icons'
 import React,{useState} from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet,Alert } from 'react-native'
 import AddDeckModal from '../components/AddDeckModal'
 import { Timestamp } from 'firebase/firestore'
 import { router } from 'expo-router'
-import { ro } from '@faker-js/faker/.'
-// import { auth, db } from '../../config'
-
+import { auth } from '../../config'
+import { signOut } from 'firebase/auth'
 
 
 interface FooterProps {
@@ -59,7 +58,6 @@ const FooterButton = ({
 
 const Footer = ({ 
   current, 
-  onNavigate,
   deckId,
   deckName,
 }: FooterProps) => {
@@ -83,9 +81,41 @@ const Footer = ({
     ])
   }
 
+  const handleSignOut = (): void => {
+    Alert.alert(
+      'ログアウトしますか？',
+      'もう一度ログインするにはメールアドレスとパスワードが必要です。',
+      [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: 'ログアウト',
+          style: 'destructive',
+          onPress: () => {
+            signOut(auth)
+              .then(() => {
+                router.replace('/auth/logIn')
+              })
+              .catch(() => {
+                Alert.alert('ログアウトに失敗しました')
+              })
+          },
+        },
+      ]
+    )
+  }
+
   return (
     <View>
       <View style={styles.container}>
+
+        <FooterButton
+          icon="home-outline"
+          label="Home"
+          size={current === 'Home' ? 28 : 24}
+          active={current === 'Home'}
+          onPress={current !== 'Home' ? () => router.replace('/') : () => {}}
+        />
+        
         {current == 'Home' && (
           <FooterButton
             icon="albums-outline"
@@ -114,35 +144,33 @@ const Footer = ({
           />
         )}
     
-        <FooterButton
+        {/* <FooterButton
           icon="search-outline"
           label="Search"
           size={24}
           active={current === 'Search'}
           onPress={() => onNavigate('Search')}
-        />
+        /> */}
         
-        <FooterButton
-          icon="home-outline"
-          label="Home"
-          size={current === 'Home' ? 28 : 24}
-          active={current === 'Home'}
-          onPress={current !== 'Home' ? () => router.replace('/') : () => {}}
-        />
+
 
         <FooterButton
           icon="star-outline"
-          label="Favorites"
+          label="Bookmark"
           size={24}
-          active={current === 'Favorites'}
-          onPress={() => onNavigate('Favorites')}
+          active={current === 'Bookmark'}
+          onPress={() => {
+            router.push({
+              pathname: '/memo/bookmark',
+            })
+          }}
         />
         <FooterButton
           icon="settings-outline"
-          label="Settings"
+          label="Logout"
           size={24}
-          active={current === 'Settings'}
-          onPress={() => onNavigate('Settings')}
+          active={current === 'Logout'}
+          onPress={handleSignOut}
         />
       </View>
 

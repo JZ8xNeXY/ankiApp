@@ -61,7 +61,7 @@ const SignUp = (): JSX.Element => {
         />
         <View style={styles.footer}>
           <Text style={styles.footerText}>Already registered?</Text>
-          <Link href="/auth/log_in" asChild replace>
+          <Link href="/auth/logIn" asChild replace>
             <TouchableOpacity>
               <Text style={styles.footerLink}>Log In</Text>
             </TouchableOpacity>
@@ -80,6 +80,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f4f8',
   },
   inner: {
+    marginTop: 50,
     paddingVertical: 24,
     paddingHorizontal: 27,
   },

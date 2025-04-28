@@ -43,7 +43,7 @@ interface Flashcard {
   createdAt: Timestamp
 }
 
-const FlashcardScreen = (): JSX.Element => {
+const BookmarkReviewScreen = (): JSX.Element => {
   const router = useRouter()
 
   const { deckId, deckName } = useLocalSearchParams()
@@ -187,92 +187,137 @@ const FlashcardScreen = (): JSX.Element => {
     })
   }, [])
 
+  // useEffect(() => {
+  //   if (!auth.currentUser) return
+
+  //   const now = new Date()
+  //   const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
+
+  //   // 🔁 リアルタイムで監視
+  //   const unsubscribe = onSnapshot(deckRef, async (snapshot) => {
+  //     const deckList: Deck[] = await Promise.all(
+  //       snapshot.docs.map(async (doc) => {
+  //         const flashcardRef = collection(
+  //           db,
+  //           `users/${auth.currentUser?.uid}/decks/${doc.id}/flashcards`,
+  //         )
+
+  //         // 全体数
+  //         const allSnap = await getDocs(flashcardRef)
+  //         const totalCount = allSnap.size
+
+  //         // 今日の復習対象
+  //         const q = query(
+  //           flashcardRef,
+  //           where('nextReview', '<=', Timestamp.fromDate(now)),
+  //         )
+  //         const reviewSnap = await getDocs(q)
+  //         const reviewCount = reviewSnap.size
+
+  //         return {
+  //           id: doc.id,
+  //           name: doc.data().name,
+  //           tag: doc.data().tag,
+  //           cardCount: reviewCount,
+  //           totalCount: totalCount,
+  //           createdAt: doc.data().createdAt?.toDate() || new Date(),
+  //         }
+  //       }),
+  //     )
+  //     setDecks(deckList)
+  //   })
+
+  //   return () => unsubscribe()
+  // }, [])
+
+  // useEffect(() => {
+  //   const fetchFlashCard = async () => {
+  //     if (!auth.currentUser) return
+
+  //     const now = new Date()
+
+  //     const ref = collection(
+  //       db,
+  //       `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
+  //     )
+  //     const q = query(ref, where('nextReview', '<=', Timestamp.fromDate(now))) //復習カードを抽出
+
+  //     const snapshot = await getDocs(q)
+
+  //     const dueFlashCardList: Flashcard[] = snapshot.docs.map((doc) => {
+  //       const data = doc.data()
+  //       return {
+  //         id: doc.id,
+  //         question: data.front,
+  //         answer: data.back,
+  //         isBookmarked: data.isBookmarked,
+  //         repetition: data.repetition,
+  //         interval: data.interval,
+  //         efactor: data.efactor,
+  //         nextReview: data.nextReview,
+  //         createdAt: data.createdAt || Timestamp.now(),
+  //       }
+  //     })
+
+  //     // 🔀 Fisher-Yatesアルゴリズムでシャッフル
+  //     for (let i = dueFlashCardList.length - 1; i > 0; i--) {
+  //       const j = Math.floor(Math.random() * (i + 1))
+  //       ;[dueFlashCardList[i], dueFlashCardList[j]] = [
+  //         dueFlashCardList[j],
+  //         dueFlashCardList[i],
+  //       ]
+  //     }
+
+  //     setFlashCards(dueFlashCardList)
+  //   }
+
+  //   fetchFlashCard()
+  // }, [deckId,isBookmarked])
+
   useEffect(() => {
     if (!auth.currentUser) return
-
-    const now = new Date()
-    const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
-
-    // 🔁 リアルタイムで監視
-    const unsubscribe = onSnapshot(deckRef, async (snapshot) => {
-      const deckList: Deck[] = await Promise.all(
-        snapshot.docs.map(async (doc) => {
-          const flashcardRef = collection(
-            db,
-            `users/${auth.currentUser?.uid}/decks/${doc.id}/flashcards`,
-          )
-
-          // 全体数
-          const allSnap = await getDocs(flashcardRef)
-          const totalCount = allSnap.size
-
-          // 今日の復習対象
-          const q = query(
-            flashcardRef,
-            where('nextReview', '<=', Timestamp.fromDate(now)),
-          )
-          const reviewSnap = await getDocs(q)
-          const reviewCount = reviewSnap.size
-
-          return {
-            id: doc.id,
-            name: doc.data().name,
-            tag: doc.data().tag,
-            cardCount: reviewCount,
-            totalCount: totalCount,
-            createdAt: doc.data().createdAt?.toDate() || new Date(),
-          }
-        }),
-      )
-      setDecks(deckList)
-    })
-
-    return () => unsubscribe()
-  }, [])
-
-  useEffect(() => {
-    const fetchFlashCard = async () => {
-      if (!auth.currentUser) return
-
-      const now = new Date()
-
-      const ref = collection(
-        db,
-        `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
-      )
-      const q = query(ref, where('nextReview', '<=', Timestamp.fromDate(now))) //復習カードを抽出
-
-      const snapshot = await getDocs(q)
-
-      const dueFlashCardList: Flashcard[] = snapshot.docs.map((doc) => {
-        const data = doc.data()
-        return {
-          id: doc.id,
-          question: data.front,
-          answer: data.back,
-          isBookmarked: data.isBookmarked,
-          repetition: data.repetition,
-          interval: data.interval,
-          efactor: data.efactor,
-          nextReview: data.nextReview,
-          createdAt: data.createdAt || Timestamp.now(),
-        }
-      })
-
-      // 🔀 Fisher-Yatesアルゴリズムでシャッフル
-      for (let i = dueFlashCardList.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1))
-        ;[dueFlashCardList[i], dueFlashCardList[j]] = [
-          dueFlashCardList[j],
-          dueFlashCardList[i],
-        ]
+  
+    const fetchBookmarkedFlashcards = async () => {
+      const deckRef = collection(db, `users/${auth.currentUser?.uid}/decks`)
+      const snapshot = await getDocs(deckRef)
+  
+      const items: Flashcard[] = []
+  
+      for (const deckDoc of snapshot.docs) {
+        const flashcardRef = collection(
+          db,
+          `users/${auth.currentUser?.uid}/decks/${deckDoc.id}/flashcards`,
+        )
+        const q = query(flashcardRef, where('isBookmarked', '==', true))
+        const flashcardSnap = await getDocs(q)
+  
+        flashcardSnap.forEach((flashcardDoc) => {
+          items.push({
+            id: flashcardDoc.id,
+            question: flashcardDoc.data().front,
+            answer: flashcardDoc.data().back,
+            isBookmarked: true,
+            repetition: flashcardDoc.data().repetition,
+            interval: flashcardDoc.data().interval,
+            efactor: flashcardDoc.data().efactor,
+            nextReview: flashcardDoc.data().nextReview,
+            createdAt: flashcardDoc.data().createdAt || Timestamp.now(),
+          })
+        })
       }
-
-      setFlashCards(dueFlashCardList)
+  
+      // シャッフル
+      const shuffled = [...items]
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      }
+  
+      setFlashCards(shuffled)
     }
-
-    fetchFlashCard()
-  }, [deckId,isBookmarked])
+  
+    fetchBookmarkedFlashcards()
+  }, [])
 
   // 問題表示時
   useEffect(() => {
@@ -473,7 +518,7 @@ const FlashcardScreen = (): JSX.Element => {
   )
 }
 
-export default FlashcardScreen
+export default BookmarkReviewScreen
 
 const styles = StyleSheet.create({
   container: {
