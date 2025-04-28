@@ -12,7 +12,7 @@ import {
   onSnapshot,
 } from 'firebase/firestore'
 import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native'
+import { View, Text, StyleSheet, Modal, TouchableOpacity,ScrollView } from 'react-native'
 import { auth, db } from '../../config'
 import AnswerButton from '../components/AnswerButton'
 import CircleButton from '../components/CircleButton'
@@ -332,29 +332,41 @@ const FlashcardScreen = (): JSX.Element => {
           </TouchableOpacity>
         </View>
 
-        {flashcards && flashcards.length > 0 ? (
-          currentCard >= flashcards.length ? (
-            <Text style={styles.cardText}>
-              全てのカードを{'\n'}終了しました 🎉
-            </Text>
-          ) : !showReviewButtons ? (
-            <Text style={styles.cardText}>
-              {flashcards[currentCard].question}
-            </Text>
-          ) : (
-            <View style={styles.answerWrapper}>
-              <Text style={styles.answerText}>
-                {flashcards[currentCard].answer}
+          <View>
+            {flashcards && flashcards.length > 0 ? (
+              currentCard >= flashcards.length ? (
+                <Text style={styles.cardText}>
+                  全てのカードを{'\n'}終了しました 🎉
+                </Text>
+              ) : !showReviewButtons ? (
+                <ScrollView 
+                  style={{ maxHeight: 300 }} 
+                  contentContainerStyle={{ justifyContent: 'center' }}
+                >
+                  <Text style={styles.cardText}>
+                    {flashcards[currentCard].question}
+                  </Text>
+                </ScrollView>
+              ) : (
+                <View style={styles.answerWrapper}>
+                  <ScrollView 
+                    style={{ maxHeight: 300 }}
+                    contentContainerStyle={{ justifyContent: 'center' }}
+                  >
+                    <Text style={styles.answerText}>
+                      {flashcards[currentCard].answer}
+                    </Text>
+                  </ScrollView>
+                </View>
+              )
+            ) : (
+              <Text style={styles.cardText}>
+                新しいカードを{'\n'}追加してみましょう
               </Text>
-            </View>
-          )
-        ) : (
-          <Text style={styles.cardText}>
-            新しいカードを{'\n'}追加してみましょう
-          </Text>
-        )}
+            )}
+          </View>
 
-        {flashcards &&
+          {flashcards &&
           flashcards.length > 0 &&
           currentCard < flashcards.length && (
             <CircleButton
