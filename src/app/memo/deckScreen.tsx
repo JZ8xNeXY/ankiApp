@@ -25,9 +25,7 @@ import DraggableFlatList, {
 } from 'react-native-draggable-flatlist'
 import { auth, db } from '../../config'
 import ActionSheetComponent from '../components/ActionSheet'
-import AddDeckModal from '../components/AddDeckModal'
 import EditDeckModal from '../components/EditDeckModal'
-// import Header from '../components/Header's
 import Footer from '../components/Footer'
 import ProgressCircle from '../components/ProgressCircle'
 
@@ -45,7 +43,7 @@ const DeckScreen = (): JSX.Element => {
   const router = useRouter()
 
   const [decks, setDecks] = useState<Deck[]>([])
-  const [addModalVisible, setAddModalVisible] = useState(false)
+
   const [editModalVisible, setEditModalVisible] = useState(false)
   const [selectedDeck, setSelectedDeck] = useState<{
     id: string
@@ -54,21 +52,6 @@ const DeckScreen = (): JSX.Element => {
 
   const actionSheetRef = useRef<{ show: () => void } | null>(null)
   const selectedDeckId = useRef<string | null>(null)
-
-  const handleAddDeck = (deckName: string, deckId: string, deckTag: string) => {
-    setDecks((prevDecks) => [
-      ...prevDecks,
-      {
-        id: deckId,
-        name: deckName,
-        tag: deckTag,
-        cardCount: 0,
-        totalCount: 0,
-        createdAt: Timestamp.fromDate(new Date()),
-        order: prevDecks.length,
-      },
-    ])
-  }
 
   const handleShowActionSheet = (deckId: string) => {
     if (selectedDeckId) {
@@ -182,13 +165,6 @@ const DeckScreen = (): JSX.Element => {
 
   return (
     <View style={styles.container}>
-      {/* TODO : Headerの表示を修正 */}
-      {/* <Header showBackToDecks={false} /> */}
-
-      <View>
-        <Text style={styles.headerTitle}>Home</Text>
-      </View>
-
       <View style={styles.tipCard}>
         <MaterialCommunityIcons
           name="lightbulb-on-outline"
@@ -235,9 +211,6 @@ const DeckScreen = (): JSX.Element => {
 
                   <View style={styles.progressWrapper}>
                     <ProgressCircle progress={progress} />
-                    {/* <Text style={styles.deckCount}>
-                    {reviewedCount} / {item.totalCount}（完了）
-                  </Text> */}
                   </View>
 
                   <TouchableOpacity
@@ -261,23 +234,6 @@ const DeckScreen = (): JSX.Element => {
       <Footer
         current="Home"
         onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
-      />
-
-      {/* TODO adddeckボタン修正 */}
-      {/* <View style={styles.addDeckButton}>
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => setAddModalVisible(true)}
-        >
-          <Text style={styles.addButtonText}>Add Deck</Text>
-        </TouchableOpacity>
-      </View> */}
-
-      {/* モーダルを表示 */}
-      <AddDeckModal
-        visible={addModalVisible}
-        onClose={() => setAddModalVisible(false)}
-        onAddDeck={handleAddDeck}
       />
 
       {selectedDeck && (
@@ -311,7 +267,8 @@ const styles = StyleSheet.create({
   },
   tipCard: {
     backgroundColor: '#2C64C6',
-    margin: 10,
+    marginTop: 60,
+    marginHorizontal: 10,
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
@@ -357,7 +314,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
-    marginBottom: 10,
+    marginTop: 10,
     marginHorizontal: 10,
     borderRadius: 20,
     shadowColor: '#000',

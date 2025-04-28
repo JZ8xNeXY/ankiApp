@@ -1,5 +1,5 @@
 import { Ionicons, Feather } from '@expo/vector-icons'
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams ,useRouter} from 'expo-router'
 import * as Speech from 'expo-speech'
 import {
   collection,
@@ -17,10 +17,10 @@ import { auth, db } from '../../config'
 import AnswerButton from '../components/AnswerButton'
 import CircleButton from '../components/CircleButton'
 import FlashcardActionSheetComponent from '../components/FlashcardModal'
-import Header from '../components/Header'
 import ProgressBar from '../components/ProgressBar'
 import ReviewButton from '../components/ReviewButton'
 import { calculateSM2 } from '../utils/srs'
+import Footer from '../components/Footer'
 
 interface Deck {
   id: string
@@ -43,6 +43,8 @@ interface Flashcard {
 }
 
 const FlashcardScreen = (): JSX.Element => {
+  const router = useRouter()
+
   const { deckId, deckName } = useLocalSearchParams<{
     deckId: string
     deckName: string
@@ -89,7 +91,6 @@ const FlashcardScreen = (): JSX.Element => {
     flashcardFront: string,
     flashcardBack: string,
   ) => {
-    console.log('start')
     setSelectedCard({
       deckId: deckId,
       deckName: deckName,
@@ -287,14 +288,6 @@ const FlashcardScreen = (): JSX.Element => {
 
   return (
     <View style={styles.container}>
-      <Header
-        deckId={deckId}
-        deckName={deckName}
-        flashcardId={flashcards?.[currentCard]?.id}
-        flashcardFront={flashcards?.[currentCard]?.question}
-        flashcardBack={flashcards?.[currentCard]?.answer}
-      />
-
       <View style={styles.progressWrapper}>
         <ProgressBar
           progress={
@@ -361,23 +354,6 @@ const FlashcardScreen = (): JSX.Element => {
           </Text>
         )}
 
-        {/* {flashcards &&
-          flashcards.length > 0 &&
-          currentCard < flashcards.length && (
-              <View  
-              style={styles.SoundIcon}>
-                <Ionicons onPress={() =>
-                speakQuestion(
-                  showReviewButtons
-                    ? flashcards[currentCard].answer
-                    : flashcards[currentCard].question,
-                )
-              }
-              name="volume-high-outline" 
-              size={40} 
-              color="#2C64C6"/>
-              </View>
-          )} */}
         {flashcards &&
           flashcards.length > 0 &&
           currentCard < flashcards.length && (
@@ -394,6 +370,13 @@ const FlashcardScreen = (): JSX.Element => {
             </CircleButton>
           )}
       </View>
+      
+      <Footer
+        current="Flashcard"
+        onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
+        deckId={deckId}
+        deckName={deckName}
+      />
 
       <Modal visible={showCongratsModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
@@ -463,7 +446,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 20,
     marginTop: 15,
-    marginBottom: 125,
+    marginBottom: 200,
     padding: 24,
     borderWidth: 2,
     borderColor: '#DDD',
@@ -518,7 +501,7 @@ const styles = StyleSheet.create({
     right: 10,
     width: 72,
     height: 72,
-    borderRadius: 999, // 完全な丸
+    borderRadius: 999, 
     backgroundColor: 'rgba(70, 127, 211, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -587,6 +570,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
     width: '100%',
     position: 'absolute',
-    bottom: 50,
+    bottom: 100,
   },
 })

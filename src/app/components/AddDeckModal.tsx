@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native'
+import { getDocs } from 'firebase/firestore'
 import { auth, db } from '../../config'
 
 interface AddDeckModalProps {
@@ -36,14 +37,19 @@ const AddDeckModal: React.FC<AddDeckModalProps> = ({
 
     try {
       const ref = collection(db, `users/${auth.currentUser.uid}/decks`)
+      // ここで既存のデッキ数を取得
+      const snapshot = await getDocs(ref)
+      const currentDeckCount = snapshot.size
+      
       const docRef = await addDoc(ref, {
         name: deckName,
-        tap: deckTag,
+        tag: deckTag,
         cardCount: 0,
         createdAt: serverTimestamp(),
+        order: currentDeckCount,
       })
 
-      onAddDeck(deckName, docRef.id, deckTag)
+      onAddDeck(deckName, docRef.id, deckTag,)
 
       setDeckName('')
       onClose()
