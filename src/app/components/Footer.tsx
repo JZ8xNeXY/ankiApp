@@ -1,12 +1,11 @@
 import { Ionicons } from '@expo/vector-icons'
 import React,{useState} from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet,Alert } from 'react-native'
 import AddDeckModal from '../components/AddDeckModal'
 import { Timestamp } from 'firebase/firestore'
 import { router } from 'expo-router'
-import { ro } from '@faker-js/faker/.'
-// import { auth, db } from '../../config'
-
+import { auth } from '../../config'
+import { signOut } from 'firebase/auth'
 
 
 interface FooterProps {
@@ -83,6 +82,16 @@ const Footer = ({
     ])
   }
 
+  const handleSignOut = (): void => {
+    signOut(auth)
+      .then(() => {
+        router.replace('/auth/logIn')
+      })
+      .catch(() => {
+        Alert.alert('ログアウトに失敗しました')
+      })
+  }
+
   return (
     <View>
       <View style={styles.container}>
@@ -146,10 +155,10 @@ const Footer = ({
         />
         <FooterButton
           icon="settings-outline"
-          label="Settings"
+          label="Logout"
           size={24}
-          active={current === 'Settings'}
-          onPress={() => onNavigate('Settings')}
+          active={current === 'Logout'}
+          onPress={handleSignOut}
         />
       </View>
 
