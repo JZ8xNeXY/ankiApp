@@ -1,59 +1,163 @@
 import { Ionicons } from '@expo/vector-icons'
-import React from 'react'
+import React,{useState} from 'react'
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import AddDeckModal from '../components/AddDeckModal'
+import { Timestamp } from 'firebase/firestore'
+import { router } from 'expo-router'
+import { ro } from '@faker-js/faker/.'
+// import { auth, db } from '../../config'
+
+
 
 interface FooterProps {
   current: string
   onNavigate: (screen: string) => void
+  deckId?: string
+  deckName?: string
 }
 
-const Footer = ({ current, onNavigate }: FooterProps) => {
-  return (
-    <View style={styles.container}>
-      <FooterButton
-        icon="home-outline"
-        label="Home"
-        active={current === 'Home'}
-        onPress={() => onNavigate('Home')}
-      />
-      <FooterButton
-        icon="search-outline"
-        label="Search"
-        active={current === 'Search'}
-        onPress={() => onNavigate('Search')}
-      />
-      <FooterButton
-        icon="star-outline"
-        label="Favorites"
-        active={current === 'Favorites'}
-        onPress={() => onNavigate('Favorites')}
-      />
-      <FooterButton
-        icon="settings-outline"
-        label="Settings"
-        active={current === 'Settings'}
-        onPress={() => onNavigate('Settings')}
-      />
-    </View>
-  )
+interface Deck {
+  id: string
+  name: string
+  tag: string | null
+  cardCount: number // 復習対象
+  totalCount: number // 全体数
+  createdAt?: Timestamp
+  order?: number
+}
+
+interface FooterProps {
+  deckId?: string
+  deckName?: string
+  flashcardId?: string
+  flashcardFront?: string
+  flashcardBack?: string
+  tags?: string
+  showBackToDecks?: boolean
 }
 
 const FooterButton = ({
   icon,
   label,
+  size,
   active,
   onPress,
 }: {
-  icon: string
+  icon: keyof typeof Ionicons.glyphMap
   label: string
+  size?: number
   active: boolean
   onPress: () => void
 }) => (
   <TouchableOpacity style={styles.button} onPress={onPress}>
-    <Ionicons name={icon} size={24} color={active ? '#2C64C6' : '#888'} />
+    <Ionicons name={icon} size={size} color={active ? '#2C64C6' : '#888'} />
     <Text style={[styles.label, active && styles.activeLabel]}>{label}</Text>
   </TouchableOpacity>
 )
+
+
+
+const Footer = ({ 
+  current, 
+  onNavigate,
+  deckId,
+  deckName,
+}: FooterProps) => {
+
+  const [, setDecks] = useState<Deck[]>([])
+  const [addModalVisible, setAddModalVisible] = useState(false)
+
+
+  const handleAddDeck = (deckName: string, deckId: string, deckTag: string) => {
+    setDecks((prevDecks) => [
+      ...prevDecks,
+      {
+        id: deckId,
+        name: deckName,
+        tag: deckTag,
+        cardCount: 0,
+        totalCount: 0,
+        createdAt: Timestamp.fromDate(new Date()),
+        order: prevDecks.length,
+      },
+    ])
+  }
+
+  return (
+    <View>
+      <View style={styles.container}>
+        {current == 'Home' && (
+          <FooterButton
+            icon="albums-outline"
+            label="Add Deck"
+            size={24}
+            active={false}
+            onPress={() => setAddModalVisible(true)}
+          />
+        )}
+
+        {current == 'Flashcard' && (
+          <FooterButton
+            icon="document-outline"
+            label="Add Card"
+            size={24}
+            active={false}
+            onPress={() => {
+              router.push({
+                pathname: '/memo/add',
+                params: {
+                  deckId,
+                  deckName,
+                },
+              })
+            }}
+          />
+        )}
+    
+        <FooterButton
+          icon="search-outline"
+          label="Search"
+          size={24}
+          active={current === 'Search'}
+          onPress={() => onNavigate('Search')}
+        />
+        
+        <FooterButton
+          icon="home-outline"
+          label="Home"
+          size={current === 'Home' ? 28 : 24}
+          active={current === 'Home'}
+          onPress={current !== 'Home' ? () => router.replace('/') : () => {}}
+        />
+
+        <FooterButton
+          icon="star-outline"
+          label="Favorites"
+          size={24}
+          active={current === 'Favorites'}
+          onPress={() => onNavigate('Favorites')}
+        />
+        <FooterButton
+          icon="settings-outline"
+          label="Settings"
+          size={24}
+          active={current === 'Settings'}
+          onPress={() => onNavigate('Settings')}
+        />
+      </View>
+
+      <AddDeckModal
+        visible={addModalVisible}
+        onClose={() => setAddModalVisible(false)}
+        onAddDeck={handleAddDeck}
+      />
+
+
+    </View>
+  )
+}
+
+
 
 export default Footer
 
