@@ -79,7 +79,7 @@ const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
             try {
               const flashcardRef = doc(
                 db,
-                `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
+                `users/${auth.currentUser?.uid}/decks/${deckId}/flashcards`,
                 flashcardId,
               )
               await deleteDoc(flashcardRef)
