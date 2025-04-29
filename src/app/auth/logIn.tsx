@@ -94,7 +94,8 @@ export default LogIn
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f4f8',
+    backgroundColor: '#FFFDE7',
+
   },
   inner: {
     marginTop: 50,

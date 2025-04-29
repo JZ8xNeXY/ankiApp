@@ -81,28 +81,7 @@ const Footer = ({
     ])
   }
 
-  const handleSignOut = (): void => {
-    Alert.alert(
-      'ログアウトしますか？',
-      'もう一度ログインするにはメールアドレスとパスワードが必要です。',
-      [
-        { text: 'キャンセル', style: 'cancel' },
-        {
-          text: 'ログアウト',
-          style: 'destructive',
-          onPress: () => {
-            signOut(auth)
-              .then(() => {
-                router.replace('/auth/logIn')
-              })
-              .catch(() => {
-                Alert.alert('ログアウトに失敗しました')
-              })
-          },
-        },
-      ]
-    )
-  }
+
 
   return (
     <View>
@@ -178,11 +157,15 @@ const Footer = ({
         /> */}
         <FooterButton
           icon="settings-outline"
-          label="Logout"
+          label="Settings"
           size={24}
-          active={current === 'Logout'}
-          onPress={handleSignOut}
-        />
+          active={current === 'Settings'}
+          onPress={() => {
+            router.push({
+              pathname: '/settings/settingScreen',
+            })
+          }}
+        />  
       </View>
 
       <AddDeckModal
