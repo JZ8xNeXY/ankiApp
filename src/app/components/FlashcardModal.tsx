@@ -3,6 +3,7 @@ import { doc, deleteDoc } from 'firebase/firestore'
 import React, { useRef, useEffect } from 'react'
 import ActionSheet from 'react-native-actionsheet'
 import { auth, db } from '../../config'
+import { Alert } from 'react-native'
 
 interface ActionSheetProps {
   visible: boolean
@@ -65,20 +66,34 @@ const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
       alert('削除に必要な情報が足りません')
       return
     }
-
-    try {
-      const flashcardRef = doc(
-        db,
-        `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
-        flashcardId,
-      )
-      await deleteDoc(flashcardRef)
-      alert('フラッシュカードを削除しました')
-      router.push('/')
-    } catch (error) {
-      console.error('フラッシュカード削除エラー: ', error)
-      alert('削除に失敗しました')
-    }
+  
+    Alert.alert(
+      'フラッシュカードを削除しますか？',
+      '一度削除すると元に戻せません。',
+      [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: '削除する',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const flashcardRef = doc(
+                db,
+                `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
+                flashcardId,
+              )
+              await deleteDoc(flashcardRef)
+              alert('フラッシュカードを削除しました')
+              router.push('/') // 削除後にホームへ遷移
+            } catch (error) {
+              console.error('フラッシュカード削除エラー: ', error)
+              alert('削除に失敗しました')
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    )
   }
 
   useEffect(() => {
