@@ -19,6 +19,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
+  Alert
 } from 'react-native'
 import DraggableFlatList, {
   ScaleDecorator,
@@ -83,17 +84,31 @@ const DeckScreen = (): JSX.Element => {
   const handleDelete = async (deckId: string) => {
     console.log(`Delete deck: ${deckId}`)
 
-    try {
-      if (auth.currentUser) {
-        const deckRef = doc(db, `users/${auth.currentUser.uid}/decks`, deckId)
-        await deleteDoc(deckRef)
-        console.log(`Deleted deck: ${deckId}`)
-      }
-      setDecks((prevDecks) => prevDecks.filter((deck) => deck.id !== deckId))
-    } catch (error) {
-      console.error('デッキ削除エラー: ', error)
-      alert('デッキの削除に失敗しました')
-    }
+    Alert.alert(
+      'デッキを削除しますか？',
+      '一度削除すると元に戻せません。',
+      [
+        { text: 'キャンセル', style: 'cancel' },
+        {
+          text: '削除する',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              if (auth.currentUser) {
+                const deckRef = doc(db, `users/${auth.currentUser.uid}/decks`, deckId)
+                await deleteDoc(deckRef)
+                console.log(`Deleted deck: ${deckId}`)
+                setDecks((prevDecks) => prevDecks.filter((deck) => deck.id !== deckId))
+              }
+            } catch (error) {
+              console.error('デッキ削除エラー: ', error)
+              alert('デッキの削除に失敗しました')
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    )
   }
 
   const handleDragEnd = async ({ data }: { data: Deck[] }) => {
