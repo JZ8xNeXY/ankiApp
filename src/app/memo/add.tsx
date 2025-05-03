@@ -16,6 +16,7 @@ import {
 } from 'react-native'
 import { auth, db } from '../../config'
 import AddFlashcardModal from '../components/AddFlashcardModal'
+import AnswerButton from '../components/AnswerButton'
 
 const AddCard = (): JSX.Element => {
   const { deckId } = useLocalSearchParams<{
@@ -141,16 +142,16 @@ const AddCard = (): JSX.Element => {
 
           {/* TODO 補助ツールエリア */}
           <View style={styles.tools}>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.toolButton}
               onPress={() => setAddModalVisible(true)}
             >
               <Text style={styles.toolText}>AIでカード作成支援</Text>
-            </TouchableOpacity>
-            {/* <TouchableOpacity style={styles.toolButton}>
-            <Text style={styles.toolText}>翻訳</Text>
-          </TouchableOpacity> */}
+            </TouchableOpacity> */}
+            <AnswerButton label="AIでカード作成" onPress={() => setAddModalVisible(true)} />
           </View>
+
+      
 
           {/* モーダルを表示 */}
           <AddFlashcardModal
@@ -159,12 +160,16 @@ const AddCard = (): JSX.Element => {
             onCreateFlashcard={handleCreateFlashCard}
           />
         </KeyboardAvoidingView>
+
+
       </TouchableWithoutFeedback>
     </SafeAreaView>
+
   )
 }
 
 export default AddCard
+
 
 const styles = StyleSheet.create({
   container: {
@@ -194,7 +199,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#666',
     marginBottom: 4,
     marginTop: 12,
@@ -208,18 +213,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   tools: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    marginBottom: 30,
-  },
-  toolButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: '#467FD3',
-    borderRadius: 6,
-  },
-  toolText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    alignItems: 'center'
   },
 })

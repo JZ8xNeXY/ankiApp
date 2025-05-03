@@ -21,6 +21,7 @@ import ProgressBar from '../components/ProgressBar'
 import ReviewButton from '../components/ReviewButton'
 import { calculateSM2 } from '../utils/srs'
 import Footer from '../components/Footer'
+import { Dimensions } from 'react-native'
 
 interface Deck {
   id: string
@@ -447,7 +448,9 @@ const FlashcardScreen = (): JSX.Element => {
       {flashcards &&
         currentCard < flashcards.length &&
         (!showReviewButtons ? (
-          <AnswerButton label="回答を表示" onPress={handleShowAnswer} />
+          <View style={styles.answerButton}>
+            <AnswerButton label="回答を表示" onPress={handleShowAnswer} />
+          </View>
         ) : (
           <View style={styles.buttonContainer}>
             <ReviewButton
@@ -472,6 +475,8 @@ const FlashcardScreen = (): JSX.Element => {
 }
 
 export default FlashcardScreen
+
+const screenWidth = Dimensions.get('window').width
 
 const styles = StyleSheet.create({
   container: {
@@ -551,23 +556,7 @@ const styles = StyleSheet.create({
     elevation: 3, // Android用の影
   },
   answerButton: {
-    position: 'absolute',
-    bottom: 25,
-    left: '50%',
-    transform: [{ translateX: -100 }],
-    backgroundColor: '#467FD3',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginBottom: 30,
-    width: 200,
     alignItems: 'center',
-  },
-  answerButtonText: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: '600',
-    letterSpacing: 0.5,
   },
   modalOverlay: {
     flex: 1,

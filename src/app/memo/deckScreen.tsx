@@ -29,6 +29,7 @@ import ActionSheetComponent from '../components/ActionSheet'
 import EditDeckModal from '../components/EditDeckModal'
 import Footer from '../components/Footer'
 import ProgressCircle from '../components/ProgressCircle'
+import { ActivityIndicator } from 'react-native'
 
 interface Deck {
   id: string
@@ -44,6 +45,7 @@ const DeckScreen = (): JSX.Element => {
   const router = useRouter()
 
   const [decks, setDecks] = useState<Deck[]>([])
+  const [loading, setLoading] = useState(true)
 
   const [editModalVisible, setEditModalVisible] = useState(false)
   const [selectedDeck, setSelectedDeck] = useState<{
@@ -133,6 +135,7 @@ const DeckScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (!auth.currentUser) return
+    setLoading(true) 
 
     const now = new Date()
     const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
@@ -173,11 +176,20 @@ const DeckScreen = (): JSX.Element => {
         )
 
         setDecks(deckList)
+        setLoading(false) 
       },
     )
 
     return () => unsubscribe()
   }, [])
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2C64C6" />
+      </View>
+    )
+  }
 
   return (
     <View style={styles.container}>
@@ -274,6 +286,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFDE7',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 32,

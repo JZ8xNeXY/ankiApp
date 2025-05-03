@@ -10,7 +10,7 @@ import { signOut } from 'firebase/auth'
 
 interface FooterProps {
   current: string
-  onNavigate: (screen: string) => void
+  onNavigate?: (screen: string) => void
   deckId?: string
   deckName?: string
 }

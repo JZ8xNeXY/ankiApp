@@ -32,9 +32,9 @@ const WelcomeScreen = (): JSX.Element => {
       colors={['#FFFDE7', '#FFECB3', '#FFD54F']}
       style={styles.container}
     >
-      <Text style={styles.logo}>My Flashcard</Text>
-      <Text style={styles.catchphrase}>語学学習を、もっとシンプルに。</Text>
-      <Text style={styles.description}>お気に入りだけ効率よく{'\n'}復習できる毎日の習慣づくり。</Text>
+      <Text style={styles.logo}>マイアンキカード</Text>
+      <Text style={styles.catchphrase}>学習を、もっとシンプルに。</Text>
+      <Text style={styles.description}>効率よく復習できる毎日の習慣づくり。</Text>
 
       <TouchableOpacity style={styles.button} onPress={handlePress}>
         <Text style={styles.buttonText}>タップしてはじめる</Text>

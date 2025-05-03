@@ -82,10 +82,10 @@ const AddFlashcardModal: React.FC<AddFlashcardModalProps> = ({
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
-          <Text style={styles.title}>Create Flashcard</Text>
+          <Text style={styles.title}>カードを作成する</Text>
           <TextInput
             style={styles.input}
-            placeholder="Input Keyword"
+            placeholder="キーワードを入力"
             value={keyword}
             onChangeText={setKeyword}
           />
@@ -116,18 +116,18 @@ const AddFlashcardModal: React.FC<AddFlashcardModalProps> = ({
               style={[styles.button, styles.cancel]}
               onPress={onClose}
             >
-              <Text style={styles.buttonText}>Cancel</Text>
+              <Text style={styles.buttonText}>キャンセル</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.add]}
               onPress={handleAddFlashcard}
             >
-              <Text style={styles.buttonText}>Create</Text>
+              <Text style={styles.buttonText}>作成</Text>
             </TouchableOpacity>
           </View>
           <View>
             <Text style={styles.notice}>
-              ※フラッシュカードはキーワードをもとにAIが自動生成します。内容は必ずご自身でご確認・修正ください。
+              ※カードはキーワードをもとにAIが自動生成します。内容は必ずご自身でご確認・修正ください。
             </Text>
           </View>
         </View>
