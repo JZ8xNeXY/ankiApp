@@ -42,6 +42,7 @@ interface Flashcard {
   nextReview: Timestamp
   createdAt: Timestamp
   deckId: string
+  deckName: string
 }
 
 const BookmarkReviewScreen = (): JSX.Element => {
@@ -84,6 +85,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
     flashcardBack: string,
     flashcardBookmarked: boolean
   ) => {
+
     setSelectedCard({
       deckId: deckId,
       deckName: deckName,
@@ -95,7 +97,6 @@ const BookmarkReviewScreen = (): JSX.Element => {
 
     setFlashcardModalVisible(true)
 
-    console.log(flashcardModalVisible)
   }
 
   const handleShowAnswer = () => {
@@ -110,7 +111,6 @@ const BookmarkReviewScreen = (): JSX.Element => {
     }
   
     try {
-      console.log(deckId, flashcardId, currentBookmarked)
       const ref = doc(
         db,
         `users/${auth.currentUser.uid}/decks/${deckId}/flashcards/${flashcardId}`
@@ -214,6 +214,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
             nextReview: flashcardDoc.data().nextReview,
             createdAt: flashcardDoc.data().createdAt || Timestamp.now(),
             deckId: deckDoc.id,
+            deckName: deckDoc.data().name,
           })
         })
       }
@@ -309,9 +310,9 @@ const BookmarkReviewScreen = (): JSX.Element => {
           <TouchableOpacity
             onPress={() =>
               handleMorePress(
-                deckId,
-                deckName,
                 flashcards?.[currentCard]?.deckId,
+                flashcards?.[currentCard]?.deckName,
+                flashcards?.[currentCard]?.id,
                 flashcards?.[currentCard]?.question,
                 flashcards?.[currentCard]?.answer,
                 flashcards?.[currentCard]?.isBookmarked,
@@ -398,8 +399,8 @@ const BookmarkReviewScreen = (): JSX.Element => {
         <FlashcardActionSheetComponent
           visible={flashcardModalVisible}
           onClose={() => setFlashcardModalVisible(false)}
-          deckId={deckId}
-          deckName={deckName}
+          deckId={selectedCard?.deckId}
+          deckName={selectedCard?.deckName}
           flashcardId={selectedCard?.flashcardId}
           flashcardFront={selectedCard?.flashcardFront}
           flashcardBack={selectedCard?.flashcardBack}

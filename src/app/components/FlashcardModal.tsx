@@ -25,6 +25,15 @@ const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
   flashcardBack,
 }) => {
   const actionSheetRef = useRef<ActionSheet | null>(null)
+  
+  console.log('FlashcardActionSheetComponent', {
+    visible,
+    deckId,
+    deckName,
+    flashcardId,
+    flashcardFront,
+    flashcardBack,
+  })
 
   // const showActionSheet = () => {
   //   if (actionSheetRef.current) {
@@ -76,6 +85,7 @@ const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
           text: '削除する',
           style: 'destructive',
           onPress: async () => {
+            console.log('Deleting flashcard:', deckId, flashcardId)
             try {
               const flashcardRef = doc(
                 db,
