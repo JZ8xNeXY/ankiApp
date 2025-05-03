@@ -41,17 +41,17 @@ interface Flashcard {
   efactor: number
   nextReview: Timestamp
   createdAt: Timestamp
+  deckId: string
 }
 
 const BookmarkReviewScreen = (): JSX.Element => {
   const router = useRouter()
 
-  const { deckId, deckName } = useLocalSearchParams()
+  const { deckId, deckName } = useLocalSearchParams<{ deckId: string; deckName: string }>()
 
   const [, setShowAnswer] = useState(false)
   const [flashcardModalVisible, setFlashcardModalVisible] = useState(false)
   const [showReviewButtons, setShowReviewButtons] = useState(false)
-  const [, setDecks] = useState<Deck[]>([])
   const [currentCard, setCurrentCard] = useState(0)
   const [flashcards, setFlashCards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false)
@@ -75,9 +75,6 @@ const BookmarkReviewScreen = (): JSX.Element => {
     if (hasChineseCharacters) return 'zh'
     return 'ja'
   }
-
-
-  const toggleBookmark = () => {}
 
   const handleMorePress = (
     deckId: string,
@@ -113,6 +110,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
     }
   
     try {
+      console.log(deckId, flashcardId, currentBookmarked)
       const ref = doc(
         db,
         `users/${auth.currentUser.uid}/decks/${deckId}/flashcards/${flashcardId}`
@@ -187,93 +185,6 @@ const BookmarkReviewScreen = (): JSX.Element => {
     })
   }, [])
 
-  // useEffect(() => {
-  //   if (!auth.currentUser) return
-
-  //   const now = new Date()
-  //   const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
-
-  //   // 🔁 リアルタイムで監視
-  //   const unsubscribe = onSnapshot(deckRef, async (snapshot) => {
-  //     const deckList: Deck[] = await Promise.all(
-  //       snapshot.docs.map(async (doc) => {
-  //         const flashcardRef = collection(
-  //           db,
-  //           `users/${auth.currentUser?.uid}/decks/${doc.id}/flashcards`,
-  //         )
-
-  //         // 全体数
-  //         const allSnap = await getDocs(flashcardRef)
-  //         const totalCount = allSnap.size
-
-  //         // 今日の復習対象
-  //         const q = query(
-  //           flashcardRef,
-  //           where('nextReview', '<=', Timestamp.fromDate(now)),
-  //         )
-  //         const reviewSnap = await getDocs(q)
-  //         const reviewCount = reviewSnap.size
-
-  //         return {
-  //           id: doc.id,
-  //           name: doc.data().name,
-  //           tag: doc.data().tag,
-  //           cardCount: reviewCount,
-  //           totalCount: totalCount,
-  //           createdAt: doc.data().createdAt?.toDate() || new Date(),
-  //         }
-  //       }),
-  //     )
-  //     setDecks(deckList)
-  //   })
-
-  //   return () => unsubscribe()
-  // }, [])
-
-  // useEffect(() => {
-  //   const fetchFlashCard = async () => {
-  //     if (!auth.currentUser) return
-
-  //     const now = new Date()
-
-  //     const ref = collection(
-  //       db,
-  //       `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
-  //     )
-  //     const q = query(ref, where('nextReview', '<=', Timestamp.fromDate(now))) //復習カードを抽出
-
-  //     const snapshot = await getDocs(q)
-
-  //     const dueFlashCardList: Flashcard[] = snapshot.docs.map((doc) => {
-  //       const data = doc.data()
-  //       return {
-  //         id: doc.id,
-  //         question: data.front,
-  //         answer: data.back,
-  //         isBookmarked: data.isBookmarked,
-  //         repetition: data.repetition,
-  //         interval: data.interval,
-  //         efactor: data.efactor,
-  //         nextReview: data.nextReview,
-  //         createdAt: data.createdAt || Timestamp.now(),
-  //       }
-  //     })
-
-  //     // 🔀 Fisher-Yatesアルゴリズムでシャッフル
-  //     for (let i = dueFlashCardList.length - 1; i > 0; i--) {
-  //       const j = Math.floor(Math.random() * (i + 1))
-  //       ;[dueFlashCardList[i], dueFlashCardList[j]] = [
-  //         dueFlashCardList[j],
-  //         dueFlashCardList[i],
-  //       ]
-  //     }
-
-  //     setFlashCards(dueFlashCardList)
-  //   }
-
-  //   fetchFlashCard()
-  // }, [deckId,isBookmarked])
-
   useEffect(() => {
     if (!auth.currentUser) return
   
@@ -302,6 +213,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
             efactor: flashcardDoc.data().efactor,
             nextReview: flashcardDoc.data().nextReview,
             createdAt: flashcardDoc.data().createdAt || Timestamp.now(),
+            deckId: deckDoc.id,
           })
         })
       }
@@ -380,12 +292,16 @@ const BookmarkReviewScreen = (): JSX.Element => {
         {/* cardHeader */}
         <View style={styles.cardHeader}>
           {/* お気に入り（スター） */}
-          <TouchableOpacity onPress={toggleBookmark}>
+          <TouchableOpacity>
           <Ionicons
-            name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
+            name={flashcards?.[currentCard]?.isBookmarked ? 'bookmark' : 'bookmark-outline'}
             size={40}
-            color={isBookmarked ? '#467FD3' : '#aaa'}
-            onPress={() => handleToggleBookmark(deckId, flashcards?.[currentCard]?.id, isBookmarked)}
+            color={flashcards?.[currentCard]?.isBookmarked ? '#467FD3' : '#aaa'}
+            onPress={() => handleToggleBookmark(
+              flashcards?.[currentCard]?.deckId as string,
+              flashcards?.[currentCard]?.id ?? '',
+              flashcards?.[currentCard]?.isBookmarked ?? false
+            )}
           />
           </TouchableOpacity>
 
@@ -395,7 +311,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
               handleMorePress(
                 deckId,
                 deckName,
-                flashcards?.[currentCard]?.id,
+                flashcards?.[currentCard]?.deckId,
                 flashcards?.[currentCard]?.question,
                 flashcards?.[currentCard]?.answer,
                 flashcards?.[currentCard]?.isBookmarked,
