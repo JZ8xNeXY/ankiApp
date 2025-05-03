@@ -110,23 +110,23 @@ const EditDeck = (): JSX.Element => {
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.push('/')}>
-            <Text style={styles.headerText}>Cancel</Text>
+            <Text style={styles.headerText}>キャンセル</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>カードの修正</Text>
           <TouchableOpacity onPress={handleEditFlashCard}>
-            <Text style={styles.headerText}>Save</Text>
+            <Text style={styles.headerText}>保存</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.form}>
-          <Text style={styles.label}>Question</Text>
+          <Text style={styles.label}>問題</Text>
           <TextInput
             style={styles.input}
             multiline={true}
             value={front}
             onChangeText={setFront}
           />
-          <Text style={styles.label}>Answer</Text>
+          <Text style={styles.label}>回答</Text>
           <TextInput
             style={styles.input}
             multiline={true}

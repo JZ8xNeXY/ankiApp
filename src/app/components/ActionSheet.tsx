@@ -36,8 +36,8 @@ const ActionSheetComponent: React.FC<ActionSheetProps> = ({
       {/* ActionSheet */}
       <ActionSheet
         ref={actionSheetRef}
-        title={'Choose an action'}
-        options={['Edit', 'Delete', 'Cancel']}
+        title={'選択してください'}
+        options={['編集', '削除', 'キャンセル']}
         cancelButtonIndex={2}
         destructiveButtonIndex={1}
         onPress={(index: number) => {

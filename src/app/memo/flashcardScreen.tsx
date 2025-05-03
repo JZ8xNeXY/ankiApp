@@ -447,21 +447,21 @@ const FlashcardScreen = (): JSX.Element => {
       {flashcards &&
         currentCard < flashcards.length &&
         (!showReviewButtons ? (
-          <AnswerButton label="Show Answer" onPress={handleShowAnswer} />
+          <AnswerButton label="回答を表示" onPress={handleShowAnswer} />
         ) : (
           <View style={styles.buttonContainer}>
             <ReviewButton
-              label="Again"
+              label="もう一度"
               color="#B90101"
               onPress={() => handleNextCard(1)}
             />
             <ReviewButton
-              label="Good"
+              label="できた"
               color="#26B502"
               onPress={() => handleNextCard(4)}
             />
             <ReviewButton
-              label="Easy"
+              label="簡単"
               color="#2F79E7"
               onPress={() => handleNextCard(5)}
             />

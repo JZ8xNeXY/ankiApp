@@ -189,9 +189,9 @@ const DeckScreen = (): JSX.Element => {
           style={styles.tipIcon}
         />
         <View style={styles.tipTextContainer}>
-          <Text style={styles.tipTitle}>Today&apos;s Tip</Text>
-          <Text style={styles.tipText}>Set a daily goal to build</Text>
-          <Text style={styles.tipText}>a vocabulary habit</Text>
+        <Text style={styles.tipTitle}>今日のヒント</Text>
+        <Text style={styles.tipText}>毎日の目標を設定して、</Text>
+        <Text style={styles.tipText}>語彙力を習慣的に伸ばしましょう</Text>
         </View>
       </View>
 

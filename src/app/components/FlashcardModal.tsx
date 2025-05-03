@@ -115,8 +115,8 @@ const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
   return (
     <ActionSheet
       ref={actionSheetRef}
-      title={'Choose an action'}
-      options={['Add', 'Edit', 'Delete', 'Cancel']}
+      title={'選択してください'}
+      options={['追加', '編集', '削除', 'キャンセル']}
       cancelButtonIndex={3}
       destructiveButtonIndex={2}
       onPress={(index) => {
