@@ -129,13 +129,14 @@ const AddCard = (): JSX.Element => {
               value={back}
               onChangeText={setBack}
             />
-            <Text style={styles.label}>TAGS</Text>
+            {/* TODO タグ */}
+            {/* <Text style={styles.label}>TAGS</Text>
             <TextInput
               style={styles.input}
               placeholder="例: Country, Capitol"
               value={tags}
               onChangeText={setTags}
-            />
+            /> */}
           </View>
 
           {/* TODO 補助ツールエリア */}
@@ -168,7 +169,7 @@ export default AddCard
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: '#FFFDE7',
   },
   inner: {
     flex: 1,

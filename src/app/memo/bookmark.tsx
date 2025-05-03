@@ -89,9 +89,10 @@ const Bookmark = (): JSX.Element => {
           {item.answer.length > 30 ? item.answer.slice(0, 30) + '…' : item.answer}
         </Text>
       </View>
-      <TouchableOpacity onPress={() => console.log('More options')}>
+      {/* TODO そのうち機能追加 */}
+      {/* <TouchableOpacity onPress={() => console.log('More options')}>
         <Feather name="more-vertical" size={20} color="#444" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   )
 

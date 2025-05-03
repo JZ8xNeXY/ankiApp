@@ -133,15 +133,13 @@ const EditDeck = (): JSX.Element => {
             value={back}
             onChangeText={setBack}
           />
-          <Text style={styles.label}>TAGS</Text>
-          <TextInput style={styles.input} value={tags} onChangeText={setTags} />
+          {/* TODO タグ */}
+          {/* <Text style={styles.label}>TAGS</Text>
+          <TextInput style={styles.input} value={tags} onChangeText={setTags} /> */}
         </View>
 
         {/* TODO 補助ツールエリア */}
         <View style={styles.tools}>
-          <TouchableOpacity style={styles.toolButton}>
-            <Text style={styles.toolText}>例文生成</Text>
-          </TouchableOpacity>
           {/* <TouchableOpacity style={styles.toolButton}>
             <Text style={styles.toolText}>翻訳</Text>
           </TouchableOpacity> */}
@@ -156,7 +154,7 @@ export default EditDeck
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: '#FFFDE7',
   },
   inner: {
     flex: 1,
