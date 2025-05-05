@@ -57,6 +57,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
   const [flashcards, setFlashCards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false)
+  const [autoSpeakEnabled, setAutoSpeakEnabled] = useState(false)
   const [selectedCard, setSelectedCard] = useState<{
     deckId: string
     deckName: string
@@ -180,8 +181,8 @@ const BookmarkReviewScreen = (): JSX.Element => {
 
     Speech.speak(text, {
       language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
-      rate: 1.0,
-      pitch: 1.0,
+      rate: 0.85,
+      pitch: 1.1,
     })
   }, [])
 
@@ -235,10 +236,12 @@ const BookmarkReviewScreen = (): JSX.Element => {
   // 問題表示時
   useEffect(() => {
     if (
+      autoSpeakEnabled &&
       flashcards &&
       flashcards.length > 0 &&
       currentCard < flashcards.length
     ) {
+      Speech.stop()  // 👈 先に読み上げを停止
       speakQuestion(flashcards[currentCard].question)
       setIsBookmarked(flashcards[currentCard].isBookmarked || false)//setIsBookmarked(flashcards[currentCard].isBookmarked || false)
     }
@@ -247,11 +250,12 @@ const BookmarkReviewScreen = (): JSX.Element => {
   // 回答表示時
   useEffect(() => {
     const speakAnswer = (text: string) => {
+      Speech.stop()  // 👈 先に読み上げを停止
       const lang = detectLanguage(text)
       Speech.speak(text, {
         language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
-        rate: 1.0,
-        pitch: 1.0,
+        rate: 0.85,
+        pitch: 1.1,
       })
     }
 
@@ -361,13 +365,8 @@ const BookmarkReviewScreen = (): JSX.Element => {
           flashcards.length > 0 &&
           currentCard < flashcards.length && (
             <CircleButton
-              onPress={() =>
-                speakQuestion(
-                  showReviewButtons
-                    ? flashcards[currentCard].answer
-                    : flashcards[currentCard].question,
-                )
-              }
+            onPress={() => setAutoSpeakEnabled(!autoSpeakEnabled)}
+            backgroundColor={autoSpeakEnabled}
             >
               <Ionicons name="volume-high-outline" size={40} color="#2C64C6" />
             </CircleButton>
@@ -411,7 +410,9 @@ const BookmarkReviewScreen = (): JSX.Element => {
       {flashcards &&
         currentCard < flashcards.length &&
         (!showReviewButtons ? (
-          <AnswerButton label="Show Answer" onPress={handleShowAnswer} />
+          <View style={styles.answerButton}>
+            <AnswerButton label="回答を表示" onPress={handleShowAnswer} />
+          </View>
         ) : (
           <View style={styles.buttonContainer}>
             <ReviewButton
@@ -515,16 +516,6 @@ const styles = StyleSheet.create({
     elevation: 3, // Android用の影
   },
   answerButton: {
-    position: 'absolute',
-    bottom: 25,
-    left: '50%',
-    transform: [{ translateX: -100 }],
-    backgroundColor: '#467FD3',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginBottom: 30,
-    width: 200,
     alignItems: 'center',
   },
   answerButtonText: {
