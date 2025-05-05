@@ -44,7 +44,7 @@ const AccountEdit = (): JSX.Element => {
         onChangeText={setNewEmail}
         autoCapitalize="none"
         keyboardType="email-address"
-        placeholder="New Email Address"
+        placeholder="新しいメールアドレスを入力"
       />
       <Button label="変更する" onPress={handleUpdateEmail} />
     </View>

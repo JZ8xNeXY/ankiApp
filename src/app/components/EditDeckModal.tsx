@@ -68,16 +68,16 @@ const EditDeckModal: React.FC<EditDeckModalProps> = ({
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
-          <Text style={styles.title}>Edit Deck</Text>
+          <Text style={styles.title}>デッキを編集する</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter new deck name"
+            placeholder="デッキ名を入力"
             value={newDeckName}
             onChangeText={setNewDeckName}
           />
           <TextInput
             style={styles.input}
-            placeholder="Enter new deck tag"
+            placeholder="タグを入力"
             value={newDeckTag ?? ''}
             onChangeText={setNewDeckTag}
           />
@@ -86,13 +86,13 @@ const EditDeckModal: React.FC<EditDeckModalProps> = ({
               style={[styles.button, styles.cancel]}
               onPress={onClose}
             >
-              <Text style={styles.buttonText}>Cancel</Text>
+              <Text style={styles.buttonText}>キャンセル</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.save]}
               onPress={handleUpdateDeck}
             >
-              <Text style={styles.buttonText}>Save</Text>
+              <Text style={styles.buttonText}>保存</Text>
             </TouchableOpacity>
           </View>
         </View>

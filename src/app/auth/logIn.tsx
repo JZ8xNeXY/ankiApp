@@ -56,14 +56,14 @@ const LogIn = (): JSX.Element => {
   return (
     <View style={styles.container}>
       <View style={styles.inner}>
-        <Text style={styles.title}>Log In</Text>
+        <Text style={styles.title}>ログイン</Text>
         <TextInput
           style={styles.input}
           value={email}
           onChangeText={(e) => setEmail(e)}
           autoCapitalize="none"
           keyboardType="email-address"
-          placeholder="Email Address"
+          placeholder="メールアドレス"
           textContentType="emailAddress"
         />
         <TextInput
@@ -72,15 +72,15 @@ const LogIn = (): JSX.Element => {
           onChangeText={(e) => setPassword(e)}
           autoCapitalize="none"
           secureTextEntry
-          placeholder="Password"
+          placeholder="パスワード"
           textContentType="password"
         />
-        <Button label="Submit" onPress={handlePress} />
+        <Button label="送信" onPress={handlePress} />
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Not registered?</Text>
+          <Text style={styles.footerText}>未登録の方</Text>
           <Link href="/auth/signUp" asChild replace>
             <TouchableOpacity>
-              <Text style={styles.footerLink}>Sign up here</Text>
+              <Text style={styles.footerLink}>新規登録はこちら</Text>
             </TouchableOpacity>
           </Link>
         </View>

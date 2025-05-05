@@ -23,7 +23,6 @@ const styles = StyleSheet.create({
   answerButton: {
     position: 'absolute',
     bottom: 100,
-    left: screenWidth * 0.15,
     width: screenWidth * 0.7,
     backgroundColor: '#2C64C6',
     paddingVertical: 14,

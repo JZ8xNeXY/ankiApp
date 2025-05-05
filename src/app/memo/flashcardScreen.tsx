@@ -11,7 +11,7 @@ import {
   where,
   onSnapshot,
 } from 'firebase/firestore'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect,useCallback } from 'react'
 import { View, Text, StyleSheet, Modal, TouchableOpacity,ScrollView } from 'react-native'
 import { auth, db } from '../../config'
 import AnswerButton from '../components/AnswerButton'
@@ -21,6 +21,7 @@ import ProgressBar from '../components/ProgressBar'
 import ReviewButton from '../components/ReviewButton'
 import { calculateSM2 } from '../utils/srs'
 import Footer from '../components/Footer'
+import { Dimensions } from 'react-native'
 
 interface Deck {
   id: string
@@ -53,7 +54,7 @@ const FlashcardScreen = (): JSX.Element => {
   const [showReviewButtons, setShowReviewButtons] = useState(false)
   const [, setDecks] = useState<Deck[]>([])
   const [currentCard, setCurrentCard] = useState(0)
-  const [flashcards, setFlashCards] = useState<Flashcard[]>()
+  const [flashcards, setFlashcards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false)
   const [selectedCard, setSelectedCard] = useState<{
@@ -123,7 +124,7 @@ const FlashcardScreen = (): JSX.Element => {
   
       setIsBookmarked(!currentBookmarked)
 
-      setFlashCards((prev) =>
+      setFlashcards((prev) =>
         prev?.map((card) =>
           card.id === flashcardId ? { ...card, isBookmarked: !currentBookmarked } : card
         )
@@ -187,6 +188,7 @@ const FlashcardScreen = (): JSX.Element => {
     })
   }, [])
 
+  // 初回だけ
   useEffect(() => {
     if (!auth.currentUser) return
 
@@ -230,49 +232,46 @@ const FlashcardScreen = (): JSX.Element => {
     return () => unsubscribe()
   }, [])
 
-  useEffect(() => {
-    const fetchFlashCard = async () => {
-      if (!auth.currentUser) return
+  // デッキの順序を更新 リアルタイム更新をやめる
+  const fetchFlashcards = useCallback(async () => {
+    if (!auth.currentUser) return
 
-      const now = new Date()
+    const now = new Date()
+    const ref = collection(db, `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`)
+    const q = query(ref, where('nextReview', '<=', Timestamp.fromDate(now)))
 
-      const ref = collection(
-        db,
-        `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
-      )
-      const q = query(ref, where('nextReview', '<=', Timestamp.fromDate(now))) //復習カードを抽出
+    const snapshot = await getDocs(q)
 
-      const snapshot = await getDocs(q)
-
-      const dueFlashCardList: Flashcard[] = snapshot.docs.map((doc) => {
-        const data = doc.data()
-        return {
-          id: doc.id,
-          question: data.front,
-          answer: data.back,
-          isBookmarked: data.isBookmarked,
-          repetition: data.repetition,
-          interval: data.interval,
-          efactor: data.efactor,
-          nextReview: data.nextReview,
-          createdAt: data.createdAt || Timestamp.now(),
-        }
-      })
-
-      // 🔀 Fisher-Yatesアルゴリズムでシャッフル
-      for (let i = dueFlashCardList.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1))
-        ;[dueFlashCardList[i], dueFlashCardList[j]] = [
-          dueFlashCardList[j],
-          dueFlashCardList[i],
-        ]
+    const dueFlashcards: Flashcard[] = snapshot.docs.map(doc => {
+      const data = doc.data()
+      return {
+        id: doc.id,
+        question: data.front,
+        answer: data.back,
+        isBookmarked: data.isBookmarked,
+        repetition: data.repetition,
+        interval: data.interval,
+        efactor: data.efactor,
+        nextReview: data.nextReview,
+        createdAt: data.createdAt || Timestamp.now(),
       }
+    })
 
-      setFlashCards(dueFlashCardList)
+    console.log('読み込みしたフラッシュカード: ', dueFlashcards.length)
+
+    // シャッフル
+    for (let i = dueFlashcards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[dueFlashcards[i], dueFlashcards[j]] = [dueFlashcards[j], dueFlashcards[i]]
     }
 
-    fetchFlashCard()
-  }, [deckId,isBookmarked])
+    setFlashcards(dueFlashcards)
+  }, [deckId])
+
+  useEffect(() => {
+    fetchFlashcards()
+  }, [fetchFlashcards])
+
 
   // 問題表示時
   useEffect(() => {
@@ -449,21 +448,23 @@ const FlashcardScreen = (): JSX.Element => {
       {flashcards &&
         currentCard < flashcards.length &&
         (!showReviewButtons ? (
-          <AnswerButton label="Show Answer" onPress={handleShowAnswer} />
+          <View style={styles.answerButton}>
+            <AnswerButton label="回答を表示" onPress={handleShowAnswer} />
+          </View>
         ) : (
           <View style={styles.buttonContainer}>
             <ReviewButton
-              label="Again"
+              label="もう一度"
               color="#B90101"
               onPress={() => handleNextCard(1)}
             />
             <ReviewButton
-              label="Good"
+              label="できた"
               color="#26B502"
               onPress={() => handleNextCard(4)}
             />
             <ReviewButton
-              label="Easy"
+              label="簡単"
               color="#2F79E7"
               onPress={() => handleNextCard(5)}
             />
@@ -474,6 +475,8 @@ const FlashcardScreen = (): JSX.Element => {
 }
 
 export default FlashcardScreen
+
+const screenWidth = Dimensions.get('window').width
 
 const styles = StyleSheet.create({
   container: {
@@ -553,23 +556,7 @@ const styles = StyleSheet.create({
     elevation: 3, // Android用の影
   },
   answerButton: {
-    position: 'absolute',
-    bottom: 25,
-    left: '50%',
-    transform: [{ translateX: -100 }],
-    backgroundColor: '#467FD3',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginBottom: 30,
-    width: 200,
     alignItems: 'center',
-  },
-  answerButtonText: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: '600',
-    letterSpacing: 0.5,
   },
   modalOverlay: {
     flex: 1,

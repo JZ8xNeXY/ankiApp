@@ -110,38 +110,36 @@ const EditDeck = (): JSX.Element => {
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.push('/')}>
-            <Text style={styles.headerText}>Cancel</Text>
+            <Text style={styles.headerText}>キャンセル</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>カードの修正</Text>
           <TouchableOpacity onPress={handleEditFlashCard}>
-            <Text style={styles.headerText}>Save</Text>
+            <Text style={styles.headerText}>保存</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.form}>
-          <Text style={styles.label}>Question</Text>
+          <Text style={styles.label}>問題</Text>
           <TextInput
             style={styles.input}
             multiline={true}
             value={front}
             onChangeText={setFront}
           />
-          <Text style={styles.label}>Answer</Text>
+          <Text style={styles.label}>回答</Text>
           <TextInput
             style={styles.input}
             multiline={true}
             value={back}
             onChangeText={setBack}
           />
-          <Text style={styles.label}>TAGS</Text>
-          <TextInput style={styles.input} value={tags} onChangeText={setTags} />
+          {/* TODO タグ */}
+          {/* <Text style={styles.label}>TAGS</Text>
+          <TextInput style={styles.input} value={tags} onChangeText={setTags} /> */}
         </View>
 
         {/* TODO 補助ツールエリア */}
         <View style={styles.tools}>
-          <TouchableOpacity style={styles.toolButton}>
-            <Text style={styles.toolText}>例文生成</Text>
-          </TouchableOpacity>
           {/* <TouchableOpacity style={styles.toolButton}>
             <Text style={styles.toolText}>翻訳</Text>
           </TouchableOpacity> */}
@@ -156,7 +154,7 @@ export default EditDeck
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: '#FFFDE7',
   },
   inner: {
     flex: 1,

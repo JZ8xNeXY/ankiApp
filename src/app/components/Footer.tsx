@@ -10,7 +10,7 @@ import { signOut } from 'firebase/auth'
 
 interface FooterProps {
   current: string
-  onNavigate: (screen: string) => void
+  onNavigate?: (screen: string) => void
   deckId?: string
   deckName?: string
 }
@@ -89,7 +89,7 @@ const Footer = ({
 
         <FooterButton
           icon="home-outline"
-          label="Home"
+          label="ホーム"
           size={current === 'Home' ? 28 : 24}
           active={current === 'Home'}
           onPress={current !== 'Home' ? () => router.replace('/') : () => {}}
@@ -98,7 +98,7 @@ const Footer = ({
         {current == 'Home' && (
           <FooterButton
             icon="albums-outline"
-            label="Add Deck"
+            label="デッキを追加"
             size={24}
             active={false}
             onPress={() => setAddModalVisible(true)}
@@ -108,7 +108,7 @@ const Footer = ({
         {current == 'Flashcard' && (
           <FooterButton
             icon="document-outline"
-            label="Add Card"
+            label="カードを追加"
             size={24}
             active={false}
             onPress={() => {
@@ -135,7 +135,7 @@ const Footer = ({
 
         <FooterButton
           icon="star-outline"
-          label="Bookmark"
+          label="ブックマーク"
           size={24}
           active={current === 'Bookmark'}
           onPress={() => {
@@ -157,7 +157,7 @@ const Footer = ({
         /> */}
         <FooterButton
           icon="settings-outline"
-          label="Settings"
+          label="設定"
           size={24}
           active={current === 'Settings'}
           onPress={() => {

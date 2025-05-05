@@ -16,6 +16,7 @@ import {
 } from 'react-native'
 import { auth, db } from '../../config'
 import AddFlashcardModal from '../components/AddFlashcardModal'
+import { Dimensions } from 'react-native'
 
 const AddCard = (): JSX.Element => {
   const { deckId } = useLocalSearchParams<{
@@ -103,39 +104,40 @@ const AddCard = (): JSX.Element => {
         >
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.push('/')}>
-              <Text style={styles.headerText}>Cancel</Text>
+              <Text style={styles.headerText}>キャンセル</Text>
             </TouchableOpacity>
             <Text style={styles.headerTitle}>新規カード</Text>
             <TouchableOpacity onPress={handleAddFlashCard}>
-              <Text style={styles.headerText}>Save</Text>
+              <Text style={styles.headerText}>保存</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.form}>
-            <Text style={styles.label}>Question</Text>
+            <Text style={styles.label}>問題</Text>
 
             <TextInput
               style={styles.input}
               multiline={true}
-              placeholder="例: What is the capital of Japan"
+              placeholder="例: 日本の首都は？"
               value={front}
               onChangeText={setFront}
             />
-            <Text style={styles.label}>Answer</Text>
+            <Text style={styles.label}>回答</Text>
             <TextInput
               style={styles.input}
               multiline={true}
-              placeholder="例: Tokyo"
+              placeholder="例: 東京"
               value={back}
               onChangeText={setBack}
             />
-            <Text style={styles.label}>TAGS</Text>
+            {/* TODO タグ */}
+            {/* <Text style={styles.label}>TAGS</Text>
             <TextInput
               style={styles.input}
               placeholder="例: Country, Capitol"
               value={tags}
               onChangeText={setTags}
-            />
+            /> */}
           </View>
 
           {/* TODO 補助ツールエリア */}
@@ -144,12 +146,11 @@ const AddCard = (): JSX.Element => {
               style={styles.toolButton}
               onPress={() => setAddModalVisible(true)}
             >
-              <Text style={styles.toolText}>AIでカード作成支援</Text>
+              <Text style={styles.toolButtonText}>AIでカード作成支援</Text>
             </TouchableOpacity>
-            {/* <TouchableOpacity style={styles.toolButton}>
-            <Text style={styles.toolText}>翻訳</Text>
-          </TouchableOpacity> */}
           </View>
+
+      
 
           {/* モーダルを表示 */}
           <AddFlashcardModal
@@ -158,17 +159,22 @@ const AddCard = (): JSX.Element => {
             onCreateFlashcard={handleCreateFlashCard}
           />
         </KeyboardAvoidingView>
+
+
       </TouchableWithoutFeedback>
     </SafeAreaView>
+
   )
 }
 
 export default AddCard
 
+const screenWidth = Dimensions.get('window').width
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9F9F9',
+    backgroundColor: '#FFFDE7',
   },
   inner: {
     flex: 1,
@@ -193,7 +199,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   label: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#666',
     marginBottom: 4,
     marginTop: 12,
@@ -207,18 +213,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   tools: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    marginBottom: 30,
+    alignItems: 'center',
   },
   toolButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: '#467FD3',
-    borderRadius: 6,
+    position: 'absolute',
+    bottom: 60,
+    width: screenWidth * 0.7,
+    backgroundColor: '#2C64C6',
+    paddingVertical: 14,
+    borderRadius: 16,
+    marginBottom: 0,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
-  toolText: {
+  toolButtonText: {
+    fontSize: 20,
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: '500',
   },
 })

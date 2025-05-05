@@ -6,6 +6,8 @@ import { Ionicons,Feather } from '@expo/vector-icons'
 import Footer from '../components/Footer'
 import * as Speech from 'expo-speech'
 import { router } from 'expo-router'
+import AnswerButton from '../components/AnswerButton'
+import { ActivityIndicator } from 'react-native'
 
 interface BookmarkedFlashcard {
   deckId: string
@@ -17,6 +19,7 @@ interface BookmarkedFlashcard {
 
 const Bookmark = (): JSX.Element => {
   const [bookmarkedItems, setBookmarkedItems] = useState<BookmarkedFlashcard[]>([])
+  const [loading, setLoading] = useState(true)
 
   const detectLanguage = (text: string): 'en' | 'ja' | 'zh' => {
     const hasEnglish = /[a-zA-Z]/.test(text)
@@ -41,6 +44,7 @@ const Bookmark = (): JSX.Element => {
 
   useEffect(() => {
     if (!auth.currentUser) return
+    setLoading(true) 
 
     const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
 
@@ -72,7 +76,9 @@ const Bookmark = (): JSX.Element => {
         }
 
         setBookmarkedItems(items)
+        setLoading(false) 
       },
+
     )
 
     return () => unsubscribe()
@@ -89,11 +95,20 @@ const Bookmark = (): JSX.Element => {
           {item.answer.length > 30 ? item.answer.slice(0, 30) + '…' : item.answer}
         </Text>
       </View>
-      <TouchableOpacity onPress={() => console.log('More options')}>
+      {/* TODO そのうち機能追加 */}
+      {/* <TouchableOpacity onPress={() => console.log('More options')}>
         <Feather name="more-vertical" size={20} color="#444" />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   )
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2C64C6" />
+      </View>
+    )
+  }
 
   return (
     <View style={styles.container}>
@@ -104,14 +119,17 @@ const Bookmark = (): JSX.Element => {
         renderItem={renderItem}
         ListEmptyComponent={<Text style={styles.emptyText}>ブックマークはまだありません</Text>}
       />
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.reviewButton}
-        onPress={() => {
-          router.push('/memo/bookmarkReviewScreen');
-        }}
+        onPress={}
       >
         <Text style={styles.reviewButtonText}>復習する</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+      <View style={styles.reviewButton}>
+        <AnswerButton label="復習する" onPress={() => {
+            router.push('/memo/bookmarkReviewScreen');
+          }} />
+      </View>
       <Footer current="Bookmark" onNavigate={(screen) => console.log(`Navigate to ${screen}`)} />
     </View>
   )
@@ -124,6 +142,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFDE7',
     paddingTop: 50,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   title: {
     fontSize: 22,
@@ -157,22 +180,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   reviewButton: {
-    position: 'absolute',
-    bottom: 75,
-    left: '35%',
-    transform: [{ translateX: -100 }],
-    backgroundColor: '#467FD3',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginBottom: 30,
-    width: 300,
     alignItems: 'center',
-  },
-  reviewButtonText: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: '600',
-    letterSpacing: 0.5,
   },
 })

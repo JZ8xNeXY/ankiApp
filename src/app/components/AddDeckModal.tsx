@@ -63,10 +63,10 @@ const AddDeckModal: React.FC<AddDeckModalProps> = ({
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
-          <Text style={styles.title}>Add Deck</Text>
+          <Text style={styles.title}>デッキを追加</Text>
           <TextInput
             style={styles.input}
-            placeholder="Add Deck Name"
+            placeholder="デッキ名を入力"
             value={deckName}
             onChangeText={setDeckName}
           />
@@ -75,13 +75,13 @@ const AddDeckModal: React.FC<AddDeckModalProps> = ({
               style={[styles.button, styles.cancel]}
               onPress={onClose}
             >
-              <Text style={styles.buttonText}>Cancel</Text>
+              <Text style={styles.buttonText}>キャンセル</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.add]}
               onPress={handleAddDeck}
             >
-              <Text style={styles.buttonText}>Add</Text>
+              <Text style={styles.buttonText}>追加</Text>
             </TouchableOpacity>
           </View>
         </View>
