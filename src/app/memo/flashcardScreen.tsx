@@ -21,7 +21,6 @@ import ProgressBar from '../components/ProgressBar'
 import ReviewButton from '../components/ReviewButton'
 import { calculateSM2 } from '../utils/srs'
 import Footer from '../components/Footer'
-import { Dimensions } from 'react-native'
 
 interface Deck {
   id: string
@@ -57,6 +56,7 @@ const FlashcardScreen = (): JSX.Element => {
   const [flashcards, setFlashcards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false)
+  const [autoSpeakEnabled, setAutoSpeakEnabled] = useState(false)
   const [selectedCard, setSelectedCard] = useState<{
     deckId: string
     deckName: string
@@ -67,13 +67,13 @@ const FlashcardScreen = (): JSX.Element => {
   }>()
 
   const detectLanguage = (text: string): 'en' | 'ja' | 'zh' => {
-    const hasEnglish = /[a-zA-Z]/.test(text)
     const hasHiraganaOrKatakana = /[\u3040-\u30FF]/.test(text)
     const hasChineseCharacters = /[\u4E00-\u9FFF]/.test(text)
+    const hasEnglish = /[a-zA-Z]/.test(text)
 
-    if (hasEnglish) return 'en'
     if (hasHiraganaOrKatakana) return 'ja'
     if (hasChineseCharacters) return 'zh'
+    if (hasEnglish) return 'en'
     return 'ja'
   }
 
@@ -183,8 +183,8 @@ const FlashcardScreen = (): JSX.Element => {
 
     Speech.speak(text, {
       language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
-      rate: 1.0,
-      pitch: 1.0,
+      rate: 0.85,
+      pitch: 1.1,
     })
   }, [])
 
@@ -276,18 +276,21 @@ const FlashcardScreen = (): JSX.Element => {
   // 問題表示時
   useEffect(() => {
     if (
+      autoSpeakEnabled &&
       flashcards &&
       flashcards.length > 0 &&
       currentCard < flashcards.length
     ) {
+      Speech.stop()  // 👈 先に読み上げを停止s
       speakQuestion(flashcards[currentCard].question)
       setIsBookmarked(flashcards[currentCard].isBookmarked || false)//setIsBookmarked(flashcards[currentCard].isBookmarked || false)
     }
-  }, [currentCard, flashcards, speakQuestion])
+  }, [currentCard, flashcards, speakQuestion,autoSpeakEnabled])
 
   // 回答表示時
   useEffect(() => {
     const speakAnswer = (text: string) => {
+      Speech.stop()  // 👈 先に読み上げを停止
       const lang = detectLanguage(text)
       Speech.speak(text, {
         language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
@@ -297,6 +300,7 @@ const FlashcardScreen = (): JSX.Element => {
     }
 
     if (
+      autoSpeakEnabled &&
       showReviewButtons &&
       flashcards &&
       flashcards.length > 0 &&
@@ -304,7 +308,7 @@ const FlashcardScreen = (): JSX.Element => {
     ) {
       speakAnswer(flashcards[currentCard].answer)
     }
-  }, [showReviewButtons, currentCard, flashcards])
+  }, [showReviewButtons, currentCard, flashcards,autoSpeakEnabled])
 
   useEffect(() => {
     if (flashcards && currentCard >= flashcards.length) {
@@ -398,13 +402,8 @@ const FlashcardScreen = (): JSX.Element => {
           flashcards.length > 0 &&
           currentCard < flashcards.length && (
             <CircleButton
-              onPress={() =>
-                speakQuestion(
-                  showReviewButtons
-                    ? flashcards[currentCard].answer
-                    : flashcards[currentCard].question,
-                )
-              }
+            onPress={() => setAutoSpeakEnabled(!autoSpeakEnabled)}
+            backgroundColor={autoSpeakEnabled}
             >
               <Ionicons name="volume-high-outline" size={40} color="#2C64C6" />
             </CircleButton>
@@ -476,7 +475,6 @@ const FlashcardScreen = (): JSX.Element => {
 
 export default FlashcardScreen
 
-const screenWidth = Dimensions.get('window').width
 
 const styles = StyleSheet.create({
   container: {
