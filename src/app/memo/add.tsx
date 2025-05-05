@@ -16,7 +16,7 @@ import {
 } from 'react-native'
 import { auth, db } from '../../config'
 import AddFlashcardModal from '../components/AddFlashcardModal'
-import AnswerButton from '../components/AnswerButton'
+import { Dimensions } from 'react-native'
 
 const AddCard = (): JSX.Element => {
   const { deckId } = useLocalSearchParams<{
@@ -142,13 +142,12 @@ const AddCard = (): JSX.Element => {
 
           {/* TODO 補助ツールエリア */}
           <View style={styles.tools}>
-            {/* <TouchableOpacity
+            <TouchableOpacity
               style={styles.toolButton}
               onPress={() => setAddModalVisible(true)}
             >
-              <Text style={styles.toolText}>AIでカード作成支援</Text>
-            </TouchableOpacity> */}
-            <AnswerButton label="AIでカード作成" onPress={() => setAddModalVisible(true)} />
+              <Text style={styles.toolButtonText}>AIでカード作成支援</Text>
+            </TouchableOpacity>
           </View>
 
       
@@ -170,6 +169,7 @@ const AddCard = (): JSX.Element => {
 
 export default AddCard
 
+const screenWidth = Dimensions.get('window').width
 
 const styles = StyleSheet.create({
   container: {
@@ -213,6 +213,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   tools: {
-    alignItems: 'center'
+    alignItems: 'center',
+  },
+  toolButton: {
+    position: 'absolute',
+    bottom: 60,
+    width: screenWidth * 0.7,
+    backgroundColor: '#2C64C6',
+    paddingVertical: 14,
+    borderRadius: 16,
+    marginBottom: 0,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  toolButtonText: {
+    fontSize: 20,
+    color: '#fff',
+    fontWeight: '500',
   },
 })
