@@ -281,7 +281,7 @@ const FlashcardScreen = (): JSX.Element => {
       flashcards.length > 0 &&
       currentCard < flashcards.length
     ) {
-      Speech.stop()  // 👈 先に読み上げを停止s
+      Speech.stop()  // 👈 先に読み上げを停止
       speakQuestion(flashcards[currentCard].question)
       setIsBookmarked(flashcards[currentCard].isBookmarked || false)//setIsBookmarked(flashcards[currentCard].isBookmarked || false)
     }
@@ -294,8 +294,8 @@ const FlashcardScreen = (): JSX.Element => {
       const lang = detectLanguage(text)
       Speech.speak(text, {
         language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
-        rate: 1.0,
-        pitch: 1.0,
+        rate: 0.85,
+        pitch: 1.1,
       })
     }
 
