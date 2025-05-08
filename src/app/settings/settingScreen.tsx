@@ -1,15 +1,25 @@
-import React from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Linking, ScrollView } from 'react-native'
 import { useRouter } from 'expo-router'
 import { signOut } from 'firebase/auth'
+import React from 'react'
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Linking,
+  ScrollView,
+} from 'react-native'
 import { auth } from '../../config'
-import Footer from '../components/Footer'
+import Footer from '../components/footer'
 
 const SettingsScreen = (): JSX.Element => {
   const router = useRouter()
 
   const handleOpenForm = () => {
-    Linking.openURL('https://docs.google.com/forms/d/1d9DFnJrN1fBiRtKGn5e_FzcQygW_utP4YpkfsJDGueQ/viewform')
+    Linking.openURL(
+      'https://docs.google.com/forms/d/1d9DFnJrN1fBiRtKGn5e_FzcQygW_utP4YpkfsJDGueQ/viewform',
+    )
   }
 
   const handleSignOut = (): void => {
@@ -31,7 +41,7 @@ const SettingsScreen = (): JSX.Element => {
               })
           },
         },
-      ]
+      ],
     )
   }
 
@@ -54,10 +64,7 @@ const SettingsScreen = (): JSX.Element => {
           <Text style={styles.menuText}>利用規約とプライバシーポリシー</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={handleOpenForm}
-        >
+        <TouchableOpacity style={styles.menuItem} onPress={handleOpenForm}>
           <Text style={styles.menuText}>お問い合わせ</Text>
         </TouchableOpacity>
 
@@ -85,7 +92,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 24,
-    paddingBottom: 100, 
+    paddingBottom: 100,
   },
   title: {
     fontSize: 24,

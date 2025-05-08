@@ -4,7 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
 const Layout = (): JSX.Element => {
   return (
-    <GestureHandlerRootView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack
         screenOptions={{
           headerShown: false,

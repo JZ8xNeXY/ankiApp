@@ -14,9 +14,9 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native'
-import { auth, db } from '../../config'
-import AddFlashcardModal from '../components/AddFlashcardModal'
 import { Dimensions } from 'react-native'
+import { auth, db } from '../../config'
+import AddFlashcardModal from '../components/addFlashcardModal'
 
 const AddCard = (): JSX.Element => {
   const { deckId } = useLocalSearchParams<{
@@ -150,8 +150,6 @@ const AddCard = (): JSX.Element => {
             </TouchableOpacity>
           </View>
 
-      
-
           {/* モーダルを表示 */}
           <AddFlashcardModal
             visible={addModalVisible}
@@ -159,11 +157,8 @@ const AddCard = (): JSX.Element => {
             onCreateFlashcard={handleCreateFlashCard}
           />
         </KeyboardAvoidingView>
-
-
       </TouchableWithoutFeedback>
     </SafeAreaView>
-
   )
 }
 

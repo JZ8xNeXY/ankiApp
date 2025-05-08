@@ -9,7 +9,7 @@ import {
 } from 'react-native'
 import { auth } from '../../config'
 import generateFlashcard from '../utils/chatgptApi'
-import CustomRadioButton from './CustomRadioButton'
+import CustomRadioButton from './customRadioButton'
 
 interface AddFlashcardModalProps {
   visible: boolean

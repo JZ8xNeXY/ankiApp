@@ -1,8 +1,8 @@
+import { updateEmail, sendEmailVerification } from 'firebase/auth'
 import React, { useState } from 'react'
 import { View, Text, TextInput, StyleSheet, Alert } from 'react-native'
 import { auth } from '../../config'
-import { updateEmail, sendEmailVerification } from 'firebase/auth'
-import Button from '../components/Button'
+import Button from '../components/button'
 
 const AccountEdit = (): JSX.Element => {
   const [newEmail, setNewEmail] = useState('')
@@ -27,7 +27,10 @@ const AccountEdit = (): JSX.Element => {
     } catch (error: any) {
       console.error('更新エラー:', error)
       if (error.code === 'auth/requires-recent-login') {
-        Alert.alert('認証エラー', '再ログインが必要です。いったんログアウトして、再度ログインしてください。')
+        Alert.alert(
+          '認証エラー',
+          '再ログインが必要です。いったんログアウトして、再度ログインしてください。',
+        )
       } else {
         Alert.alert('変更失敗', error.message || 'エラーが発生しました')
       }

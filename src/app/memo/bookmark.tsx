@@ -1,13 +1,26 @@
-import React, { useEffect, useState } from 'react'
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native'
-import { collection, query, where, getDocs, onSnapshot, orderBy } from 'firebase/firestore'
-import { auth, db } from '../../config'
-import { Ionicons,Feather } from '@expo/vector-icons'
-import Footer from '../components/Footer'
-import * as Speech from 'expo-speech'
+import { Ionicons, Feather } from '@expo/vector-icons'
 import { router } from 'expo-router'
-import AnswerButton from '../components/AnswerButton'
+import * as Speech from 'expo-speech'
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  onSnapshot,
+  orderBy,
+} from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native'
 import { ActivityIndicator } from 'react-native'
+import { auth, db } from '../../config'
+import AnswerButton from '../components/answerButton'
+import Footer from '../components/footer'
 
 interface BookmarkedFlashcard {
   deckId: string
@@ -18,7 +31,9 @@ interface BookmarkedFlashcard {
 }
 
 const Bookmark = (): JSX.Element => {
-  const [bookmarkedItems, setBookmarkedItems] = useState<BookmarkedFlashcard[]>([])
+  const [bookmarkedItems, setBookmarkedItems] = useState<BookmarkedFlashcard[]>(
+    [],
+  )
   const [loading, setLoading] = useState(true)
 
   const detectLanguage = (text: string): 'en' | 'ja' | 'zh' => {
@@ -44,7 +59,7 @@ const Bookmark = (): JSX.Element => {
 
   useEffect(() => {
     if (!auth.currentUser) return
-    setLoading(true) 
+    setLoading(true)
 
     const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
 
@@ -76,9 +91,8 @@ const Bookmark = (): JSX.Element => {
         }
 
         setBookmarkedItems(items)
-        setLoading(false) 
+        setLoading(false)
       },
-
     )
 
     return () => unsubscribe()
@@ -92,7 +106,9 @@ const Bookmark = (): JSX.Element => {
       <View style={{ flex: 1, marginLeft: 12 }}>
         <Text style={styles.question}>{item.question}</Text>
         <Text style={styles.answer}>
-          {item.answer.length > 30 ? item.answer.slice(0, 30) + '…' : item.answer}
+          {item.answer.length > 30
+            ? item.answer.slice(0, 30) + '…'
+            : item.answer}
         </Text>
       </View>
       {/* TODO そのうち機能追加 */}
@@ -117,7 +133,9 @@ const Bookmark = (): JSX.Element => {
         data={bookmarkedItems}
         keyExtractor={(item) => item.flashcardId}
         renderItem={renderItem}
-        ListEmptyComponent={<Text style={styles.emptyText}>ブックマークはまだありません</Text>}
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>ブックマークはまだありません</Text>
+        }
       />
       {/* <TouchableOpacity
         style={styles.reviewButton}
@@ -126,11 +144,17 @@ const Bookmark = (): JSX.Element => {
         <Text style={styles.reviewButtonText}>復習する</Text>
       </TouchableOpacity> */}
       <View style={styles.reviewButton}>
-        <AnswerButton label="復習する" onPress={() => {
-            router.push('/memo/bookmarkReviewScreen');
-          }} />
+        <AnswerButton
+          label="復習する"
+          onPress={() => {
+            router.push('/memo/bookmarkReviewScreen')
+          }}
+        />
       </View>
-      <Footer current="Bookmark" onNavigate={(screen) => console.log(`Navigate to ${screen}`)} />
+      <Footer
+        current="Bookmark"
+        onNavigate={(screen) => console.log(`Navigate to ${screen}`)}
+      />
     </View>
   )
 }
