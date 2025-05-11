@@ -101,7 +101,7 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
             active={false}
             onPress={() => {
               router.push({
-                pathname: '/memo/Add',
+                pathname: '/memo/add',
                 params: {
                   deckId,
                   deckName,
@@ -126,7 +126,7 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
           active={current === 'Bookmark'}
           onPress={() => {
             router.push({
-              pathname: '/memo/Bookmark',
+              pathname: '/memo/bookmark',
             })
           }}
         />
@@ -148,7 +148,7 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
           active={current === 'Settings'}
           onPress={() => {
             router.push({
-              pathname: '/settings/SettingScreen',
+              pathname: '/settings/settingScreen',
             })
           }}
         />
