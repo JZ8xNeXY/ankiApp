@@ -11,6 +11,7 @@ import {
   onSnapshot,
   orderBy,
   writeBatch,
+  QuerySnapshot,
 } from 'firebase/firestore'
 import React, { useState, useEffect, useRef } from 'react'
 import {
@@ -20,6 +21,7 @@ import {
   StyleSheet,
   Dimensions,
   Alert,
+  RefreshControl,
 } from 'react-native'
 import { ActivityIndicator } from 'react-native'
 import DraggableFlatList, {
@@ -46,7 +48,7 @@ const DeckScreen = (): JSX.Element => {
 
   const [decks, setDecks] = useState<Deck[]>([])
   const [loading, setLoading] = useState(true)
-
+  const [refreshing, setRefreshing] = useState(false)
   const [editModalVisible, setEditModalVisible] = useState(false)
   const [selectedDeck, setSelectedDeck] = useState<{
     id: string
@@ -119,6 +121,56 @@ const DeckScreen = (): JSX.Element => {
     )
   }
 
+  const fetchDeckList = async (snapshot: QuerySnapshot): Promise<Deck[]> => {
+    const now = new Date()
+  
+    const deckList: Deck[] = await Promise.all(
+      snapshot.docs.map(async (doc) => {
+        const flashcardRef = collection(
+          db,
+          `users/${auth.currentUser?.uid}/decks/${doc.id}/flashcards`,
+        )
+  
+        const allSnap = await getDocs(flashcardRef)
+        const totalCount = allSnap.size
+  
+        const reviewSnap = await getDocs(
+          query(flashcardRef, where('nextReview', '<=', Timestamp.fromDate(now))),
+        )
+        const reviewCount = reviewSnap.size
+  
+        return {
+          id: doc.id,
+          name: doc.data().name,
+          tag: doc.data().tag,
+          cardCount: reviewCount,
+          totalCount: totalCount,
+          createdAt: doc.data().createdAt?.toDate() || new Date(),
+          order: doc.data().order || 0,
+        }
+      }),
+    )
+  
+    return deckList
+  }
+
+  const onRefresh = async () => {
+    if (!auth.currentUser) return
+    setRefreshing(true)
+  
+    try {
+      const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
+      const snapshot = await getDocs(query(deckRef, orderBy('order')))
+      const deckList = await fetchDeckList(snapshot)
+      setDecks(deckList)
+    } catch (error) {
+      console.error('デッキの取得に失敗しました:', error)
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
+
   const handleDragEnd = async ({ data }: { data: Deck[] }) => {
     setDecks(data)
     try {
@@ -143,44 +195,13 @@ const DeckScreen = (): JSX.Element => {
     if (!auth.currentUser) return
     setLoading(true)
 
-    const now = new Date()
     const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
 
     // 🔁 リアルタイムで監視
     const unsubscribe = onSnapshot(
       query(deckRef, orderBy('order')),
       async (snapshot) => {
-        const deckList: Deck[] = await Promise.all(
-          snapshot.docs.map(async (doc) => {
-            const flashcardRef = collection(
-              db,
-              `users/${auth.currentUser?.uid}/decks/${doc.id}/flashcards`,
-            )
-
-            // 全体数
-            const allSnap = await getDocs(flashcardRef)
-            const totalCount = allSnap.size
-
-            // 今日の復習対象
-            const q = query(
-              flashcardRef,
-              where('nextReview', '<=', Timestamp.fromDate(now)),
-            )
-            const reviewSnap = await getDocs(q)
-            const reviewCount = reviewSnap.size
-
-            return {
-              id: doc.id,
-              name: doc.data().name,
-              tag: doc.data().tag,
-              cardCount: reviewCount,
-              totalCount: totalCount,
-              createdAt: doc.data().createdAt?.toDate() || new Date(),
-              order: doc.data().order || 0,
-            }
-          }),
-        )
-
+        const deckList = await fetchDeckList(snapshot)
         setDecks(deckList)
         setLoading(false)
       },
@@ -220,6 +241,13 @@ const DeckScreen = (): JSX.Element => {
           data={decks}
           onDragEnd={({ data }) => handleDragEnd({ data })}
           keyExtractor={(item) => item.id}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#2C64C6"
+            />
+          }
           renderItem={({ item, drag }) => {
             const reviewedCount = item.totalCount - item.cardCount
             const progress =

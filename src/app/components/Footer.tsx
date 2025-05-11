@@ -1,10 +1,8 @@
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
-import { signOut } from 'firebase/auth'
 import { Timestamp } from 'firebase/firestore'
 import React, { useState } from 'react'
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native'
-import { auth } from '../../config'
 import AddDeckModal from '../components/addDeckModal'
 
 interface FooterProps {
