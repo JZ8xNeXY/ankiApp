@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native'
 import { auth } from '../../config'
-import Button from '../components/Button'
+import Button from '../components/button'
 
 const handlePress = (email: string, password: string): void => {
   console.log(email, password)

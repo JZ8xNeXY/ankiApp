@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { auth } from '../../config'
-import Button from '../components/Button'
+import Button from '../components/button'
 
 const LogIn = (): JSX.Element => {
   const [email, setEmail] = useState('')
@@ -95,7 +95,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFDE7',
-
   },
   inner: {
     marginTop: 50,

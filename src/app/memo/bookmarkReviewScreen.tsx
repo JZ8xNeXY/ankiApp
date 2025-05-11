@@ -1,5 +1,5 @@
 import { Ionicons, Feather } from '@expo/vector-icons'
-import { useLocalSearchParams ,useRouter} from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import * as Speech from 'expo-speech'
 import {
   collection,
@@ -12,15 +12,22 @@ import {
   onSnapshot,
 } from 'firebase/firestore'
 import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet, Modal, TouchableOpacity,ScrollView } from 'react-native'
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native'
 import { auth, db } from '../../config'
-import AnswerButton from '../components/AnswerButton'
-import CircleButton from '../components/CircleButton'
-import FlashcardActionSheetComponent from '../components/FlashcardModal'
-import ProgressBar from '../components/ProgressBar'
-import ReviewButton from '../components/ReviewButton'
+import AnswerButton from '../components/answerButton'
+import CircleButton from '../components/circleButton'
+import FlashcardActionSheetComponent from '../components/flashcardModal'
+import Footer from '../components/footer'
+import ProgressBar from '../components/progressBar'
+import ReviewButton from '../components/reviewButton'
 import { calculateSM2 } from '../utils/srs'
-import Footer from '../components/Footer'
 
 interface Deck {
   id: string
@@ -48,7 +55,10 @@ interface Flashcard {
 const BookmarkReviewScreen = (): JSX.Element => {
   const router = useRouter()
 
-  const { deckId, deckName } = useLocalSearchParams<{ deckId: string; deckName: string }>()
+  const { deckId, deckName } = useLocalSearchParams<{
+    deckId: string
+    deckName: string
+  }>()
 
   const [, setShowAnswer] = useState(false)
   const [flashcardModalVisible, setFlashcardModalVisible] = useState(false)
@@ -84,9 +94,8 @@ const BookmarkReviewScreen = (): JSX.Element => {
     flashcardId: string,
     flashcardFront: string,
     flashcardBack: string,
-    flashcardBookmarked: boolean
+    flashcardBookmarked: boolean,
   ) => {
-
     setSelectedCard({
       deckId: deckId,
       deckName: deckName,
@@ -97,7 +106,6 @@ const BookmarkReviewScreen = (): JSX.Element => {
     })
 
     setFlashcardModalVisible(true)
-
   }
 
   const handleShowAnswer = () => {
@@ -105,27 +113,33 @@ const BookmarkReviewScreen = (): JSX.Element => {
     setShowReviewButtons(true)
   }
 
-  const handleToggleBookmark = async (deckId: string, flashcardId: string, currentBookmarked: boolean) => {
+  const handleToggleBookmark = async (
+    deckId: string,
+    flashcardId: string,
+    currentBookmarked: boolean,
+  ) => {
     if (!auth.currentUser) {
       alert('ログインしてください')
       return
     }
-  
+
     try {
       const ref = doc(
         db,
-        `users/${auth.currentUser.uid}/decks/${deckId}/flashcards/${flashcardId}`
+        `users/${auth.currentUser.uid}/decks/${deckId}/flashcards/${flashcardId}`,
       )
       await updateDoc(ref, {
         isBookmarked: !currentBookmarked, // true → false、false → true
       })
-  
+
       setIsBookmarked(!currentBookmarked)
 
       setFlashCards((prev) =>
         prev?.map((card) =>
-          card.id === flashcardId ? { ...card, isBookmarked: !currentBookmarked } : card
-        )
+          card.id === flashcardId
+            ? { ...card, isBookmarked: !currentBookmarked }
+            : card,
+        ),
       )
     } catch (error) {
       console.error('ブックマーク更新エラー: ', error)
@@ -188,13 +202,13 @@ const BookmarkReviewScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (!auth.currentUser) return
-  
+
     const fetchBookmarkedFlashcards = async () => {
       const deckRef = collection(db, `users/${auth.currentUser?.uid}/decks`)
       const snapshot = await getDocs(deckRef)
-  
+
       const items: Flashcard[] = []
-  
+
       for (const deckDoc of snapshot.docs) {
         const flashcardRef = collection(
           db,
@@ -202,7 +216,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
         )
         const q = query(flashcardRef, where('isBookmarked', '==', true))
         const flashcardSnap = await getDocs(q)
-  
+
         flashcardSnap.forEach((flashcardDoc) => {
           items.push({
             id: flashcardDoc.id,
@@ -219,17 +233,17 @@ const BookmarkReviewScreen = (): JSX.Element => {
           })
         })
       }
-  
+
       // シャッフル
       const shuffled = [...items]
       for (let i = shuffled.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1))
         ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
       }
-  
+
       setFlashCards(shuffled)
     }
-  
+
     fetchBookmarkedFlashcards()
   }, [])
 
@@ -241,16 +255,16 @@ const BookmarkReviewScreen = (): JSX.Element => {
       flashcards.length > 0 &&
       currentCard < flashcards.length
     ) {
-      Speech.stop()  // 👈 先に読み上げを停止
+      Speech.stop() // 👈 先に読み上げを停止
       speakQuestion(flashcards[currentCard].question)
-      setIsBookmarked(flashcards[currentCard].isBookmarked || false)//setIsBookmarked(flashcards[currentCard].isBookmarked || false)
+      setIsBookmarked(flashcards[currentCard].isBookmarked || false) //setIsBookmarked(flashcards[currentCard].isBookmarked || false)
     }
   }, [currentCard, flashcards, speakQuestion])
 
   // 回答表示時
   useEffect(() => {
     const speakAnswer = (text: string) => {
-      Speech.stop()  // 👈 先に読み上げを停止
+      Speech.stop() // 👈 先に読み上げを停止
       const lang = detectLanguage(text)
       Speech.speak(text, {
         language: lang === 'en' ? 'en-US' : lang === 'zh' ? 'zh-CN' : 'ja-JP',
@@ -298,16 +312,24 @@ const BookmarkReviewScreen = (): JSX.Element => {
         <View style={styles.cardHeader}>
           {/* お気に入り（スター） */}
           <TouchableOpacity>
-          <Ionicons
-            name={flashcards?.[currentCard]?.isBookmarked ? 'bookmark' : 'bookmark-outline'}
-            size={40}
-            color={flashcards?.[currentCard]?.isBookmarked ? '#467FD3' : '#aaa'}
-            onPress={() => handleToggleBookmark(
-              flashcards?.[currentCard]?.deckId as string,
-              flashcards?.[currentCard]?.id ?? '',
-              flashcards?.[currentCard]?.isBookmarked ?? false
-            )}
-          />
+            <Ionicons
+              name={
+                flashcards?.[currentCard]?.isBookmarked
+                  ? 'bookmark'
+                  : 'bookmark-outline'
+              }
+              size={40}
+              color={
+                flashcards?.[currentCard]?.isBookmarked ? '#467FD3' : '#aaa'
+              }
+              onPress={() =>
+                handleToggleBookmark(
+                  flashcards?.[currentCard]?.deckId as string,
+                  flashcards?.[currentCard]?.id ?? '',
+                  flashcards?.[currentCard]?.isBookmarked ?? false,
+                )
+              }
+            />
           </TouchableOpacity>
 
           {/* 三点メニュー */}
@@ -327,52 +349,52 @@ const BookmarkReviewScreen = (): JSX.Element => {
           </TouchableOpacity>
         </View>
 
-          <View>
-            {flashcards && flashcards.length > 0 ? (
-              currentCard >= flashcards.length ? (
+        <View>
+          {flashcards && flashcards.length > 0 ? (
+            currentCard >= flashcards.length ? (
+              <Text style={styles.cardText}>
+                全てのカードを{'\n'}終了しました 🎉
+              </Text>
+            ) : !showReviewButtons ? (
+              <ScrollView
+                style={{ maxHeight: 300 }}
+                contentContainerStyle={{ justifyContent: 'center' }}
+              >
                 <Text style={styles.cardText}>
-                  全てのカードを{'\n'}終了しました 🎉
+                  {flashcards[currentCard].question}
                 </Text>
-              ) : !showReviewButtons ? (
-                <ScrollView 
-                  style={{ maxHeight: 300 }} 
+              </ScrollView>
+            ) : (
+              <View style={styles.answerWrapper}>
+                <ScrollView
+                  style={{ maxHeight: 300 }}
                   contentContainerStyle={{ justifyContent: 'center' }}
                 >
-                  <Text style={styles.cardText}>
-                    {flashcards[currentCard].question}
+                  <Text style={styles.answerText}>
+                    {flashcards[currentCard].answer}
                   </Text>
                 </ScrollView>
-              ) : (
-                <View style={styles.answerWrapper}>
-                  <ScrollView 
-                    style={{ maxHeight: 300 }}
-                    contentContainerStyle={{ justifyContent: 'center' }}
-                  >
-                    <Text style={styles.answerText}>
-                      {flashcards[currentCard].answer}
-                    </Text>
-                  </ScrollView>
-                </View>
-              )
-            ) : (
-              <Text style={styles.cardText}>
-                新しいカードを{'\n'}追加してみましょう
-              </Text>
-            )}
-          </View>
+              </View>
+            )
+          ) : (
+            <Text style={styles.cardText}>
+              新しいカードを{'\n'}追加してみましょう
+            </Text>
+          )}
+        </View>
 
-          {flashcards &&
+        {flashcards &&
           flashcards.length > 0 &&
           currentCard < flashcards.length && (
             <CircleButton
-            onPress={() => setAutoSpeakEnabled(!autoSpeakEnabled)}
-            backgroundColor={autoSpeakEnabled}
+              onPress={() => setAutoSpeakEnabled(!autoSpeakEnabled)}
+              backgroundColor={autoSpeakEnabled}
             >
               <Ionicons name="volume-high-outline" size={40} color="#2C64C6" />
             </CircleButton>
           )}
       </View>
-      
+
       <Footer
         current="Flashcard"
         onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
@@ -505,7 +527,7 @@ const styles = StyleSheet.create({
     right: 10,
     width: 72,
     height: 72,
-    borderRadius: 999, 
+    borderRadius: 999,
     backgroundColor: 'rgba(70, 127, 211, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',

@@ -19,17 +19,17 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  Alert
+  Alert,
 } from 'react-native'
+import { ActivityIndicator } from 'react-native'
 import DraggableFlatList, {
   ScaleDecorator,
 } from 'react-native-draggable-flatlist'
 import { auth, db } from '../../config'
-import ActionSheetComponent from '../components/ActionSheet'
-import EditDeckModal from '../components/EditDeckModal'
-import Footer from '../components/Footer'
-import ProgressCircle from '../components/ProgressCircle'
-import { ActivityIndicator } from 'react-native'
+import ActionSheetComponent from '../components/actionSheet'
+import EditDeckModal from '../components/editDeckModal'
+import Footer from '../components/footer'
+import ProgressCircle from '../components/progressCircle'
 
 interface Deck {
   id: string
@@ -67,13 +67,13 @@ const DeckScreen = (): JSX.Element => {
   }
 
   const handleRename = (
-      deckId: string,
-      currentName: string,
-      currentTag: string | null,
-    ) => {
-      setSelectedDeck({ id: deckId, name: currentName, tag: currentTag })
-      setEditModalVisible(true)
-    }
+    deckId: string,
+    currentName: string,
+    currentTag: string | null,
+  ) => {
+    setSelectedDeck({ id: deckId, name: currentName, tag: currentTag })
+    setEditModalVisible(true)
+  }
 
   const handleUpdateDeck = (deckId: string, newName: string) => {
     setDecks((prevDecks) =>
@@ -97,10 +97,16 @@ const DeckScreen = (): JSX.Element => {
           onPress: async () => {
             try {
               if (auth.currentUser) {
-                const deckRef = doc(db, `users/${auth.currentUser.uid}/decks`, deckId)
+                const deckRef = doc(
+                  db,
+                  `users/${auth.currentUser.uid}/decks`,
+                  deckId,
+                )
                 await deleteDoc(deckRef)
                 console.log(`Deleted deck: ${deckId}`)
-                setDecks((prevDecks) => prevDecks.filter((deck) => deck.id !== deckId))
+                setDecks((prevDecks) =>
+                  prevDecks.filter((deck) => deck.id !== deckId),
+                )
               }
             } catch (error) {
               console.error('デッキ削除エラー: ', error)
@@ -109,7 +115,7 @@ const DeckScreen = (): JSX.Element => {
           },
         },
       ],
-      { cancelable: true }
+      { cancelable: true },
     )
   }
 
@@ -135,7 +141,7 @@ const DeckScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (!auth.currentUser) return
-    setLoading(true) 
+    setLoading(true)
 
     const now = new Date()
     const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
@@ -176,7 +182,7 @@ const DeckScreen = (): JSX.Element => {
         )
 
         setDecks(deckList)
-        setLoading(false) 
+        setLoading(false)
       },
     )
 
@@ -201,9 +207,9 @@ const DeckScreen = (): JSX.Element => {
           style={styles.tipIcon}
         />
         <View style={styles.tipTextContainer}>
-        <Text style={styles.tipTitle}>今日のヒント</Text>
-        <Text style={styles.tipText}>毎日の目標を設定して、</Text>
-        <Text style={styles.tipText}>語彙力を習慣的に伸ばしましょう</Text>
+          <Text style={styles.tipTitle}>今日のヒント</Text>
+          <Text style={styles.tipText}>毎日の目標を設定して、</Text>
+          <Text style={styles.tipText}>語彙力を習慣的に伸ばしましょう</Text>
         </View>
       </View>
 
@@ -249,7 +255,7 @@ const DeckScreen = (): JSX.Element => {
                       deckId={item.id}
                       deckName={item.name}
                       deckTag={item.tag}
-                      onRename={(id, name,tag) => handleRename(id, name,tag)}
+                      onRename={(id, name, tag) => handleRename(id, name, tag)}
                       onDelete={(id) => handleDelete(id)}
                     />
                   </TouchableOpacity>
@@ -272,7 +278,8 @@ const DeckScreen = (): JSX.Element => {
           deckId={selectedDeck.id}
           currentName={selectedDeck?.name || ''}
           currentTag={selectedDeck?.tag || ''}
-          onUpdateDeck={handleUpdateDeck} />
+          onUpdateDeck={handleUpdateDeck}
+        />
       )}
     </View>
   )
