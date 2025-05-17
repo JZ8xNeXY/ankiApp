@@ -438,17 +438,17 @@ const BookmarkReviewScreen = (): JSX.Element => {
         ) : (
           <View style={styles.buttonContainer}>
             <ReviewButton
-              label="Again"
+              label="もう一度"
               color="#B90101"
               onPress={() => handleNextCard(1)}
             />
             <ReviewButton
-              label="Good"
+              label="できた"
               color="#26B502"
               onPress={() => handleNextCard(4)}
             />
             <ReviewButton
-              label="Easy"
+              label="簡単"
               color="#2F79E7"
               onPress={() => handleNextCard(5)}
             />
