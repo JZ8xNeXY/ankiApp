@@ -32,6 +32,7 @@ import ActionSheetComponent from '../components/actionSheet'
 import EditDeckModal from '../components/editDeckModal'
 import Footer from '../components/footer'
 import ProgressCircle from '../components/progressCircle'
+import TipBox from '../components/tipBox'
 
 interface Deck {
   id: string
@@ -227,11 +228,12 @@ const DeckScreen = (): JSX.Element => {
           color="white"
           style={styles.tipIcon}
         />
-        <View style={styles.tipTextContainer}>
+        {/* <View style={styles.tipTextContainer}>
           <Text style={styles.tipTitle}>今日のヒント</Text>
           <Text style={styles.tipText}>毎日の目標を設定して、</Text>
           <Text style={styles.tipText}>語彙力を習慣的に伸ばしましょう</Text>
-        </View>
+        </View> */}
+        <TipBox />
       </View>
 
       {/* デッキ一覧 */}
