@@ -27,7 +27,7 @@ import FlashcardActionSheetComponent from '../components/flashcardModal'
 import Footer from '../components/footer'
 import ProgressBar from '../components/progressBar'
 import ReviewButton from '../components/reviewButton'
-import { calculateSM2 } from '../utils/srs'
+import calculateSM2  from '../utils/srs'
 
 interface Deck {
   id: string
