@@ -259,7 +259,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
       speakQuestion(flashcards[currentCard].question)
       setIsBookmarked(flashcards[currentCard].isBookmarked || false) //setIsBookmarked(flashcards[currentCard].isBookmarked || false)
     }
-  }, [currentCard, flashcards, speakQuestion])
+  }, [currentCard, flashcards, speakQuestion, autoSpeakEnabled])
 
   // 回答表示時
   useEffect(() => {
@@ -274,6 +274,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
     }
 
     if (
+      autoSpeakEnabled &&
       showReviewButtons &&
       flashcards &&
       flashcards.length > 0 &&
@@ -281,7 +282,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
     ) {
       speakAnswer(flashcards[currentCard].answer)
     }
-  }, [showReviewButtons, currentCard, flashcards])
+  }, [showReviewButtons, currentCard, flashcards,autoSpeakEnabled])
 
   useEffect(() => {
     if (flashcards && currentCard >= flashcards.length) {
