@@ -1,12 +1,12 @@
 // utils/srs.ts
 
-export interface SM2Result {
+interface SM2Result {
   repetition: number
   interval: number
   efactor: number //難易度
 }
 
-export function calculateSM2(
+export default function calculateSM2(
   score: number,
   repetition: number,
   interval: number,
