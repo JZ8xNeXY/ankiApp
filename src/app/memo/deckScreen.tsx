@@ -225,14 +225,9 @@ const DeckScreen = (): JSX.Element => {
         <MaterialCommunityIcons
           name="lightbulb-on-outline"
           size={48}
-          color="white"
+          color="gold"
           style={styles.tipIcon}
         />
-        {/* <View style={styles.tipTextContainer}>
-          <Text style={styles.tipTitle}>今日のヒント</Text>
-          <Text style={styles.tipText}>毎日の目標を設定して、</Text>
-          <Text style={styles.tipText}>語彙力を習慣的に伸ばしましょう</Text>
-        </View> */}
         <TipBox />
       </View>
 
