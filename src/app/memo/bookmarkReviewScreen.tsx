@@ -9,7 +9,6 @@ import {
   Timestamp,
   query,
   where,
-  onSnapshot,
 } from 'firebase/firestore'
 import React, { useState, useEffect } from 'react'
 import {
@@ -161,10 +160,10 @@ const BookmarkReviewScreen = (): JSX.Element => {
     const nextReviewDate = new Date()
     nextReviewDate.setDate(nextReviewDate.getDate() + newInterval)
 
-    if (auth.currentUser && deckId && id) {
+    if (auth.currentUser && currentCardData.deckId && id) {
       const ref = doc(
         db,
-        `users/${auth.currentUser.uid}/decks/${deckId}/flashcards/${id}`,
+        `users/${auth.currentUser.uid}/decks/${currentCardData.deckId}/flashcards/${id}`,
       )
       await updateDoc(ref, {
         repetition: newRepetition,
