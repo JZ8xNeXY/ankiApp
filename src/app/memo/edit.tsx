@@ -23,6 +23,11 @@ interface Flashcard {
   id: string
   question: string
   answer: string
+  isBookmarked: boolean
+  repetition: number
+  interval: number
+  efactor: number
+  nextReview: Timestamp
   createdAt: Timestamp
 }
 
@@ -31,6 +36,7 @@ const EditDeck = (): JSX.Element => {
     deckId: string
     deckName: string
   }>()
+
   const { flashcardId } = useLocalSearchParams<{
     flashcardId: string
     front: string
@@ -40,8 +46,12 @@ const EditDeck = (): JSX.Element => {
 
   const [front, setFront] = useState('')
   const [back, setBack] = useState('')
+  const [isBookmarked, setIsBookmarked] = useState(false)
   const [tags, setTags] = useState('')
   const [, setFlashCard] = useState<Flashcard>()
+  
+  // SM2関連
+  const [interval] = useState(0) 
 
   const handleEditFlashCard = async () => {
     if (!front.trim() || !back.trim()) {
@@ -54,6 +64,7 @@ const EditDeck = (): JSX.Element => {
     }
 
     try {
+      const now = new Date()
       const ref = doc(
         db,
         `users/${auth.currentUser.uid}/decks/${deckId}/flashcards/${flashcardId}`,
@@ -62,6 +73,11 @@ const EditDeck = (): JSX.Element => {
         front,
         back,
         tags,
+        isBookmarked,
+        repetition: 0,
+        interval: 1,
+        efactor: 2.5,
+        nextReview: new Date(now.getTime() + interval * 24 * 60 * 60 * 1000),
         createdAt: serverTimestamp(),
       })
 
@@ -81,7 +97,6 @@ const EditDeck = (): JSX.Element => {
         db,
         `users/${auth.currentUser.uid}/decks/${deckId}/flashcards/${flashcardId}`,
       )
-      console.log('test', ref)
       const snapshot = await getDoc(ref)
       const data = snapshot.data()
       if (data) {
@@ -90,12 +105,17 @@ const EditDeck = (): JSX.Element => {
           question: data.front,
           answer: data.back,
           createdAt: data.createdAt || Timestamp.now(),
+          isBookmarked: data.isBookmarked || false,
+          repetition: data.repetition,
+          interval: data.interval,
+          efactor: data.efactor,
+          nextReview: data.nextReview,
         }
         setFlashCard(flashcard)
         setFront(data.front)
         setBack(data.back)
+        setIsBookmarked(data.isBookmarked || false)
         setTags(data.tags || '')
-        console.log('test')
       }
     }
 
