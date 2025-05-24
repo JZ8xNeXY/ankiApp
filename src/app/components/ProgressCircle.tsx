@@ -20,7 +20,7 @@ const ProgressBar = ({ progress }: ProgressBarProps): JSX.Element => {
         size={60} // 円のサイズ
         thickness={6}
         showsText={true}
-        formatText={() => `${Math.round(progress * 100)}%`}
+        formatText={() => `${Math.floor(progress * 100)}%`}
         color={getProgressColor(progress)}
         unfilledColor="#E0E0E0"
         borderWidth={0}
