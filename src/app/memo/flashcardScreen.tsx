@@ -300,9 +300,18 @@ const FlashcardScreen = (): JSX.Element => {
     ) {
       Speech.stop() // 👈 先に読み上げを停止
       speakQuestion(flashcards[currentCard].question)
-      setIsBookmarked(flashcards[currentCard].isBookmarked || false) //setIsBookmarked(flashcards[currentCard].isBookmarked || false)
     }
   }, [currentCard, flashcards, speakQuestion, autoSpeakEnabled])
+ 
+ // 問題表示時
+  useEffect(() => {
+  if (flashcards && 
+      flashcards.length > 0 &&
+      currentCard < flashcards.length
+    ) {
+    setIsBookmarked(flashcards[currentCard].isBookmarked || false)
+  }
+}, [currentCard, flashcards])
 
   // 回答表示時
   useEffect(() => {
