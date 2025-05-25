@@ -1,13 +1,20 @@
 import axios from 'axios'
 
-const API_URL =
-  'https://vvw1xgx7t9.execute-api.ap-northeast-1.amazonaws.com/dev/openAIAPI' // LambdaをつないだAPI GatewayのURL
+const API_URL = process.env.EXPO_PUBLIC_OPENAI_API_URL
+const API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY
+ // LambdaをつないだAPI GatewayのURL
 
 const generateFlashcard = async (prompt: string) => {
   console.log('Generating flashcard with prompt:', prompt)
   try {
-    const response = await axios.post(API_URL, { prompt }) // POSTでpromptを渡す
-    
+    const response = await axios.post(API_URL, { prompt },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY
+      },
+    })
+   
     const data = response.data
     
     return {
