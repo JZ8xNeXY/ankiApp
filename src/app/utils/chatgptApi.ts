@@ -1,45 +1,29 @@
 import axios from 'axios'
 
-const API_URL = 'https://api.openai.com/v1/'
-const MODEL = 'gpt-4o-mini'
+const API_URL = process.env.EXPO_PUBLIC_OPENAI_API_URL
 const API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY
+ // LambdaをつないだAPI GatewayのURL
 
-export const generateFlashcard = async (prompt: string) => {
+const generateFlashcard = async (prompt: string) => {
+  console.log('Generating flashcard with prompt:', prompt)
   try {
-    const response = await axios.post(
-      `${API_URL}chat/completions`,
-      {
-        model: MODEL,
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You are an AI that helps learners create flashcards for studying English vocabulary. Return only pure JSON (no markdown or code block).',
-          },
-          {
-            role: 'user',
-            content: ` "${prompt}".\n
-                     - Format: {"question": "keyword", "answer": "example sentence"}\n
-                        Return only valid JSON.`,
-          },
-        ],
+    const response = await axios.post(API_URL, { prompt },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY
       },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${API_KEY}`,
-        },
-      },
-    )
-    const result = response.data.choices[0].message.content
-    const parsed = JSON.parse(result)
+    })
+   
+    const data = response.data
+    
     return {
-      front: parsed.question,
-      back: parsed.answer,
-      tag: '',
+      front: data.front,
+      back: data.back,
+      tag: data.tag,
     }
   } catch (error) {
-    console.error('OpenAI Error:', error)
+    console.error('Gateway API Error:', error)
     return null
   }
 }
