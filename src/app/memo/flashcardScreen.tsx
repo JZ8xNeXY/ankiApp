@@ -20,6 +20,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { auth, db } from '../../config'
 import AnswerButton from '../components/answerButton'
 import CircleButton from '../components/circleButton'
@@ -189,6 +190,35 @@ const FlashcardScreen = (): JSX.Element => {
       setCurrentCard((prev) => prev + 1)
     }
   }
+
+  //FIX
+  const handlePreviousCard = () => {
+    if (showReviewButtons) {
+      // いま英語（回答）表示中 → 同じカードの日本語へ
+      setShowReviewButtons(false)
+      setShowAnswer(false)
+      return
+    }
+
+    // いま日本語（質問）表示中 → 前カードの英語へ
+    setCurrentCard((prev) => {
+      const nextIndex = Math.max(0, prev - 1)
+      return nextIndex
+    })
+    setShowReviewButtons(true) // 前カードを英語状態で表示
+    setShowAnswer(true)
+  }
+
+  const swipe = Gesture.Pan()
+    .activeOffsetX([-15, 15]) // 横に15px以上のときだけ
+    .onEnd((e) => {
+      const TH = 40
+      if (e.translationX > TH) {
+        // 左→右へ十分スワイプ：ホームへ
+        router.replace('/') // 例）タブ構成なら '/(tabs)/home' などに変更
+        // もしモーダルや重なりを全部閉じたいなら: router.dismissAll()
+      }
+    })
 
   const speakQuestion = React.useCallback((text: string) => {
     const lang = detectLanguage(text)
@@ -364,6 +394,17 @@ const FlashcardScreen = (): JSX.Element => {
       <View style={styles.cardContainer}>
         {/* cardHeader */}
         <View style={styles.cardHeader}>
+          {/* 戻るボタン */}
+          <TouchableOpacity
+            onPress={handlePreviousCard}
+            disabled={currentCard === 0 && !showReviewButtons}
+            style={{
+              opacity: currentCard === 0 && !showReviewButtons ? 0.3 : 1,
+            }}
+          >
+            <Ionicons name="arrow-back" size={32} color="#467FD3" />
+          </TouchableOpacity>
+
           {/* お気に入り（スター） */}
           <TouchableOpacity onPress={toggleBookmark}>
             <Ionicons
@@ -396,40 +437,42 @@ const FlashcardScreen = (): JSX.Element => {
             <Feather name="more-vertical" size={32} color="#444" />
           </TouchableOpacity>
         </View>
-
-        <View>
-          {flashcards && flashcards.length > 0 ? (
-            currentCard >= flashcards.length ? (
-              <Text style={styles.cardText}>
-                全てのカードを{'\n'}終了しました 🎉
-              </Text>
-            ) : !showReviewButtons ? (
-              <ScrollView
-                style={{ maxHeight: 300 }}
-                contentContainerStyle={{ justifyContent: 'center' }}
-              >
+        <GestureDetector gesture={swipe}>
+          <View>
+            {flashcards && flashcards.length > 0 ? (
+              currentCard >= flashcards.length ? (
                 <Text style={styles.cardText}>
-                  {flashcards[currentCard].question}
+                  全てのカードを{'\n'}終了しました 🎉
                 </Text>
-              </ScrollView>
-            ) : (
-              <View style={styles.answerWrapper}>
+              ) : !showReviewButtons ? (
                 <ScrollView
                   style={{ maxHeight: 300 }}
                   contentContainerStyle={{ justifyContent: 'center' }}
                 >
-                  <Text style={styles.answerText}>
-                    {flashcards[currentCard].answer}
+                  <Text style={styles.cardText}>
+                    {flashcards[currentCard].question}
                   </Text>
                 </ScrollView>
-              </View>
-            )
-          ) : (
-            <Text style={styles.cardText}>
-              お疲れ様です😄{'\n'}新しいカードを追加して{'\n'}学びを広げましょう
-            </Text>
-          )}
-        </View>
+              ) : (
+                <View style={styles.answerWrapper}>
+                  <ScrollView
+                    style={{ maxHeight: 300 }}
+                    contentContainerStyle={{ justifyContent: 'center' }}
+                  >
+                    <Text style={styles.answerText}>
+                      {flashcards[currentCard].answer}
+                    </Text>
+                  </ScrollView>
+                </View>
+              )
+            ) : (
+              <Text style={styles.cardText}>
+                お疲れ様です😄{'\n'}新しいカードを追加して{'\n'}
+                学びを広げましょう
+              </Text>
+            )}
+          </View>
+        </GestureDetector>
 
         {flashcards &&
           flashcards.length > 0 &&
