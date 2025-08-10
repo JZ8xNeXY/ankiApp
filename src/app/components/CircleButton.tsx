@@ -14,16 +14,20 @@ interface Props {
 }
 
 const CircleButton = (props: Props): JSX.Element => {
-  const { children, style,backgroundColor, onPress } = props
+  const { children, style, backgroundColor, onPress } = props
 
   const resolvedBackgroundColor = backgroundColor
-  ? 'rgba(70, 127, 211, 0.6)' // ON: 濃い青
-  : 'rgba(70, 127, 211, 0.05)' // OFF: デフォルトの薄青
+    ? 'rgba(70, 127, 211, 0.6)' // ON: 濃い青
+    : 'rgba(70, 127, 211, 0.05)' // OFF: デフォルトの薄青
 
   return (
     <TouchableOpacity
       onPress={onPress}
-      style={[styles.circleButton, style, { backgroundColor: resolvedBackgroundColor }]}
+      style={[
+        styles.circleButton,
+        style,
+        { backgroundColor: resolvedBackgroundColor },
+      ]}
     >
       <Text style={styles.circleButtonLabel}>{children}</Text>
     </TouchableOpacity>

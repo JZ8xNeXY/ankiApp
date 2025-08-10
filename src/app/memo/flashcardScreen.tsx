@@ -20,7 +20,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native'
-import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+
 import { auth, db } from '../../config'
 import AnswerButton from '../components/answerButton'
 import CircleButton from '../components/circleButton'
@@ -51,10 +51,12 @@ interface Flashcard {
   createdAt: Timestamp
 }
 
-const FlashcardScreen = (): JSX.Element => {
+const FlashcardScreen = (): React.JSX.Element => {
   const router = useRouter()
 
   const { deckId, deckName } = useLocalSearchParams()
+  const deckIdStr = deckId as string
+  const deckNameStr = deckName as string
 
   const [, setShowAnswer] = useState(false)
   const [flashcardModalVisible, setFlashcardModalVisible] = useState(false)
@@ -191,7 +193,9 @@ const FlashcardScreen = (): JSX.Element => {
     }
   }
 
-  //FIX
+  const canGoBack =
+    !!flashcards?.length && (showReviewButtons || currentCard > 0)
+
   const handlePreviousCard = () => {
     if (showReviewButtons) {
       // いま英語（回答）表示中 → 同じカードの日本語へ
@@ -208,17 +212,6 @@ const FlashcardScreen = (): JSX.Element => {
     setShowReviewButtons(true) // 前カードを英語状態で表示
     setShowAnswer(true)
   }
-
-  const swipe = Gesture.Pan()
-    .activeOffsetX([-15, 15]) // 横に15px以上のときだけ
-    .onEnd((e) => {
-      const TH = 40
-      if (e.translationX > TH) {
-        // 左→右へ十分スワイプ：ホームへ
-        router.replace('/') // 例）タブ構成なら '/(tabs)/home' などに変更
-        // もしモーダルや重なりを全部閉じたいなら: router.dismissAll()
-      }
-    })
 
   const speakQuestion = React.useCallback((text: string) => {
     const lang = detectLanguage(text)
@@ -281,7 +274,7 @@ const FlashcardScreen = (): JSX.Element => {
     const now = new Date()
     const ref = collection(
       db,
-      `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
+      `users/${auth.currentUser.uid}/decks/${deckIdStr}/flashcards`,
     )
     const q = query(ref, where('nextReview', '<=', Timestamp.fromDate(now)))
 
@@ -397,14 +390,11 @@ const FlashcardScreen = (): JSX.Element => {
           {/* 戻るボタン */}
           <TouchableOpacity
             onPress={handlePreviousCard}
-            disabled={currentCard === 0 && !showReviewButtons}
-            style={{
-              opacity: currentCard === 0 && !showReviewButtons ? 0.3 : 1,
-            }}
+            disabled={!canGoBack}
+            style={[styles.backButton, { opacity: canGoBack ? 1 : 0 }]}
           >
-            <Ionicons name="arrow-back" size={32} color="#467FD3" />
+            <Ionicons name="arrow-back" size={28} color="#fff" />
           </TouchableOpacity>
-
           {/* お気に入り（スター） */}
           <TouchableOpacity onPress={toggleBookmark}>
             <Ionicons
@@ -413,66 +403,64 @@ const FlashcardScreen = (): JSX.Element => {
               color={isBookmarked ? '#467FD3' : '#aaa'}
               onPress={() =>
                 handleToggleBookmark(
-                  deckId,
-                  flashcards?.[currentCard]?.id,
+                  deckIdStr,
+                  flashcards?.[currentCard]?.id || '',
                   isBookmarked,
                 )
               }
             />
           </TouchableOpacity>
-
           {/* 三点メニュー */}
           <TouchableOpacity
             onPress={() =>
               handleMorePress(
-                deckId,
-                deckName,
-                flashcards?.[currentCard]?.id,
-                flashcards?.[currentCard]?.question,
-                flashcards?.[currentCard]?.answer,
-                flashcards?.[currentCard]?.isBookmarked,
+                deckIdStr,
+                deckNameStr,
+                flashcards?.[currentCard]?.id || '',
+                flashcards?.[currentCard]?.question || '',
+                flashcards?.[currentCard]?.answer || '',
+                flashcards?.[currentCard]?.isBookmarked || false,
               )
             }
           >
             <Feather name="more-vertical" size={32} color="#444" />
           </TouchableOpacity>
         </View>
-        <GestureDetector gesture={swipe}>
-          <View>
-            {flashcards && flashcards.length > 0 ? (
-              currentCard >= flashcards.length ? (
+
+        <View>
+          {flashcards && flashcards.length > 0 ? (
+            currentCard >= flashcards.length ? (
+              <Text style={styles.cardText}>
+                全てのカードを{'\n'}終了しました 🎉
+              </Text>
+            ) : !showReviewButtons ? (
+              <ScrollView
+                style={{ maxHeight: 300 }}
+                contentContainerStyle={{ justifyContent: 'center' }}
+              >
                 <Text style={styles.cardText}>
-                  全てのカードを{'\n'}終了しました 🎉
+                  {flashcards[currentCard].question}
                 </Text>
-              ) : !showReviewButtons ? (
+              </ScrollView>
+            ) : (
+              <View style={styles.answerWrapper}>
                 <ScrollView
                   style={{ maxHeight: 300 }}
                   contentContainerStyle={{ justifyContent: 'center' }}
                 >
-                  <Text style={styles.cardText}>
-                    {flashcards[currentCard].question}
+                  <Text style={styles.answerText}>
+                    {flashcards[currentCard].answer}
                   </Text>
                 </ScrollView>
-              ) : (
-                <View style={styles.answerWrapper}>
-                  <ScrollView
-                    style={{ maxHeight: 300 }}
-                    contentContainerStyle={{ justifyContent: 'center' }}
-                  >
-                    <Text style={styles.answerText}>
-                      {flashcards[currentCard].answer}
-                    </Text>
-                  </ScrollView>
-                </View>
-              )
-            ) : (
-              <Text style={styles.cardText}>
-                お疲れ様です😄{'\n'}新しいカードを追加して{'\n'}
-                学びを広げましょう
-              </Text>
-            )}
-          </View>
-        </GestureDetector>
+              </View>
+            )
+          ) : (
+            <Text style={styles.cardText}>
+              お疲れ様です😄{'\n'}新しいカードを追加して{'\n'}
+              学びを広げましょう
+            </Text>
+          )}
+        </View>
 
         {flashcards &&
           flashcards.length > 0 &&
@@ -489,8 +477,8 @@ const FlashcardScreen = (): JSX.Element => {
       <Footer
         current="Flashcard"
         onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
-        deckId={deckId}
-        deckName={deckName}
+        deckId={deckIdStr}
+        deckName={deckNameStr}
       />
 
       <Modal visible={showCongratsModal} transparent animationType="fade">
@@ -514,8 +502,8 @@ const FlashcardScreen = (): JSX.Element => {
         <FlashcardActionSheetComponent
           visible={flashcardModalVisible}
           onClose={() => setFlashcardModalVisible(false)}
-          deckId={deckId}
-          deckName={deckName}
+          deckId={deckIdStr}
+          deckName={deckNameStr}
           flashcardId={selectedCard?.flashcardId}
           flashcardFront={selectedCard?.flashcardFront}
           flashcardBack={selectedCard?.flashcardBack}
@@ -559,6 +547,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFDE7',
     paddingTop: 50,
+  },
+  backButton: {
+    backgroundColor: 'rgba(70, 127, 211, 0.25)',
+    padding: 10,
+    borderRadius: 999,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3, // Android用影
   },
   cardContainer: {
     flexGrow: 1,
