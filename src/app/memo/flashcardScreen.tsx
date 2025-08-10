@@ -27,7 +27,7 @@ import FlashcardActionSheetComponent from '../components/flashcardModal'
 import Footer from '../components/footer'
 import ProgressBar from '../components/progressBar'
 import ReviewButton from '../components/reviewButton'
-import calculateSM2  from '../utils/srs'
+import calculateSM2 from '../utils/srs'
 
 interface Deck {
   id: string
@@ -302,16 +302,17 @@ const FlashcardScreen = (): JSX.Element => {
       speakQuestion(flashcards[currentCard].question)
     }
   }, [currentCard, flashcards, speakQuestion, autoSpeakEnabled])
- 
- // 問題表示時
+
+  // 問題表示時
   useEffect(() => {
-  if (flashcards && 
+    if (
+      flashcards &&
       flashcards.length > 0 &&
       currentCard < flashcards.length
     ) {
-    setIsBookmarked(flashcards[currentCard].isBookmarked || false)
-  }
-}, [currentCard, flashcards])
+      setIsBookmarked(flashcards[currentCard].isBookmarked || false)
+    }
+  }, [currentCard, flashcards])
 
   // 回答表示時
   useEffect(() => {
@@ -425,7 +426,7 @@ const FlashcardScreen = (): JSX.Element => {
             )
           ) : (
             <Text style={styles.cardText}>
-              新しいカードを{'\n'}追加してみましょう
+              お疲れ様です😄{'\n'}新しいカードを追加して{'\n'}学びを広げましょう
             </Text>
           )}
         </View>
@@ -452,7 +453,10 @@ const FlashcardScreen = (): JSX.Element => {
       <Modal visible={showCongratsModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalText}> 全てのカードを終了しました</Text>
+            <Text style={styles.modalText}>
+              {' '}
+              お疲れ様です😄{'\n'}新しいカードを追加して{'\n'}学びを広げましょう
+            </Text>
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => setShowCongratsModal(false)}
@@ -546,7 +550,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cardText: {
-    fontSize: 32,
+    fontSize: 28,
     textAlign: 'center',
   },
   hiddenText: {
@@ -601,10 +605,11 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   modalText: {
-    fontSize: 20,
+    fontSize: 24,
+    textAlign: 'center',
     fontWeight: 'bold',
     color: '#467FD3',
-    marginBottom: 10,
+    marginBottom: 48,
   },
   modalSubText: {
     fontSize: 16,
