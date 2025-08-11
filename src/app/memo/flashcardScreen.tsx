@@ -20,6 +20,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from 'react-native'
+
 import { auth, db } from '../../config'
 import AnswerButton from '../components/answerButton'
 import CircleButton from '../components/circleButton'
@@ -27,7 +28,7 @@ import FlashcardActionSheetComponent from '../components/flashcardModal'
 import Footer from '../components/footer'
 import ProgressBar from '../components/progressBar'
 import ReviewButton from '../components/reviewButton'
-import calculateSM2  from '../utils/srs'
+import calculateSM2 from '../utils/srs'
 
 interface Deck {
   id: string
@@ -50,10 +51,12 @@ interface Flashcard {
   createdAt: Timestamp
 }
 
-const FlashcardScreen = (): JSX.Element => {
+const FlashcardScreen = (): React.JSX.Element => {
   const router = useRouter()
 
   const { deckId, deckName } = useLocalSearchParams()
+  const deckIdStr = deckId as string
+  const deckNameStr = deckName as string
 
   const [, setShowAnswer] = useState(false)
   const [flashcardModalVisible, setFlashcardModalVisible] = useState(false)
@@ -190,6 +193,26 @@ const FlashcardScreen = (): JSX.Element => {
     }
   }
 
+  const canGoBack =
+    !!flashcards?.length && (showReviewButtons || currentCard > 0)
+
+  const handlePreviousCard = () => {
+    if (showReviewButtons) {
+      // いま英語（回答）表示中 → 同じカードの日本語へ
+      setShowReviewButtons(false)
+      setShowAnswer(false)
+      return
+    }
+
+    // いま日本語（質問）表示中 → 前カードの英語へ
+    setCurrentCard((prev) => {
+      const nextIndex = Math.max(0, prev - 1)
+      return nextIndex
+    })
+    setShowReviewButtons(true) // 前カードを英語状態で表示
+    setShowAnswer(true)
+  }
+
   const speakQuestion = React.useCallback((text: string) => {
     const lang = detectLanguage(text)
 
@@ -251,7 +274,7 @@ const FlashcardScreen = (): JSX.Element => {
     const now = new Date()
     const ref = collection(
       db,
-      `users/${auth.currentUser.uid}/decks/${deckId}/flashcards`,
+      `users/${auth.currentUser.uid}/decks/${deckIdStr}/flashcards`,
     )
     const q = query(ref, where('nextReview', '<=', Timestamp.fromDate(now)))
 
@@ -302,16 +325,17 @@ const FlashcardScreen = (): JSX.Element => {
       speakQuestion(flashcards[currentCard].question)
     }
   }, [currentCard, flashcards, speakQuestion, autoSpeakEnabled])
- 
- // 問題表示時
+
+  // 問題表示時
   useEffect(() => {
-  if (flashcards && 
+    if (
+      flashcards &&
       flashcards.length > 0 &&
       currentCard < flashcards.length
     ) {
-    setIsBookmarked(flashcards[currentCard].isBookmarked || false)
-  }
-}, [currentCard, flashcards])
+      setIsBookmarked(flashcards[currentCard].isBookmarked || false)
+    }
+  }, [currentCard, flashcards])
 
   // 回答表示時
   useEffect(() => {
@@ -363,6 +387,14 @@ const FlashcardScreen = (): JSX.Element => {
       <View style={styles.cardContainer}>
         {/* cardHeader */}
         <View style={styles.cardHeader}>
+          {/* 戻るボタン */}
+          <TouchableOpacity
+            onPress={handlePreviousCard}
+            disabled={!canGoBack}
+            style={[styles.backButton, { opacity: canGoBack ? 1 : 0 }]}
+          >
+            <Ionicons name="arrow-back" size={28} color="#fff" />
+          </TouchableOpacity>
           {/* お気に入り（スター） */}
           <TouchableOpacity onPress={toggleBookmark}>
             <Ionicons
@@ -371,24 +403,23 @@ const FlashcardScreen = (): JSX.Element => {
               color={isBookmarked ? '#467FD3' : '#aaa'}
               onPress={() =>
                 handleToggleBookmark(
-                  deckId,
-                  flashcards?.[currentCard]?.id,
+                  deckIdStr,
+                  flashcards?.[currentCard]?.id || '',
                   isBookmarked,
                 )
               }
             />
           </TouchableOpacity>
-
           {/* 三点メニュー */}
           <TouchableOpacity
             onPress={() =>
               handleMorePress(
-                deckId,
-                deckName,
-                flashcards?.[currentCard]?.id,
-                flashcards?.[currentCard]?.question,
-                flashcards?.[currentCard]?.answer,
-                flashcards?.[currentCard]?.isBookmarked,
+                deckIdStr,
+                deckNameStr,
+                flashcards?.[currentCard]?.id || '',
+                flashcards?.[currentCard]?.question || '',
+                flashcards?.[currentCard]?.answer || '',
+                flashcards?.[currentCard]?.isBookmarked || false,
               )
             }
           >
@@ -425,7 +456,8 @@ const FlashcardScreen = (): JSX.Element => {
             )
           ) : (
             <Text style={styles.cardText}>
-              新しいカードを{'\n'}追加してみましょう
+              お疲れ様です😄{'\n'}新しいカードを追加して{'\n'}
+              学びを広げましょう
             </Text>
           )}
         </View>
@@ -445,14 +477,17 @@ const FlashcardScreen = (): JSX.Element => {
       <Footer
         current="Flashcard"
         onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
-        deckId={deckId}
-        deckName={deckName}
+        deckId={deckIdStr}
+        deckName={deckNameStr}
       />
 
       <Modal visible={showCongratsModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalText}> 全てのカードを終了しました</Text>
+            <Text style={styles.modalText}>
+              {' '}
+              お疲れ様です😄{'\n'}新しいカードを追加して{'\n'}学びを広げましょう
+            </Text>
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => setShowCongratsModal(false)}
@@ -467,8 +502,8 @@ const FlashcardScreen = (): JSX.Element => {
         <FlashcardActionSheetComponent
           visible={flashcardModalVisible}
           onClose={() => setFlashcardModalVisible(false)}
-          deckId={deckId}
-          deckName={deckName}
+          deckId={deckIdStr}
+          deckName={deckNameStr}
           flashcardId={selectedCard?.flashcardId}
           flashcardFront={selectedCard?.flashcardFront}
           flashcardBack={selectedCard?.flashcardBack}
@@ -513,6 +548,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFDE7',
     paddingTop: 50,
   },
+  backButton: {
+    backgroundColor: 'rgba(70, 127, 211, 0.25)',
+    padding: 10,
+    borderRadius: 999,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3, // Android用影
+  },
   cardContainer: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -546,7 +591,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cardText: {
-    fontSize: 32,
+    fontSize: 28,
     textAlign: 'center',
   },
   hiddenText: {
@@ -601,10 +646,11 @@ const styles = StyleSheet.create({
     width: '80%',
   },
   modalText: {
-    fontSize: 20,
+    fontSize: 24,
+    textAlign: 'center',
     fontWeight: 'bold',
     color: '#467FD3',
-    marginBottom: 10,
+    marginBottom: 48,
   },
   modalSubText: {
     fontSize: 16,
