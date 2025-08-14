@@ -28,6 +28,7 @@ import FlashcardActionSheetComponent from '../components/flashcardModal'
 import Footer from '../components/footer'
 import ProgressBar from '../components/progressBar'
 import ReviewButton from '../components/reviewButton'
+import { isMockTime } from '../dev/mockTime'
 import calculateSM2 from '../utils/srs'
 
 interface Deck {
@@ -164,6 +165,24 @@ const FlashcardScreen = (): React.JSX.Element => {
     const nextReviewDate = new Date()
     nextReviewDate.setDate(nextReviewDate.getDate() + newInterval)
 
+    // ✅ モック時間中はFirestoreを書かずにUIだけ更新
+    if (isMockTime() || !auth.currentUser) {
+      setFlashcards((prev) =>
+        prev?.map((card) =>
+          card.id === id
+            ? {
+                ...card,
+                repetition: newRepetition,
+                interval: newInterval,
+                efactor: newEfactor,
+                nextReview: Timestamp.fromDate(nextReviewDate),
+              }
+            : card,
+        ),
+      )
+      return
+    }
+
     if (auth.currentUser && deckId && id) {
       const ref = doc(
         db,
@@ -230,6 +249,23 @@ const FlashcardScreen = (): React.JSX.Element => {
     const now = new Date()
     const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
 
+    // ⏰ 特定時間帯だけ onSnapshot 停止
+    if (isMockTime()) {
+      console.log('FlashcardScreen: MOCK適用')
+      const mockDecks: Deck[] = [
+        {
+          id: 'mock',
+          name: 'Sample Deck',
+          tag: 'MOCK',
+          cardCount: 2,
+          totalCount: 2,
+          createdAt: Timestamp.fromDate(new Date()),
+        },
+      ]
+      setDecks(mockDecks)
+      return
+    }
+
     // 🔁 リアルタイムで監視
     const unsubscribe = onSnapshot(deckRef, async (snapshot) => {
       const deckList: Deck[] = await Promise.all(
@@ -272,6 +308,30 @@ const FlashcardScreen = (): React.JSX.Element => {
     if (!auth.currentUser) return
 
     const now = new Date()
+    const hour = new Date().getHours()
+    // ⏰ 開発時間だけダミーデータ適用
+    if (hour >= 13 && hour < 17) {
+      console.log('FlashcardScreen: MOCKフラッシュカード適用')
+      const oneDayAgo = new Date()
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1)
+
+      const mockFlashcards: Flashcard[] = [
+        {
+          id: 'f1',
+          question: 'Hello Test',
+          answer: 'こんにちは Test',
+          isBookmarked: false,
+          repetition: 0,
+          interval: 1,
+          efactor: 2.5,
+          nextReview: Timestamp.fromDate(oneDayAgo),
+          createdAt: Timestamp.fromDate(oneDayAgo),
+        },
+      ]
+      setFlashcards(mockFlashcards)
+      return
+    }
+
     const ref = collection(
       db,
       `users/${auth.currentUser.uid}/decks/${deckIdStr}/flashcards`,
