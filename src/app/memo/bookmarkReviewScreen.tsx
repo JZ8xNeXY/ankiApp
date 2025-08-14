@@ -189,6 +189,26 @@ const BookmarkReviewScreen = (): JSX.Element => {
     }
   }
 
+  const canGoBack =
+    !!flashcards?.length && (showReviewButtons || currentCard > 0)
+
+  const handlePreviousCard = () => {
+    if (showReviewButtons) {
+      // いま英語（回答）表示中 → 同じカードの日本語へ
+      setShowReviewButtons(false)
+      setShowAnswer(false)
+      return
+    }
+
+    // いま日本語（質問）表示中 → 前カードの英語へ
+    setCurrentCard((prev) => {
+      const nextIndex = Math.max(0, prev - 1)
+      return nextIndex
+    })
+    setShowReviewButtons(true) // 前カードを英語状態で表示
+    setShowAnswer(true)
+  }
+
   const speakQuestion = React.useCallback((text: string) => {
     const lang = detectLanguage(text)
 
@@ -281,7 +301,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
     ) {
       speakAnswer(flashcards[currentCard].answer)
     }
-  }, [showReviewButtons, currentCard, flashcards,autoSpeakEnabled])
+  }, [showReviewButtons, currentCard, flashcards, autoSpeakEnabled])
 
   useEffect(() => {
     if (flashcards && currentCard >= flashcards.length) {
@@ -310,6 +330,14 @@ const BookmarkReviewScreen = (): JSX.Element => {
       <View style={styles.cardContainer}>
         {/* cardHeader */}
         <View style={styles.cardHeader}>
+          {/* 戻るボタン */}
+          <TouchableOpacity
+            onPress={handlePreviousCard}
+            disabled={!canGoBack}
+            style={[styles.backButton, { opacity: canGoBack ? 1 : 0 }]}
+          >
+            <Ionicons name="arrow-back" size={28} color="#fff" />
+          </TouchableOpacity>
           {/* お気に入り（スター） */}
           <TouchableOpacity>
             <Ionicons
@@ -465,6 +493,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFDE7',
     paddingTop: 50,
+  },
+  backButton: {
+    backgroundColor: 'rgba(70, 127, 211, 0.25)',
+    padding: 10,
+    borderRadius: 999,
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3, // Android用影
   },
   cardContainer: {
     flexGrow: 1,
