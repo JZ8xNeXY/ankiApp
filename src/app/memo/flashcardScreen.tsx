@@ -4,12 +4,15 @@ import * as Speech from 'expo-speech'
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   updateDoc,
   Timestamp,
   query,
   where,
   onSnapshot,
+  setDoc,
+  serverTimestamp,
 } from 'firebase/firestore'
 import React, { useState, useEffect, useCallback } from 'react'
 import {
@@ -369,6 +372,64 @@ const FlashcardScreen = (): React.JSX.Element => {
     setFlashcards(dueFlashcards)
   }, [deckId])
 
+  // ユーティリティ：日付だけ比較（時刻は切り捨て）
+  const toYmd = (d: Date) => {
+    const x = new Date(d)
+    x.setHours(0, 0, 0, 0)
+    return x.getTime()
+  }
+  // 全カード終了時に 1日 分の streak を更新
+  const updateStreakOnComplete = async () => {
+    if (!auth.currentUser || isMockTime()) return // モック時間帯は書き込まない
+    const uid = auth.currentUser.uid
+    const userRef = doc(db, 'users', uid)
+    const snapshot = await getDoc(userRef)
+
+    // ユーザードキュメントが無い場合は作る（既存フィールドはmergeで温存）
+    if (!snapshot.exists()) {
+      await setDoc(
+        userRef,
+        {
+          email: auth.currentUser.email ?? null,
+          createdAt: serverTimestamp(),
+          streakCount: 1,
+          lastStudiedAt: serverTimestamp(),
+        },
+        { merge: true },
+      )
+      return
+    }
+
+    const data = snapshot.data()
+    const today = new Date()
+    const last = data.lastStudiedAt?.toDate?.() as Date | undefined
+
+    // すでに今日更新済み → 何もしない
+    if (last && toYmd(last) === toYmd(today)) return
+
+    let nextStreak = 1
+    if (last) {
+      const diffDays = Math.round(
+        (toYmd(today) - toYmd(last)) / (1000 * 60 * 60 * 24),
+      )
+      //昨日も学習していた
+      if (diffDays === 1) {
+        //型の確認
+        nextStreak =
+          (typeof data.streakCount === 'number'
+            ? data.streakCount
+            : parseInt(String(data.streakCount ?? 0), 10)) + 1
+      } else {
+        nextStreak = 1 // 1日以上空いたらリセット
+      }
+    }
+
+    await updateDoc(userRef, {
+      streakCount: nextStreak,
+      lastStudiedAt: serverTimestamp(),
+    })
+  }
+
   useEffect(() => {
     fetchFlashcards()
   }, [fetchFlashcards])
@@ -550,7 +611,12 @@ const FlashcardScreen = (): React.JSX.Element => {
             </Text>
             <TouchableOpacity
               style={styles.modalButton}
-              onPress={() => setShowCongratsModal(false)}
+              onPress={() => {
+                updateStreakOnComplete().catch((e) =>
+                  console.error('streak 更新失敗:', e),
+                )
+                setShowCongratsModal(false)
+              }}
             >
               <Text style={styles.modalButtonText}>OK</Text>
             </TouchableOpacity>
