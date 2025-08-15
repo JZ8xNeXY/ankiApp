@@ -4,12 +4,15 @@ import * as Speech from 'expo-speech'
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   updateDoc,
   Timestamp,
   query,
   where,
   onSnapshot,
+  setDoc,
+  serverTimestamp,
 } from 'firebase/firestore'
 import React, { useState, useEffect, useCallback } from 'react'
 import {
@@ -28,6 +31,7 @@ import FlashcardActionSheetComponent from '../components/flashcardModal'
 import Footer from '../components/footer'
 import ProgressBar from '../components/progressBar'
 import ReviewButton from '../components/reviewButton'
+import { isMockTime } from '../dev/mockTime'
 import calculateSM2 from '../utils/srs'
 
 interface Deck {
@@ -164,6 +168,24 @@ const FlashcardScreen = (): React.JSX.Element => {
     const nextReviewDate = new Date()
     nextReviewDate.setDate(nextReviewDate.getDate() + newInterval)
 
+    // ✅ モック時間中はFirestoreを書かずにUIだけ更新
+    if (isMockTime() || !auth.currentUser) {
+      setFlashcards((prev) =>
+        prev?.map((card) =>
+          card.id === id
+            ? {
+                ...card,
+                repetition: newRepetition,
+                interval: newInterval,
+                efactor: newEfactor,
+                nextReview: Timestamp.fromDate(nextReviewDate),
+              }
+            : card,
+        ),
+      )
+      return
+    }
+
     if (auth.currentUser && deckId && id) {
       const ref = doc(
         db,
@@ -230,6 +252,23 @@ const FlashcardScreen = (): React.JSX.Element => {
     const now = new Date()
     const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
 
+    // ⏰ 特定時間帯だけ onSnapshot 停止
+    if (isMockTime()) {
+      console.log('FlashcardScreen: MOCK適用')
+      const mockDecks: Deck[] = [
+        {
+          id: 'mock',
+          name: 'Sample Deck',
+          tag: 'MOCK',
+          cardCount: 2,
+          totalCount: 2,
+          createdAt: Timestamp.fromDate(new Date()),
+        },
+      ]
+      setDecks(mockDecks)
+      return
+    }
+
     // 🔁 リアルタイムで監視
     const unsubscribe = onSnapshot(deckRef, async (snapshot) => {
       const deckList: Deck[] = await Promise.all(
@@ -272,6 +311,30 @@ const FlashcardScreen = (): React.JSX.Element => {
     if (!auth.currentUser) return
 
     const now = new Date()
+    const hour = new Date().getHours()
+    // ⏰ 開発時間だけダミーデータ適用
+    if (hour >= 13 && hour < 17) {
+      console.log('FlashcardScreen: MOCKフラッシュカード適用')
+      const oneDayAgo = new Date()
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1)
+
+      const mockFlashcards: Flashcard[] = [
+        {
+          id: 'f1',
+          question: 'Hello Test',
+          answer: 'こんにちは Test',
+          isBookmarked: false,
+          repetition: 0,
+          interval: 1,
+          efactor: 2.5,
+          nextReview: Timestamp.fromDate(oneDayAgo),
+          createdAt: Timestamp.fromDate(oneDayAgo),
+        },
+      ]
+      setFlashcards(mockFlashcards)
+      return
+    }
+
     const ref = collection(
       db,
       `users/${auth.currentUser.uid}/decks/${deckIdStr}/flashcards`,
@@ -308,6 +371,64 @@ const FlashcardScreen = (): React.JSX.Element => {
 
     setFlashcards(dueFlashcards)
   }, [deckId])
+
+  // ユーティリティ：日付だけ比較（時刻は切り捨て）
+  const toYmd = (d: Date) => {
+    const x = new Date(d)
+    x.setHours(0, 0, 0, 0)
+    return x.getTime()
+  }
+  // 全カード終了時に 1日 分の streak を更新
+  const updateStreakOnComplete = async () => {
+    if (!auth.currentUser || isMockTime()) return // モック時間帯は書き込まない
+    const uid = auth.currentUser.uid
+    const userRef = doc(db, 'users', uid)
+    const snapshot = await getDoc(userRef)
+
+    // ユーザードキュメントが無い場合は作る（既存フィールドはmergeで温存）
+    if (!snapshot.exists()) {
+      await setDoc(
+        userRef,
+        {
+          email: auth.currentUser.email ?? null,
+          createdAt: serverTimestamp(),
+          streakCount: 1,
+          lastStudiedAt: serverTimestamp(),
+        },
+        { merge: true },
+      )
+      return
+    }
+
+    const data = snapshot.data()
+    const today = new Date()
+    const last = data.lastStudiedAt?.toDate?.() as Date | undefined
+
+    // すでに今日更新済み → 何もしない
+    if (last && toYmd(last) === toYmd(today)) return
+
+    let nextStreak = 1
+    if (last) {
+      const diffDays = Math.round(
+        (toYmd(today) - toYmd(last)) / (1000 * 60 * 60 * 24),
+      )
+      //昨日も学習していた
+      if (diffDays === 1) {
+        //型の確認
+        nextStreak =
+          (typeof data.streakCount === 'number'
+            ? data.streakCount
+            : parseInt(String(data.streakCount ?? 0), 10)) + 1
+      } else {
+        nextStreak = 1 // 1日以上空いたらリセット
+      }
+    }
+
+    await updateDoc(userRef, {
+      streakCount: nextStreak,
+      lastStudiedAt: serverTimestamp(),
+    })
+  }
 
   useEffect(() => {
     fetchFlashcards()
@@ -490,7 +611,12 @@ const FlashcardScreen = (): React.JSX.Element => {
             </Text>
             <TouchableOpacity
               style={styles.modalButton}
-              onPress={() => setShowCongratsModal(false)}
+              onPress={() => {
+                updateStreakOnComplete().catch((e) =>
+                  console.error('streak 更新失敗:', e),
+                )
+                setShowCongratsModal(false)
+              }}
             >
               <Text style={styles.modalButtonText}>OK</Text>
             </TouchableOpacity>
