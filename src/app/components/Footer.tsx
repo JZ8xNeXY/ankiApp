@@ -140,6 +140,17 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
           }}
         /> */}
         <FooterButton
+          icon="trophy-outline"
+          label="履歴"
+          size={24}
+          active={current === 'History'}
+          onPress={() => {
+            router.push({
+              pathname: '/history/studyHistory',
+            })
+          }}
+        />
+        <FooterButton
           icon="settings-outline"
           label="設定"
           size={24}
