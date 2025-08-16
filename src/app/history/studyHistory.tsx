@@ -1,16 +1,9 @@
 import { useRouter } from 'expo-router'
 import React from 'react'
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  Linking,
-  ScrollView,
-} from 'react-native'
-import { auth } from '../../config'
+import { View, Text, StyleSheet } from 'react-native'
 import Footer from '../components/footer'
+import ProgressIndividualCard from '../components/progressIndividualCard'
+import ProgressWholeCard from '../components/progressWholeCard'
 import StudyHistoryCard from '../components/studyHistoryCard'
 
 const StudyHistory = (): JSX.Element => {
@@ -18,11 +11,10 @@ const StudyHistory = (): JSX.Element => {
 
   return (
     <View style={styles.wrapper}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>学習履歴</Text>
-        <StudyHistoryCard />
-      </ScrollView>
-
+      <Text style={styles.title}>学習履歴</Text>
+      <StudyHistoryCard />
+      <ProgressWholeCard />
+      <ProgressIndividualCard />
       <Footer
         current="History"
         onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
@@ -37,44 +29,13 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     backgroundColor: '#FFFDE7',
-  },
-  container: {
-    padding: 24,
-    paddingBottom: 100,
+    marginHorizontal: 10,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginTop: 50,
+    marginTop: 75,
+    marginLeft: 25,
     marginBottom: 24,
   },
-  // tipIcon: {
-  //   marginTop: 4,
-  // },
-  // studyHistory: {
-  //   flexDirection: 'row',
-  //   justifyContent: 'flex-start',
-  //   alignItems: 'center',
-  //   backgroundColor: '#FDFDFD',
-  //   paddingVertical: 25,
-  //   paddingHorizontal: 20,
-  //   borderBottomWidth: 1,
-  //   borderBottomColor: '#ccc',
-  //   marginTop: 10,
-  //   marginHorizontal: 10,
-  //   borderRadius: 20,
-  //   shadowColor: '#000',
-  //   shadowOffset: { width: 0, height: 4 },
-  //   shadowOpacity: 0.15,
-  //   shadowRadius: 8,
-  //   elevation: 5,
-  // },
-  // studyHistoryText: {
-  //   fontSize: 32,
-  //   fontWeight: 'bold',
-  //   marginLeft: 28,
-  //   color: '#333333',
-  //   flexShrink: 1,
-  //   overflow: 'hidden',
-  // },
 })
