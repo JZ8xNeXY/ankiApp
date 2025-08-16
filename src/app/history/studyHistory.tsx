@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router'
 import React from 'react'
-import { View, Text, StyleSheet, ScrollView } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import Footer from '../components/footer'
 import ProgressIndividualCard from '../components/progressIndividualCard'
 import ProgressWholeCard from '../components/progressWholeCard'
@@ -11,13 +11,10 @@ const StudyHistory = (): JSX.Element => {
 
   return (
     <View style={styles.wrapper}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>学習履歴</Text>
-        <StudyHistoryCard />
-        <ProgressWholeCard />
-        <ProgressIndividualCard />
-      </ScrollView>
-
+      <Text style={styles.title}>学習履歴</Text>
+      <StudyHistoryCard />
+      <ProgressWholeCard />
+      <ProgressIndividualCard />
       <Footer
         current="History"
         onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
@@ -32,15 +29,13 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     backgroundColor: '#FFFDE7',
-  },
-  container: {
-    padding: 24,
-    paddingBottom: 100,
+    marginHorizontal: 10,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginTop: 50,
+    marginTop: 75,
+    marginLeft: 25,
     marginBottom: 24,
   },
 })

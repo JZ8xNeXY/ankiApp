@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
+import { ActivityIndicator } from 'react-native'
 import { auth, db } from '../../config'
 import ProgressBar from '../components/progressBar'
 import { isMockTime } from '../dev/mockTime'
@@ -26,6 +27,7 @@ interface Deck {
 
 const ProgressWholeCard = () => {
   const [, setDeckList] = useState<Deck[]>([])
+  const [loading, setLoading] = useState(true)
   const [totalCards, setTotalCards] = useState(0)
   const [, setTotalReviewCards] = useState(0)
   const [done, setDone] = useState(0)
@@ -87,6 +89,8 @@ const ProgressWholeCard = () => {
       return
     }
 
+    setLoading(true)
+
     if (isMockTime()) {
       setDeckList([
         {
@@ -104,12 +108,12 @@ const ProgressWholeCard = () => {
           totalCount: 200,
         },
       ])
-      setTotalCards(300) // 総カード数
-      setTotalReviewCards(70) // 復習対象数
-      setDone(230) // できたカード数
-      setProgress(230 / 300)
+      setTotalCards(1000) // 総カード数
+      setTotalReviewCards(230) // 復習対象数
+      setDone(770) // できたカード数
+      setProgress(770 / 1000)
       console.log('onSnapshot は開発モードなので停止中')
-
+      setLoading(false)
       return
     }
 
@@ -126,7 +130,7 @@ const ProgressWholeCard = () => {
         setDone(result.done)
         setProgress(result.progress)
 
-        console.log('result', result)
+        setLoading(false)
       },
       (err) => {
         console.error('onSnapshot error:', err)
@@ -135,6 +139,14 @@ const ProgressWholeCard = () => {
 
     return () => unsubscribe()
   }, [])
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2C64C6" />
+      </View>
+    )
+  }
 
   return (
     <View style={styles.card}>
@@ -171,6 +183,11 @@ const ProgressWholeCard = () => {
 export default ProgressWholeCard
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   card: {
     backgroundColor: '#FFFFFF',
     paddingVertical: 18,

@@ -9,7 +9,7 @@ import {
   QuerySnapshot,
 } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
-import { View, Text, StyleSheet } from 'react-native'
+import { View, Text, StyleSheet, FlatList } from 'react-native'
 import { auth, db } from '../../config'
 import ProgressBar from '../components/progressBar'
 import { isMockTime } from '../dev/mockTime'
@@ -25,11 +25,11 @@ interface Deck {
 }
 
 const ProgressIndividualCard = () => {
-  const [, setDeckList] = useState<Deck[]>([])
-  const [totalCards, setTotalCards] = useState(0)
+  const [deckList, setDeckList] = useState<Deck[]>([])
+  const [, setTotalCards] = useState(0)
   const [, setTotalReviewCards] = useState(0)
-  const [done, setDone] = useState(0)
-  const [progress, setProgress] = useState(0)
+  const [, setDone] = useState(0)
+  const [, setProgress] = useState(0)
 
   const fetchDeckList = async (snapshot: QuerySnapshot) => {
     const now = new Date()
@@ -103,6 +103,27 @@ const ProgressIndividualCard = () => {
           cardCount: 20,
           totalCount: 200,
         },
+        {
+          id: 'mock3',
+          name: '模擬デッキ3',
+          tag: null,
+          cardCount: 20,
+          totalCount: 200,
+        },
+        {
+          id: 'mock4',
+          name: '模擬デッキ4',
+          tag: null,
+          cardCount: 20,
+          totalCount: 200,
+        },
+        {
+          id: 'mock5',
+          name: '模擬デッキ5',
+          tag: null,
+          cardCount: 20,
+          totalCount: 200,
+        },
       ])
       setTotalCards(300) // 総カード数
       setTotalReviewCards(70) // 復習対象数
@@ -125,8 +146,6 @@ const ProgressIndividualCard = () => {
         setTotalReviewCards(result.totalReviewCards)
         setDone(result.done)
         setProgress(result.progress)
-
-        console.log('result', result)
       },
       (err) => {
         console.error('onSnapshot error:', err)
@@ -137,34 +156,42 @@ const ProgressIndividualCard = () => {
   }, [])
 
   return (
-    <View style={styles.card}>
-      <View style={styles.row}>
-        <Text style={[styles.label]}>カード全体累計</Text>
-        <Text style={[styles.value, styles.num]}>
-          {totalCards.toLocaleString()}枚
-        </Text>
-      </View>
+    <FlatList
+      data={deckList}
+      keyExtractor={(item) => item.id}
+      contentContainerStyle={{ paddingTop: 8, paddingBottom: 80 }}
+      renderItem={({ item }) => {
+        const done = Math.max(item.totalCount - item.cardCount, 0)
+        const progress = item.totalCount ? done / item.totalCount : 0
 
-      <View style={styles.row}>
-        <Text style={[styles.label]}>できたカード累計</Text>
-        <Text style={[styles.value, styles.num]}>
-          {done.toLocaleString()}枚
-        </Text>
-      </View>
+        return (
+          <View style={styles.card}>
+            <View style={styles.row}>
+              <Text style={styles.label}>{item.name}</Text>
+              <Text style={[styles.value, styles.num]}>
+                {done.toLocaleString()} / {item.totalCount.toLocaleString()} 枚
+              </Text>
+            </View>
 
-      <View style={styles.divider} />
+            <View style={styles.divider} />
 
-      <View style={styles.row}>
-        <Text style={[styles.label]}>進捗</Text>
-        <Text style={[styles.value, styles.num]}>
-          {Math.floor(progress * 100)}%
-        </Text>
-      </View>
+            <View style={styles.row}>
+              <Text style={styles.label}>進捗</Text>
+              <Text style={[styles.value, styles.num]}>
+                {Math.floor(progress * 100)}%
+              </Text>
+            </View>
 
-      <View style={styles.progressRow}>
-        <ProgressBar progress={progress} />
-      </View>
-    </View>
+            <View style={styles.progressRow}>
+              <ProgressBar progress={progress} />
+            </View>
+          </View>
+        )
+      }}
+      // 長いリストなら最適化オプション
+      initialNumToRender={6}
+      windowSize={7}
+    />
   )
 }
 
