@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router'
 import React from 'react'
 import { View, Text, StyleSheet, ScrollView } from 'react-native'
 import Footer from '../components/footer'
+import ProgressIndividualCard from '../components/progressIndividualCard'
 import ProgressWholeCard from '../components/progressWholeCard'
 import StudyHistoryCard from '../components/studyHistoryCard'
 
@@ -14,6 +15,7 @@ const StudyHistory = (): JSX.Element => {
         <Text style={styles.title}>学習履歴</Text>
         <StudyHistoryCard />
         <ProgressWholeCard />
+        <ProgressIndividualCard />
       </ScrollView>
 
       <Footer
