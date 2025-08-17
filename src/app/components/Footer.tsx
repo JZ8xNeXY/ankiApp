@@ -151,6 +151,17 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
           }}
         />
         <FooterButton
+          icon="calendar-outline"
+          label="進捗"
+          size={24}
+          active={current === 'Progress'}
+          onPress={() => {
+            router.push({
+              pathname: '/history/studyProgress',
+            })
+          }}
+        />
+        <FooterButton
           icon="settings-outline"
           label="設定"
           size={24}

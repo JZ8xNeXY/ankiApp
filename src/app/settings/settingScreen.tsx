@@ -13,7 +13,6 @@ import {
 
 import { auth } from '../../config'
 import Footer from '../components/footer'
-import StudyHistoryGraph from '../components/studyHistoryGraph'
 
 const SettingsScreen = (): JSX.Element => {
   const router = useRouter()
@@ -52,9 +51,7 @@ const SettingsScreen = (): JSX.Element => {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>設定</Text>
 
-        <StudyHistoryGraph />
-
-        {/* <TouchableOpacity
+        <TouchableOpacity
           style={styles.menuItem}
           onPress={() => router.push('/settings/accountEdit')}
         >
@@ -76,7 +73,7 @@ const SettingsScreen = (): JSX.Element => {
           <Text style={styles.logoutText}>ログアウト</Text>
         </TouchableOpacity>
 
-        <Text style={styles.versionText}>v1.0.0</Text> */}
+        <Text style={styles.versionText}>v1.0.0</Text>
       </ScrollView>
 
       <Footer

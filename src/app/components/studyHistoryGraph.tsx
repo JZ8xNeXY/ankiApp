@@ -139,6 +139,10 @@ const StudyHistoryGraph = () => {
         flexDirection: 'row',
         paddingHorizontal: H_PADDING,
         backgroundColor: '#fff',
+        marginTop: 50,
+        marginBottom: 350,
+        marginHorizontal: 10,
+        borderRadius: 10,
       }}
     >
       <View

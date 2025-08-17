@@ -2,27 +2,26 @@ import { useRouter } from 'expo-router'
 import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import Footer from '../components/footer'
-import StudyHistoryCard from '../components/studyHistoryCard'
-import StudyHistoryGraph from '../components/studyHistoryGraph'
+import ProgressIndividualCard from '../components/progressIndividualCard'
+import ProgressWholeCard from '../components/progressWholeCard'
 
-const StudyHistory = (): JSX.Element => {
+const StudyProgress = (): JSX.Element => {
   const router = useRouter()
 
   return (
     <View style={styles.wrapper}>
-      <Text style={styles.title}>学習履歴</Text>
-      <StudyHistoryCard />
-      <StudyHistoryGraph />
-
+      <Text style={styles.title}>進捗状況</Text>
+      <ProgressWholeCard />
+      <ProgressIndividualCard />
       <Footer
-        current="History"
+        current="Progress"
         onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
       />
     </View>
   )
 }
 
-export default StudyHistory
+export default StudyProgress
 
 const styles = StyleSheet.create({
   wrapper: {
