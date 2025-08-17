@@ -1,18 +1,12 @@
 import {
   collection,
-  doc,
-  getDocs,
-  deleteDoc,
   Timestamp,
   query,
-  where,
   onSnapshot,
   orderBy,
-  writeBatch,
-  QuerySnapshot,
 } from 'firebase/firestore'
 import React, { useState, useRef, useEffect, use } from 'react'
-import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native'
+import { View, Text, Dimensions, ScrollView } from 'react-native'
 import { BarChart } from 'react-native-chart-kit'
 import { auth, db } from '../../config'
 import { isMockTime } from '../dev/mockTime'
