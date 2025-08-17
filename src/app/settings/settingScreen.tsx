@@ -10,6 +10,7 @@ import {
   Linking,
   ScrollView,
 } from 'react-native'
+
 import { auth } from '../../config'
 import Footer from '../components/footer'
 

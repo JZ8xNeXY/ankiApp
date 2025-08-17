@@ -13,6 +13,7 @@ import {
   onSnapshot,
   setDoc,
   serverTimestamp,
+  increment,
 } from 'firebase/firestore'
 import React, { useState, useEffect, useCallback } from 'react'
 import {
@@ -311,9 +312,8 @@ const FlashcardScreen = (): React.JSX.Element => {
     if (!auth.currentUser) return
 
     const now = new Date()
-    const hour = new Date().getHours()
     // ⏰ 開発時間だけダミーデータ適用
-    if (hour >= 13 && hour < 17) {
+    if (isMockTime) {
       console.log('FlashcardScreen: MOCKフラッシュカード適用')
       const oneDayAgo = new Date()
       oneDayAgo.setDate(oneDayAgo.getDate() - 1)
@@ -428,6 +428,77 @@ const FlashcardScreen = (): React.JSX.Element => {
       streakCount: nextStreak,
       lastStudiedAt: serverTimestamp(),
     })
+  }
+
+  // 0埋め
+  const pad2 = (n: number) => String(n).padStart(2, '0')
+
+  // その日のドキュメントID（YYYYMMDD）と各種メタ
+  const getDayKeyAndMeta = (d = new Date()) => {
+    const year = d.getFullYear()
+    const month = d.getMonth() + 1
+    const day = d.getDate()
+    const id = `${year}${pad2(month)}${pad2(day)}`
+    const yearMonth = `${year}-${pad2(month)}`
+
+    // ISO週/年の算出
+    const { isoWeek, isoYear } = getIsoWeekYear(d)
+
+    return {
+      id,
+      year,
+      month,
+      day,
+      yearMonth,
+      isoWeek,
+      isoYear,
+      date: Timestamp.fromDate(new Date(year, month - 1, day, 0, 0, 0, 0)),
+    }
+  }
+
+  // ISO週番号とISO年を返す（週の始まりは月曜）
+  function getIsoWeekYear(date: Date) {
+    const tmp = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+    )
+    // 木曜の週に属すると定義されるため、木曜基準に移動
+    const dayNum = tmp.getUTCDay() || 7
+    tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum)
+    const isoYear = tmp.getUTCFullYear()
+    const yearStart = new Date(Date.UTC(isoYear, 0, 1))
+    const isoWeek = Math.ceil(
+      ((tmp.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
+    )
+    return { isoWeek, isoYear }
+  }
+
+  // 1回の学習完了で増やす枚数を引数に
+  const updateStudyLogOnComplete = async (addCount: number) => {
+    // if (!auth.currentUser || isMockTime()) return // モック時間は書かない
+    if (!addCount || addCount <= 0) return
+
+    const uid = auth.currentUser.uid
+    const { id, year, month, day, yearMonth, isoWeek, isoYear, date } =
+      getDayKeyAndMeta(new Date())
+    const ref = doc(db, `users/${uid}/studyLogs/${id}`)
+
+    // setDoc + merge と increment で原子的に加算
+    await setDoc(
+      ref,
+      {
+        count: increment(addCount),
+        // 初回作成時に必要なメタが無ければ付与、あれば温存（merge）
+        year,
+        month,
+        day,
+        yearMonth,
+        isoWeek,
+        isoYear,
+        date, // その日0時の Timestamp（集計キー）
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },
+    )
   }
 
   useEffect(() => {
@@ -615,6 +686,7 @@ const FlashcardScreen = (): React.JSX.Element => {
                 updateStreakOnComplete().catch((e) =>
                   console.error('streak 更新失敗:', e),
                 )
+                updateStudyLogOnComplete(flashcards?.length ?? 0) //追加
                 setShowCongratsModal(false)
               }}
             >

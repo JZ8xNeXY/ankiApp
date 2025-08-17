@@ -12,8 +12,8 @@ import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import { ActivityIndicator } from 'react-native'
 import { auth, db } from '../../config'
-import ProgressBar from '../components/progressBar'
 import { isMockTime } from '../dev/mockTime'
+import ProgressBar from './progressBar'
 
 interface Deck {
   id: string

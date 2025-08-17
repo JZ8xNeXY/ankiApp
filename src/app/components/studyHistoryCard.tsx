@@ -17,7 +17,7 @@ const StudyHistoryCard = () => {
         const snapshot = await getDoc(userRef)
         if (snapshot.exists()) {
           const data = snapshot.data()
-          setStreakCount(data.streakCount ?? 0)
+          setStreakCount(data.streakCount ?? '')
           return
         }
       } catch (error) {
