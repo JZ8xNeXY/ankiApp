@@ -102,9 +102,20 @@ const StudyHistoryGraph = () => {
           ...doc.data(),
         })) as StudyLog[]
 
+        const weeklyLogs: Record<string, number> = {}
+        console.log('週のデータ読み込み中')
+
+        logs.forEach((log) => {
+          const key = `${log.isoWeek}週目`
+          if (!weeklyLogs[key]) {
+            weeklyLogs[key] = 0
+          }
+          weeklyLogs[key] += log.count
+        })
+
         // 📊 グラフ用データ（先に作る）
-        const labels = logs.map((log) => `${log.month}/${log.day}`)
-        const values = logs.map((log) => log.count)
+        const labels = Object.keys(weeklyLogs) // ['33周目', '34週目', ...]
+        const values = Object.values(weeklyLogs) // [330, 873, 459, ...]
 
         // ✅ 横幅は logs/labels の長さを使う（DATA は使わない）
         const chartWidth = Math.max(

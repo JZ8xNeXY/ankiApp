@@ -102,9 +102,20 @@ const StudyHistoryGraph = () => {
           ...doc.data(),
         })) as StudyLog[]
 
+        const monthLogs: Record<string, number> = {}
+        console.log('週のデータ読み込み中')
+
+        logs.forEach((log) => {
+          const key = `${log.year}年`
+          if (!monthLogs[key]) {
+            monthLogs[key] = 0
+          }
+          monthLogs[key] += log.count
+        })
+
         // 📊 グラフ用データ（先に作る）
-        const labels = logs.map((log) => `${log.month}/${log.day}`)
-        const values = logs.map((log) => log.count)
+        const labels = Object.keys(monthLogs) // ['2025', ...]
+        const values = Object.values(monthLogs) // [8730, ...]
 
         // ✅ 横幅は logs/labels の長さを使う（DATA は使わない）
         const chartWidth = Math.max(
