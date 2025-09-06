@@ -9,7 +9,7 @@ interface ProgressBarProps {
 const getProgressColor = (progress: number) => {
   if (progress < 0.3) return '#F44336' // Red
   if (progress < 0.7) return '#FF9800' // Orange
-  return '#4CAF50' // Green
+  return '#4caf50' // Green
 }
 
 const ProgressBar = ({ progress }: ProgressBarProps): JSX.Element => {
