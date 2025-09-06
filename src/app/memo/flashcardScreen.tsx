@@ -313,7 +313,7 @@ const FlashcardScreen = (): React.JSX.Element => {
 
     const now = new Date()
     // ⏰ 開発時間だけダミーデータ適用
-    if (isMockTime) {
+    if (isMockTime()) {
       console.log('FlashcardScreen: MOCKフラッシュカード適用')
       const oneDayAgo = new Date()
       oneDayAgo.setDate(oneDayAgo.getDate() - 1)
