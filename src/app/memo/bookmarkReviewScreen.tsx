@@ -253,6 +253,8 @@ const BookmarkReviewScreen = (): JSX.Element => {
         })
       }
 
+      console.log('読み込みしたBookmarkフラッシュカード: ', items.length)
+
       // シャッフル
       const shuffled = [...items]
       for (let i = shuffled.length - 1; i > 0; i--) {
