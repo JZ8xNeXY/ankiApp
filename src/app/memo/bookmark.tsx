@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#DDD',
   },
   question: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#333',
     marginBottom: 4,
   },
