@@ -193,8 +193,9 @@ const styles = StyleSheet.create({
     height: 75,
     backgroundColor: '#ffffff',
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    paddingHorizontal: 24, 
     borderTopColor: '#ddd',
     borderTopWidth: 1,
     zIndex: 10,
@@ -202,6 +203,7 @@ const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 6, 
   },
   label: {
     fontSize: 11,

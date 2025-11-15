@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   cardText: {
-    fontSize: 32,
+    fontSize: 28, //少し小さめに
     textAlign: 'center',
   },
   hiddenText: {
