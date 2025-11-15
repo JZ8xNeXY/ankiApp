@@ -106,7 +106,7 @@ const StudyHistoryGraph = () => {
         console.log('週のデータ読み込み中')
 
         logs.forEach((log) => {
-          const key = `${log.isoWeek}週目`
+          const key = `${log.isoWeek}週`
           if (!weeklyLogs[key]) {
             weeklyLogs[key] = 0
           }
