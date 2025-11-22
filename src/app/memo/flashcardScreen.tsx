@@ -209,7 +209,7 @@ const FlashcardScreen = (): React.JSX.Element => {
       setShowReviewButtons(false)
       setCurrentCard((prev) => prev + 1)
     } else {
-      await calculateNextInterval(score)
+      await calculateNextInterval(score) 
       setShowAnswer(false)
       setShowReviewButtons(false)
       setCurrentCard((prev) => prev + 1)

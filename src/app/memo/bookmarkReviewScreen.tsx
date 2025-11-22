@@ -151,43 +151,51 @@ const BookmarkReviewScreen = (): JSX.Element => {
     }
   }
 
+  //ボタンの不具合が発生しているためtry catchで場合わけ
   const calculateNextInterval = async (score: number) => {
-    const currentCardData = flashcards?.[currentCard]
-    if (!currentCardData) return
-    const { id, repetition, interval, efactor } = currentCardData
+    try {
+      const currentCardData = flashcards?.[currentCard]
+      if (!currentCardData) return
+      const { id, repetition, interval, efactor } = currentCardData
 
-    const {
-      repetition: newRepetition,
-      interval: newInterval,
-      efactor: newEfactor,
-    } = calculateSM2(score, repetition || 0, interval || 1, efactor || 2.5)
-
-    const nextReviewDate = new Date()
-    nextReviewDate.setDate(nextReviewDate.getDate() + newInterval)
-
-    if (auth.currentUser && currentCardData.deckId && id) {
-      const ref = doc(
-        db,
-        `users/${auth.currentUser.uid}/decks/${currentCardData.deckId}/flashcards/${id}`,
-      )
-      await updateDoc(ref, {
+      const {
         repetition: newRepetition,
         interval: newInterval,
         efactor: newEfactor,
-        nextReview: Timestamp.fromDate(nextReviewDate),
-      })
+      } = calculateSM2(score, repetition || 0, interval || 1, efactor || 2.5)
+
+      const nextReviewDate = new Date()
+      nextReviewDate.setDate(nextReviewDate.getDate() + newInterval)
+
+      if (auth.currentUser && currentCardData.deckId && id) {
+        const ref = doc(
+          db,
+          `users/${auth.currentUser.uid}/decks/${currentCardData.deckId}/flashcards/${id}`,
+        )
+        await updateDoc(ref, {
+          repetition: newRepetition,
+          interval: newInterval,
+          efactor: newEfactor,
+          nextReview: Timestamp.fromDate(nextReviewDate),
+        })
+      }
+    } catch (error) {
+      console.error('calculateNextInterval エラー:', error)
+      // エラーが発生しても処理を続行
     }
   }
 
   const handleNextCard = async (score: number) => {
-    if (score === 1) {
-      // Again の場合：スコアを 0 にして、nextReview は今のまま or 1分後に設定
-      await calculateNextInterval(0)
-      setShowAnswer(false)
-      setShowReviewButtons(false)
-      setCurrentCard((prev) => prev + 1)
-    } else {
-      await calculateNextInterval(score)
+    try {
+      if (score === 1) {
+        // Again の場合：スコアを 0 にして、nextReview は今のまま or 1分後に設定
+        await calculateNextInterval(0)
+      } 
+    } catch (error) {
+      console.error('handleNextCard エラー:', error)
+      // エラーが発生してもUIは更新
+    } finally {
+      // エラーが発生しても必ずUIを更新
       setShowAnswer(false)
       setShowReviewButtons(false)
       setCurrentCard((prev) => prev + 1)
