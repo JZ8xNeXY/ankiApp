@@ -209,7 +209,7 @@ const FlashcardScreen = (): React.JSX.Element => {
       setShowReviewButtons(false)
       setCurrentCard((prev) => prev + 1)
     } else {
-      await calculateNextInterval(score)
+      await calculateNextInterval(score) 
       setShowAnswer(false)
       setShowReviewButtons(false)
       setCurrentCard((prev) => prev + 1)
@@ -474,7 +474,7 @@ const FlashcardScreen = (): React.JSX.Element => {
 
   // 1回の学習完了で増やす枚数を引数に
   const updateStudyLogOnComplete = async (addCount: number) => {
-    // if (!auth.currentUser || isMockTime()) return // モック時間は書かない
+    if (!auth.currentUser || isMockTime()) return // モック時間は書かない
     if (!addCount || addCount <= 0) return
 
     const uid = auth.currentUser.uid
@@ -486,7 +486,7 @@ const FlashcardScreen = (): React.JSX.Element => {
     await setDoc(
       ref,
       {
-        count: increment(addCount),
+        count: increment(addCount),//現在値に加算する
         // 初回作成時に必要なメタが無ければ付与、あれば温存（merge）
         year,
         month,
@@ -497,7 +497,7 @@ const FlashcardScreen = (): React.JSX.Element => {
         date, // その日0時の Timestamp（集計キー）
         updatedAt: serverTimestamp(),
       },
-      { merge: true },
+      { merge: true },//現在値を置き換える
     )
   }
 
@@ -686,7 +686,7 @@ const FlashcardScreen = (): React.JSX.Element => {
                 updateStreakOnComplete().catch((e) =>
                   console.error('streak 更新失敗:', e),
                 )
-                updateStudyLogOnComplete(flashcards?.length ?? 0) //追加
+                updateStudyLogOnComplete(flashcards?.length ?? 0) 
                 setShowCongratsModal(false)
               }}
             >
