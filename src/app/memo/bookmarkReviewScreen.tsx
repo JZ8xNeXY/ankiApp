@@ -4,11 +4,15 @@ import * as Speech from 'expo-speech'
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   updateDoc,
+  setDoc,
   Timestamp,
   query,
   where,
+  serverTimestamp,
+  increment,
 } from 'firebase/firestore'
 import React, { useState, useEffect } from 'react'
 import {
@@ -27,6 +31,7 @@ import Footer from '../components/footer'
 import ProgressBar from '../components/progressBar'
 import ReviewButton from '../components/reviewButton'
 import calculateSM2 from '../utils/srs'
+import { isMockTime } from '../dev/mockTime'
 
 interface Deck {
   id: string
@@ -218,6 +223,137 @@ const BookmarkReviewScreen = (): JSX.Element => {
       pitch: 1.1,
     })
   }, [])
+
+  // ユーティリティ：日付だけ比較（時刻は切り捨て）
+  const toYmd = (d: Date) => {
+    const x = new Date(d)
+    x.setHours(0, 0, 0, 0)
+    return x.getTime()
+  }
+
+  // 全カード終了時に 1日 分の streak を更新
+  const updateStreakOnComplete = async () => {
+    // if (!auth.currentUser || isMockTime()) return // モック時間帯は書き込まない
+    const uid = auth.currentUser.uid
+    const userRef = doc(db, 'users', uid)
+    const snapshot = await getDoc(userRef)
+
+    // ユーザードキュメントが無い場合は作る（既存フィールドはmergeで温存）
+    if (!snapshot.exists()) {
+      await setDoc(
+        userRef,
+        {
+          email: auth.currentUser.email ?? null,
+          createdAt: serverTimestamp(),
+          streakCount: 1,
+          lastStudiedAt: serverTimestamp(),
+        },
+        { merge: true },
+      )
+      return
+    }
+
+    const data = snapshot.data()
+    const today = new Date()
+    const last = data.lastStudiedAt?.toDate?.() as Date | undefined
+
+    // すでに今日更新済み → 何もしない
+    if (last && toYmd(last) === toYmd(today)) return
+
+    let nextStreak = 1
+    if (last) {
+      const diffDays = Math.round(
+        (toYmd(today) - toYmd(last)) / (1000 * 60 * 60 * 24),
+      )
+      //昨日も学習していた
+      if (diffDays === 1) {
+        //型の確認
+        nextStreak =
+          (typeof data.streakCount === 'number'
+            ? data.streakCount
+            : parseInt(String(data.streakCount ?? 0), 10)) + 1
+      } else {
+        nextStreak = 1 // 1日以上空いたらリセット
+      }
+    }
+
+    await updateDoc(userRef, {
+      streakCount: nextStreak,
+      lastStudiedAt: serverTimestamp(),
+    })
+  }
+
+  // 0埋め
+  const pad2 = (n: number) => String(n).padStart(2, '0')
+
+  // その日のドキュメントID（YYYYMMDD）と各種メタ
+  const getDayKeyAndMeta = (d = new Date()) => {
+    const year = d.getFullYear()
+    const month = d.getMonth() + 1
+    const day = d.getDate()
+    const id = `${year}${pad2(month)}${pad2(day)}`
+    const yearMonth = `${year}-${pad2(month)}`
+
+    // ISO週/年の算出
+    const { isoWeek, isoYear } = getIsoWeekYear(d)
+
+    return {
+      id,
+      year,
+      month,
+      day,
+      yearMonth,
+      isoWeek,
+      isoYear,
+      date: Timestamp.fromDate(new Date(year, month - 1, day, 0, 0, 0, 0)),
+    }
+  }
+
+  // ISO週番号とISO年を返す（週の始まりは月曜）
+  function getIsoWeekYear(date: Date) {
+    const tmp = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+    )
+    // 木曜の週に属すると定義されるため、木曜基準に移動
+    const dayNum = tmp.getUTCDay() || 7
+    tmp.setUTCDate(tmp.getUTCDate() + 4 - dayNum)
+    const isoYear = tmp.getUTCFullYear()
+    const yearStart = new Date(Date.UTC(isoYear, 0, 1))
+    const isoWeek = Math.ceil(
+      ((tmp.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
+    )
+    return { isoWeek, isoYear }
+  }
+
+
+  // 1回の学習完了で増やす枚数を引数に
+  const updateStudyLogOnComplete = async (addCount: number) => {
+    // if (!auth.currentUser || isMockTime()) return // モック時間は書かない
+    if (!addCount || addCount <= 0) return
+
+    const uid = auth.currentUser.uid
+    const { id, year, month, day, yearMonth, isoWeek, isoYear, date } =
+      getDayKeyAndMeta(new Date())
+    const ref = doc(db, `users/${uid}/studyLogs/${id}`)
+
+    // setDoc + merge と increment で原子的に加算
+    await setDoc(
+      ref,
+      {
+        count: increment(addCount),//現在値に加算する
+        // 初回作成時に必要なメタが無ければ付与、あれば温存（merge）
+        year,
+        month,
+        day,
+        yearMonth,
+        isoWeek,
+        isoYear,
+        date, // その日0時の Timestamp（集計キー）
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true },//現在値を置き換える
+    )
+  }
 
   useEffect(() => {
     if (!auth.currentUser) return
@@ -438,7 +574,13 @@ const BookmarkReviewScreen = (): JSX.Element => {
             <Text style={styles.modalText}> 全てのカードを終了しました</Text>
             <TouchableOpacity
               style={styles.modalButton}
-              onPress={() => setShowCongratsModal(false)}
+              onPress={() => {
+                updateStreakOnComplete().catch((e) =>
+                  console.error('streak 更新失敗:', e),
+                )//追加
+                updateStudyLogOnComplete(flashcards?.length ?? 0)//追加 
+                setShowCongratsModal(false)
+              }}
             >
               <Text style={styles.modalButtonText}>OK</Text>
             </TouchableOpacity>
