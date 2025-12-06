@@ -4,6 +4,7 @@ import * as Speech from 'expo-speech'
 import {
   collection,
   doc,
+  deleteDoc,
   getDoc,
   getDocs,
   updateDoc,
@@ -235,6 +236,32 @@ const FlashcardScreen = (): React.JSX.Element => {
     setShowReviewButtons(true) // 前カードを英語状態で表示
     setShowAnswer(true)
   }
+
+  const handleDeleteCurrentCard = async () => {
+    if (!auth.currentUser || !flashcards || flashcards.length === 0) return
+
+    try {
+      if (!selectedCard?.deckId) throw new Error('カードIDがありません')
+      const flashcardRef = doc(
+        db,
+        `users/${auth.currentUser?.uid}/decks/${deckId}/flashcards`,
+        selectedCard.flashcardId,
+      )
+  
+      await deleteDoc(flashcardRef)
+  
+      alert('フラッシュカードを削除しました')
+  
+      setShowAnswer(false)
+      setShowReviewButtons(false)
+      setCurrentCard((prev) => prev + 1) 
+  
+      setFlashcardModalVisible(false)
+    } catch (error) {
+      console.error('フラッシュカード削除エラー: ', error)
+      alert('削除に失敗しました')
+    }
+  } 
 
   const speakQuestion = React.useCallback((text: string) => {
     const lang = detectLanguage(text)
@@ -510,6 +537,7 @@ const FlashcardScreen = (): React.JSX.Element => {
     useCallback(() => {
       fetchFlashcards()
       return () => {
+        // フォーカスが外れたときに何かしたければここ（今回は何もしなくてOK）
       }
     }, [fetchFlashcards]),
   )
@@ -714,6 +742,7 @@ const FlashcardScreen = (): React.JSX.Element => {
           flashcardId={selectedCard?.flashcardId}
           flashcardFront={selectedCard?.flashcardFront}
           flashcardBack={selectedCard?.flashcardBack}
+          onDelete={handleDeleteCurrentCard}
         />
       )}
 
