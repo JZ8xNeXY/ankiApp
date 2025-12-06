@@ -27,7 +27,7 @@ import { auth, db } from '../../config'
 import AnswerButton from '../components/answerButton'
 import CircleButton from '../components/circleButton'
 import FlashcardActionSheetComponent from '../components/flashcardModal'
-import Footer from '../components/footer'
+import Footer from '../components/Footer'
 import ProgressBar from '../components/progressBar'
 import ReviewButton from '../components/reviewButton'
 import calculateSM2 from '../utils/srs'
@@ -570,7 +570,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
       </View>
 
       <Footer
-        current="Flashcard"
+        current="BookmarkFlashcard"
         onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
         deckId={deckId}
         deckName={deckName}
