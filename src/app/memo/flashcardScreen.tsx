@@ -1,5 +1,5 @@
 import { Ionicons, Feather } from '@expo/vector-icons'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter,useFocusEffect } from 'expo-router'
 import * as Speech from 'expo-speech'
 import {
   collection,
@@ -504,6 +504,15 @@ const FlashcardScreen = (): React.JSX.Element => {
   useEffect(() => {
     fetchFlashcards()
   }, [fetchFlashcards])
+
+  // 画面に戻ってきたときも必ず再読み込み
+  useFocusEffect(
+    useCallback(() => {
+      fetchFlashcards()
+      return () => {
+      }
+    }, [fetchFlashcards]),
+  )
 
   // 問題表示時
   useEffect(() => {

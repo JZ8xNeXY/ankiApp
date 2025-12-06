@@ -45,7 +45,6 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
   const [, setDecks] = useState<Deck[]>([])
   const [addModalVisible, setAddModalVisible] = useState(false)
 
-  console.log(current)
 
   const handleAddDeck = (deckName: string, deckId: string, deckTag: string) => {
     setDecks((prevDecks) => [
