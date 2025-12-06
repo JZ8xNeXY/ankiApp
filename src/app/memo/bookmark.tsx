@@ -20,7 +20,7 @@ import {
 import { ActivityIndicator } from 'react-native'
 import { auth, db } from '../../config'
 import AnswerButton from '../components/answerButton'
-import Footer from '../components/footer'
+import Footer from '../components/Footer'
 
 interface BookmarkedFlashcard {
   deckId: string

@@ -1,9 +1,10 @@
 import { Ionicons, Feather } from '@expo/vector-icons'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter,useFocusEffect } from 'expo-router'
 import * as Speech from 'expo-speech'
 import {
   collection,
   doc,
+  deleteDoc,
   getDoc,
   getDocs,
   updateDoc,
@@ -29,7 +30,7 @@ import { auth, db } from '../../config'
 import AnswerButton from '../components/answerButton'
 import CircleButton from '../components/circleButton'
 import FlashcardActionSheetComponent from '../components/flashcardModal'
-import Footer from '../components/footer'
+import Footer from '../components/Footer'
 import ProgressBar from '../components/progressBar'
 import ReviewButton from '../components/reviewButton'
 import { isMockTime } from '../dev/mockTime'
@@ -235,6 +236,32 @@ const FlashcardScreen = (): React.JSX.Element => {
     setShowReviewButtons(true) // 前カードを英語状態で表示
     setShowAnswer(true)
   }
+
+  const handleDeleteCurrentCard = async () => {
+    if (!auth.currentUser || !flashcards || flashcards.length === 0) return
+
+    try {
+      if (!selectedCard?.deckId) throw new Error('カードIDがありません')
+      const flashcardRef = doc(
+        db,
+        `users/${auth.currentUser?.uid}/decks/${deckId}/flashcards`,
+        selectedCard.flashcardId,
+      )
+  
+      await deleteDoc(flashcardRef)
+  
+      alert('フラッシュカードを削除しました')
+  
+      setShowAnswer(false)
+      setShowReviewButtons(false)
+      setCurrentCard((prev) => prev + 1) 
+  
+      setFlashcardModalVisible(false)
+    } catch (error) {
+      console.error('フラッシュカード削除エラー: ', error)
+      alert('削除に失敗しました')
+    }
+  } 
 
   const speakQuestion = React.useCallback((text: string) => {
     const lang = detectLanguage(text)
@@ -505,6 +532,16 @@ const FlashcardScreen = (): React.JSX.Element => {
     fetchFlashcards()
   }, [fetchFlashcards])
 
+  // 画面に戻ってきたときも必ず再読み込み
+  useFocusEffect(
+    useCallback(() => {
+      fetchFlashcards()
+      return () => {
+        // フォーカスが外れたときに何かしたければここ（今回は何もしなくてOK）
+      }
+    }, [fetchFlashcards]),
+  )
+
   // 問題表示時
   useEffect(() => {
     if (
@@ -705,6 +742,7 @@ const FlashcardScreen = (): React.JSX.Element => {
           flashcardId={selectedCard?.flashcardId}
           flashcardFront={selectedCard?.flashcardFront}
           flashcardBack={selectedCard?.flashcardBack}
+          onDelete={handleDeleteCurrentCard}
         />
       )}
 

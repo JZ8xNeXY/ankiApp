@@ -13,6 +13,7 @@ interface ActionSheetProps {
   flashcardId?: string
   flashcardFront?: string
   flashcardBack?: string
+  onDelete:() => void
 }
 
 const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
@@ -23,24 +24,10 @@ const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
   flashcardId,
   flashcardFront,
   flashcardBack,
+  onDelete
 }) => {
   const actionSheetRef = useRef<ActionSheet | null>(null)
   
-  console.log('FlashcardActionSheetComponent', {
-    visible,
-    deckId,
-    deckName,
-    flashcardId,
-    flashcardFront,
-    flashcardBack,
-  })
-
-  // const showActionSheet = () => {
-  //   if (actionSheetRef.current) {
-  //     actionSheetRef.current.show()
-  //   }
-  // }
-
   const router = useRouter()
 
   const handleAddPress = () => {
@@ -70,41 +57,41 @@ const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
     })
   }
 
-  const handleDeleteFlashcard = async () => {
-    if (!auth.currentUser || !deckId || !flashcardId) {
-      alert('削除に必要な情報が足りません')
-      return
-    }
+  // const handleDeleteFlashcard = async () => {
+  //   if (!auth.currentUser || !deckId || !flashcardId) {
+  //     alert('削除に必要な情報が足りません')
+  //     return
+  //   }
   
-    Alert.alert(
-      'フラッシュカードを削除しますか？',
-      '一度削除すると元に戻せません。',
-      [
-        { text: 'キャンセル', style: 'cancel' },
-        {
-          text: '削除する',
-          style: 'destructive',
-          onPress: async () => {
-            console.log('Deleting flashcard:', deckId, flashcardId)
-            try {
-              const flashcardRef = doc(
-                db,
-                `users/${auth.currentUser?.uid}/decks/${deckId}/flashcards`,
-                flashcardId,
-              )
-              await deleteDoc(flashcardRef)
-              alert('フラッシュカードを削除しました')
-              router.push('/') // 削除後にホームへ遷移
-            } catch (error) {
-              console.error('フラッシュカード削除エラー: ', error)
-              alert('削除に失敗しました')
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    )
-  }
+  //   Alert.alert(
+  //     'フラッシュカードを削除しますか？',
+  //     '一度削除すると元に戻せません。',
+  //     [
+  //       { text: 'キャンセル', style: 'cancel' },
+  //       {
+  //         text: '削除する',
+  //         style: 'destructive',
+  //         onPress: async () => {
+  //           console.log('Deleting flashcard:', deckId, flashcardId)
+  //           try {
+  //             const flashcardRef = doc(
+  //               db,
+  //               `users/${auth.currentUser?.uid}/decks/${deckId}/flashcards`,
+  //               flashcardId,
+  //             )
+  //             await deleteDoc(flashcardRef)
+  //             alert('フラッシュカードを削除しました')
+  //             router.push('/') // 削除後にホームへ遷移
+  //           } catch (error) {
+  //             console.error('フラッシュカード削除エラー: ', error)
+  //             alert('削除に失敗しました')
+  //           }
+  //         },
+  //       },
+  //     ],
+  //     { cancelable: true }
+  //   )
+  // }
 
   useEffect(() => {
     if (visible && actionSheetRef.current) {
@@ -122,7 +109,7 @@ const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
       onPress={(index) => {
         if (index === 0) handleAddPress()
         else if (index === 1) handleEditPress()
-        else if (index === 2) handleDeleteFlashcard()
+        else if (index === 2) onDelete()
         onClose()
       }}
     />

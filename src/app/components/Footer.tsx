@@ -22,16 +22,6 @@ interface Deck {
   order?: number
 }
 
-interface FooterProps {
-  deckId?: string
-  deckName?: string
-  flashcardId?: string
-  flashcardFront?: string
-  flashcardBack?: string
-  tags?: string
-  showBackToDecks?: boolean
-}
-
 const FooterButton = ({
   icon,
   label,
@@ -55,6 +45,7 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
   const [, setDecks] = useState<Deck[]>([])
   const [addModalVisible, setAddModalVisible] = useState(false)
 
+
   const handleAddDeck = (deckName: string, deckId: string, deckTag: string) => {
     setDecks((prevDecks) => [
       ...prevDecks,
@@ -69,6 +60,7 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
       },
     ])
   }
+
 
   return (
     <View>
@@ -109,36 +101,21 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
           />
         )}
 
-        {/* <FooterButton
-          icon="search-outline"
-          label="Search"
-          size={24}
-          active={current === 'Search'}
-          onPress={() => onNavigate('Search')}
-        /> */}
-
+      {current == 'Home' && (
         <FooterButton
-          icon="star-outline"
-          label="ブックマーク"
-          size={24}
-          active={current === 'Bookmark'}
-          onPress={() => {
-            router.push({
-              pathname: '/memo/bookmark',
-            })
-          }}
-        />
-        {/* <FooterButton
-          icon="star-outline"
-          label="Edit"
-          size={24}
-          active={current === 'Bookmark'}
-          onPress={() => {
-            router.push({
-              pathname: '/auth/accountEdit',
-            })
-          }}
-        /> */}
+        icon="star-outline"
+        label="ブックマーク"
+        size={24}
+        active={false}
+        onPress={() => {
+          router.push({
+            pathname: '/memo/bookmark',
+          })
+        }}
+      />
+      )}
+
+        
         <FooterButton
           icon="trophy-outline"
           label="履歴"
@@ -150,6 +127,7 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
             })
           }}
         />
+
         <FooterButton
           icon="calendar-outline"
           label="進捗"
@@ -161,6 +139,7 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
             })
           }}
         />
+
         <FooterButton
           icon="settings-outline"
           label="設定"

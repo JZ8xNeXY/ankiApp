@@ -12,7 +12,7 @@ import {
 } from 'react-native'
 
 import { auth } from '../../config'
-import Footer from '../components/footer'
+import Footer from '../components/Footer'
 
 const SettingsScreen = (): JSX.Element => {
   const router = useRouter()
