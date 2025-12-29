@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router'
 import React, { useState } from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import Footer from '../components/footer'
+import Footer from '../components/Footer'
 import StudyHistoryCard from '../components/studyHistoryCard'
 import StudyHistoryGraph from '../components/studyHistoryGraph'
 import StudyHistoryGraphMonth from '../components/studyHistoryGraphMonth'

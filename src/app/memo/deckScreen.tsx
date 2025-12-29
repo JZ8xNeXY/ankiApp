@@ -30,7 +30,7 @@ import DraggableFlatList, {
 import { auth, db } from '../../config'
 import ActionSheetComponent from '../components/actionSheet'
 import EditDeckModal from '../components/editDeckModal'
-import Footer from '../components/footer'
+import Footer from '../components/Footer'
 import ProgressCircle from '../components/progressCircle'
 import TipBox from '../components/tipBox'
 import { isMockTime } from '../dev/mockTime'
