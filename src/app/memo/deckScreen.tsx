@@ -12,6 +12,7 @@ import {
   orderBy,
   writeBatch,
   QuerySnapshot,
+  getCountFromServer,
 } from 'firebase/firestore'
 import React, { useState, useEffect, useRef } from 'react'
 import {
@@ -33,7 +34,6 @@ import EditDeckModal from '../components/editDeckModal'
 import Footer from '../components/Footer'
 import ProgressCircle from '../components/progressCircle'
 import TipBox from '../components/tipBox'
-import { isMockTime } from '../dev/mockTime'
 
 interface Deck {
   id: string
@@ -133,16 +133,13 @@ const DeckScreen = (): JSX.Element => {
           `users/${auth.currentUser?.uid}/decks/${doc.id}/flashcards`,
         )
 
-        const allSnap = await getDocs(flashcardRef)
-        const totalCount = allSnap.size
+        const allSnap = await getCountFromServer(flashcardRef)
+        const totalCount = allSnap.data().count
 
-        const reviewSnap = await getDocs(
-          query(
-            flashcardRef,
-            where('nextReview', '<=', Timestamp.fromDate(now)),
-          ),
+        const reviewSnap = await getCountFromServer(
+          query(flashcardRef, where('nextReview', '<=', Timestamp.fromDate(now)))
         )
-        const reviewCount = reviewSnap.size
+        const reviewCount = reviewSnap.data().count
 
         return {
           id: doc.id,
@@ -198,33 +195,6 @@ const DeckScreen = (): JSX.Element => {
   useEffect(() => {
     if (!auth.currentUser) return
     setLoading(true)
-
-    // ⏰ 特定時間帯だけ onSnapshot 停止
-    if (isMockTime()) {
-      const MOCK_DECKS: Deck[] = [
-        {
-          id: 'd1',
-          name: 'Basics',
-          tag: 'EN',
-          cardCount: 3,
-          totalCount: 10,
-          createdAt: Timestamp.now(),
-        },
-        {
-          id: 'd2',
-          name: 'Business',
-          tag: 'EN',
-          cardCount: 0,
-          totalCount: 25,
-          createdAt: Timestamp.now(),
-        },
-      ]
-      setDecks(MOCK_DECKS)
-      setLoading(false)
-      console.log('onSnapshot は開発モードなので停止中')
-
-      return
-    }
 
     const deckRef = collection(db, `users/${auth.currentUser.uid}/decks`)
 

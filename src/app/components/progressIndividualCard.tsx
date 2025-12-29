@@ -11,7 +11,6 @@ import {
 import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet, FlatList } from 'react-native'
 import { auth, db } from '../../config'
-import { isMockTime } from '../dev/mockTime'
 import ProgressBar from './progressBar'
 
 interface Deck {
@@ -87,52 +86,6 @@ const ProgressIndividualCard = () => {
       return
     }
 
-    if (isMockTime()) {
-      setDeckList([
-        {
-          id: 'mock1',
-          name: '模擬デッキ',
-          tag: null,
-          cardCount: 50,
-          totalCount: 100,
-        },
-        {
-          id: 'mock2',
-          name: '模擬デッキ2',
-          tag: null,
-          cardCount: 20,
-          totalCount: 200,
-        },
-        {
-          id: 'mock3',
-          name: '模擬デッキ3',
-          tag: null,
-          cardCount: 20,
-          totalCount: 200,
-        },
-        {
-          id: 'mock4',
-          name: '模擬デッキ4',
-          tag: null,
-          cardCount: 20,
-          totalCount: 200,
-        },
-        {
-          id: 'mock5',
-          name: '模擬デッキ5',
-          tag: null,
-          cardCount: 20,
-          totalCount: 200,
-        },
-      ])
-      setTotalCards(300) // 総カード数
-      setTotalReviewCards(70) // 復習対象数
-      setDone(230) // できたカード数
-      setProgress(230 / 300)
-      console.log('onSnapshot は開発モードなので停止中')
-
-      return
-    }
 
     const deckRef = collection(db, `users/${uid}/decks`)
 
