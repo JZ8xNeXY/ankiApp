@@ -1,5 +1,5 @@
 import { Ionicons, Feather } from '@expo/vector-icons'
-import { useLocalSearchParams, useRouter,useFocusEffect } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import * as Speech from 'expo-speech'
 import {
   collection,
@@ -29,7 +29,7 @@ import {
 import { auth, db } from '../../config'
 import AnswerButton from '../components/answerButton'
 import CircleButton from '../components/circleButton'
-import FlashcardActionSheetComponent from '../components/flashcardModal'
+import FlashcardActionSheetComponent from '../components/FlashcardModal'
 import Footer from '../components/Footer'
 import ProgressBar from '../components/progressBar'
 import ReviewButton from '../components/reviewButton'
@@ -532,15 +532,6 @@ const FlashcardScreen = (): React.JSX.Element => {
     fetchFlashcards()
   }, [fetchFlashcards])
 
-  // 画面に戻ってきたときも必ず再読み込み
-  useFocusEffect(
-    useCallback(() => {
-      fetchFlashcards()
-      return () => {
-        // フォーカスが外れたときに何かしたければここ（今回は何もしなくてOK）
-      }
-    }, [fetchFlashcards]),
-  )
 
   // 問題表示時
   useEffect(() => {

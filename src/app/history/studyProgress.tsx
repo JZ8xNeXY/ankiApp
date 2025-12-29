@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router'
 import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
-import Footer from '../components/footer'
+import Footer from '../components/Footer'
 import ProgressIndividualCard from '../components/progressIndividualCard'
 import ProgressWholeCard from '../components/progressWholeCard'
 

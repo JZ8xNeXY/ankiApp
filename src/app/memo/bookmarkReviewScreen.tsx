@@ -26,7 +26,7 @@ import {
 import { auth, db } from '../../config'
 import AnswerButton from '../components/answerButton'
 import CircleButton from '../components/circleButton'
-import FlashcardActionSheetComponent from '../components/flashcardModal'
+import FlashcardActionSheetComponent from '../components/FlashcardModal'
 import Footer from '../components/Footer'
 import ProgressBar from '../components/progressBar'
 import ReviewButton from '../components/reviewButton'
