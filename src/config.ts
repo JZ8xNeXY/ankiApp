@@ -2,7 +2,7 @@ import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage'
 import { initializeApp } from 'firebase/app'
 import { initializeAuth, getReactNativePersistence } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
-import { isMockTime } from './app/dev/mockTime'
+import  isMockTime  from './app/dev/mockTime'
 
 let firebaseConfig
 
