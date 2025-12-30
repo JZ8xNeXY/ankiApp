@@ -40,7 +40,6 @@ interface Deck {
   name: string
   tag: string | null
   cardCount: number // 復習対象
-  totalCount: number // 全体数
   createdAt?: Timestamp
 }
 
@@ -270,10 +269,6 @@ const FlashcardScreen = (): React.JSX.Element => {
             `users/${auth.currentUser?.uid}/decks/${doc.id}/flashcards`,
           )
 
-          // 全体数
-          const allSnap = await getDocs(flashcardRef)
-          const totalCount = allSnap.size
-
           // 今日の復習対象
           const q = query(
             flashcardRef,
@@ -287,7 +282,7 @@ const FlashcardScreen = (): React.JSX.Element => {
             name: doc.data().name,
             tag: doc.data().tag,
             cardCount: reviewCount,
-            totalCount: totalCount,
+            // totalCount: totalCount,
             createdAt: doc.data().createdAt?.toDate() || new Date(),
           }
         }),

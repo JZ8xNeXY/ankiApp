@@ -1,12 +1,13 @@
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage'
-import { initializeApp } from 'firebase/app'
-import { initializeAuth, getReactNativePersistence } from 'firebase/auth'
+import { initializeApp,getApp, getApps } from 'firebase/app'
+import { initializeAuth, getAuth, getReactNativePersistence } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
-import { isMockTime } from './app/dev/mockTime'
+import  isMockTime  from './app/dev/mockTime'
 
 let firebaseConfig
 
 if (!isMockTime()) {
+  //本番用のfirebaseConfig//
  firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FB_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FB_AUTH_DOMAIN,
@@ -28,16 +29,23 @@ if (!isMockTime()) {
 
 }
 
-const app = initializeApp(firebaseConfig)
+// Appは二重初期化しない
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
 
-const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(ReactNativeAsyncStorage),
-})
+let auth
+
+try {
+  auth = getAuth(app)
+} catch {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+  })
+}
 
 const db = getFirestore(app)
 
 console.log(
-  isMockTime() ? '🔥 Firebase: PROD/MOCK' : '🧪 Firebase: DEV'
+  !isMockTime() ? '🔥 Firebase: PROD/MOCK' : '🧪 Firebase: DEV'
 )
 
 export { app, auth, db }

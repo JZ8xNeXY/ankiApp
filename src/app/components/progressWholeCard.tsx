@@ -7,6 +7,7 @@ import {
   onSnapshot,
   orderBy,
   QuerySnapshot,
+  getCountFromServer,
 } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet } from 'react-native'
@@ -44,17 +45,17 @@ const ProgressWholeCard = () => {
         )
 
         // 各デッキの総カード数
-        const allSnap = await getDocs(flashcardRef)
-        const totalCount = allSnap.size
+        const allSnap = await getCountFromServer(flashcardRef)
+        const totalCount = allSnap.data().count
 
         // 各デッキの復習対象カード数
-        const reviewSnap = await getDocs(
+        const reviewSnap = await getCountFromServer(
           query(
             flashcardRef,
             where('nextReview', '<=', Timestamp.fromDate(now)),
           ),
         )
-        const reviewCount = reviewSnap.size
+        const reviewCount = reviewSnap.data().count
 
         return {
           id: d.id,
