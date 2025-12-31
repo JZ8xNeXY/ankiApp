@@ -137,7 +137,10 @@ const DeckScreen = (): JSX.Element => {
         const totalCount = allSnap.data().count
 
         const reviewSnap = await getCountFromServer(
-          query(flashcardRef, where('nextReview', '<=', Timestamp.fromDate(now)))
+          query(
+            flashcardRef,
+            where('nextReview', '<=', Timestamp.fromDate(now)),
+          ),
         )
         const reviewCount = reviewSnap.data().count
 

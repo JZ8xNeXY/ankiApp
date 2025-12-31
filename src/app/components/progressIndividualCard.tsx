@@ -7,6 +7,7 @@ import {
   onSnapshot,
   orderBy,
   QuerySnapshot,
+  getCountFromServer,
 } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet, FlatList } from 'react-native'
@@ -42,24 +43,24 @@ const ProgressIndividualCard = () => {
         )
 
         // 各デッキの総カード数
-        const allSnap = await getDocs(flashcardRef)
-        const totalCount = allSnap.size
+        const allSnap = await getCountFromServer(flashcardRef)
+        const totalCount = allSnap.data().count
 
         // 各デッキの復習対象カード数
-        const reviewSnap = await getDocs(
+        const reviewSnap = await getCountFromServer(
           query(
             flashcardRef,
             where('nextReview', '<=', Timestamp.fromDate(now)),
           ),
         )
-        const reviewCount = reviewSnap.size
+        const reviewCount = reviewSnap.data().count
 
         return {
           id: d.id,
           name: d.data().name,
           tag: d.data().tag,
           cardCount: reviewCount,
-          totalCount,
+          totalCount: totalCount,
           createdAt: d.data().createdAt?.toDate() || new Date(),
           order: d.data().order || 0,
         }
@@ -85,7 +86,6 @@ const ProgressIndividualCard = () => {
       console.log('auth 未確定（currentUser なし）')
       return
     }
-
 
     const deckRef = collection(db, `users/${uid}/decks`)
 

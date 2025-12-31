@@ -62,7 +62,7 @@ const ProgressWholeCard = () => {
           name: d.data().name,
           tag: d.data().tag,
           cardCount: reviewCount,
-          totalCount,
+          totalCount: totalCount,
           createdAt: d.data().createdAt?.toDate() || new Date(),
           order: d.data().order || 0,
         }
