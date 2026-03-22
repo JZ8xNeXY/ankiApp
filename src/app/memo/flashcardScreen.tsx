@@ -190,7 +190,7 @@ const FlashcardScreen = (): React.JSX.Element => {
       setShowReviewButtons(false)
       setCurrentCard((prev) => prev + 1)
     } else {
-      await calculateNextInterval(score) 
+      await calculateNextInterval(score)
       setShowAnswer(false)
       setShowReviewButtons(false)
       setCurrentCard((prev) => prev + 1)
@@ -227,21 +227,21 @@ const FlashcardScreen = (): React.JSX.Element => {
         `users/${auth.currentUser?.uid}/decks/${deckId}/flashcards`,
         selectedCard.flashcardId,
       )
-  
+
       await deleteDoc(flashcardRef)
-  
+
       alert('フラッシュカードを削除しました')
-  
+
       setShowAnswer(false)
       setShowReviewButtons(false)
-      setCurrentCard((prev) => prev + 1) 
-  
+      setCurrentCard((prev) => prev + 1)
+
       setFlashcardModalVisible(false)
     } catch (error) {
       console.error('フラッシュカード削除エラー: ', error)
       alert('削除に失敗しました')
     }
-  } 
+  }
 
   const speakQuestion = React.useCallback((text: string) => {
     const lang = detectLanguage(text)
@@ -448,7 +448,7 @@ const FlashcardScreen = (): React.JSX.Element => {
     await setDoc(
       ref,
       {
-        count: increment(addCount),//現在値に加算する
+        count: increment(addCount), //現在値に加算する
         // 初回作成時に必要なメタが無ければ付与、あれば温存（merge）
         year,
         month,
@@ -459,14 +459,13 @@ const FlashcardScreen = (): React.JSX.Element => {
         date, // その日0時の Timestamp（集計キー）
         updatedAt: serverTimestamp(),
       },
-      { merge: true },//現在値を置き換える
+      { merge: true }, //現在値を置き換える
     )
   }
 
   useEffect(() => {
     fetchFlashcards()
   }, [fetchFlashcards])
-
 
   // 問題表示時
   useEffect(() => {
@@ -649,7 +648,7 @@ const FlashcardScreen = (): React.JSX.Element => {
                 updateStreakOnComplete().catch((e) =>
                   console.error('streak 更新失敗:', e),
                 )
-                updateStudyLogOnComplete(flashcards?.length ?? 0) 
+                updateStudyLogOnComplete(flashcards?.length ?? 0)
                 setShowCongratsModal(false)
               }}
             >
@@ -754,7 +753,7 @@ const styles = StyleSheet.create({
   },
   cardText: {
     fontSize: 28,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   hiddenText: {
     fontSize: 18,
@@ -768,7 +767,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     color: '#467FD3',
     fontWeight: 'bold',
-    textAlign: 'center',
+    textAlign: 'left',
   },
   nextReviewText: {
     fontSize: 16,
