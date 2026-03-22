@@ -16,7 +16,7 @@ import {
   serverTimestamp,
   increment,
 } from 'firebase/firestore'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback,useRef } from 'react'
 import {
   View,
   Text,
@@ -67,6 +67,8 @@ const FlashcardScreen = (): React.JSX.Element => {
   const [showReviewButtons, setShowReviewButtons] = useState(false)
   const [, setDecks] = useState<Deck[]>([])
   const [currentCard, setCurrentCard] = useState(0)
+  const currentCardRef = useRef(0)
+  const isCompletedRef = useRef(false)
   const [flashcards, setFlashcards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false)
@@ -190,7 +192,7 @@ const FlashcardScreen = (): React.JSX.Element => {
       setShowReviewButtons(false)
       setCurrentCard((prev) => prev + 1)
     } else {
-      await calculateNextInterval(score) 
+      await calculateNextInterval(score)
       setShowAnswer(false)
       setShowReviewButtons(false)
       setCurrentCard((prev) => prev + 1)
@@ -227,21 +229,21 @@ const FlashcardScreen = (): React.JSX.Element => {
         `users/${auth.currentUser?.uid}/decks/${deckId}/flashcards`,
         selectedCard.flashcardId,
       )
-  
+
       await deleteDoc(flashcardRef)
-  
+
       alert('フラッシュカードを削除しました')
-  
+
       setShowAnswer(false)
       setShowReviewButtons(false)
-      setCurrentCard((prev) => prev + 1) 
-  
+      setCurrentCard((prev) => prev + 1)
+
       setFlashcardModalVisible(false)
     } catch (error) {
       console.error('フラッシュカード削除エラー: ', error)
       alert('削除に失敗しました')
     }
-  } 
+  }
 
   const speakQuestion = React.useCallback((text: string) => {
     const lang = detectLanguage(text)
@@ -448,7 +450,7 @@ const FlashcardScreen = (): React.JSX.Element => {
     await setDoc(
       ref,
       {
-        count: increment(addCount),//現在値に加算する
+        count: increment(addCount), //現在値に加算する
         // 初回作成時に必要なメタが無ければ付与、あれば温存（merge）
         year,
         month,
@@ -459,14 +461,23 @@ const FlashcardScreen = (): React.JSX.Element => {
         date, // その日0時の Timestamp（集計キー）
         updatedAt: serverTimestamp(),
       },
-      { merge: true },//現在値を置き換える
+      { merge: true }, //現在値を置き換える
     )
+  }
+  // 完了済みでなく、1枚以上進んでいたら保存
+  const handleNavigateWithSave = (screen: string) => {
+    if (!isCompletedRef.current && currentCardRef.current > 0) {
+      updateStudyLogOnComplete(currentCardRef.current).catch((e) =>
+        console.error('中断時studyLog更新失敗:', e),
+      )
+    }
+    console.log('handleNavigateWithSave', screen)
+    router.push(`/${screen.toLowerCase()}`)
   }
 
   useEffect(() => {
     fetchFlashcards()
   }, [fetchFlashcards])
-
 
   // 問題表示時
   useEffect(() => {
@@ -515,11 +526,33 @@ const FlashcardScreen = (): React.JSX.Element => {
     }
   }, [showReviewButtons, currentCard, flashcards, autoSpeakEnabled])
 
+  // 現在のカードを更新
+  useEffect(() => {
+      currentCardRef.current = currentCard
+    }, [currentCard])
+  
   useEffect(() => {
     if (flashcards && currentCard >= flashcards.length) {
       setShowCongratsModal(true)
     }
   }, [currentCard, flashcards])
+
+  // 中断時にstudyLogを更新
+  useEffect(() => {
+    return () => {
+      if (!isCompletedRef.current && currentCardRef.current > 0) {
+        updateStudyLogOnComplete(currentCardRef.current).catch((e) =>
+          console.error('中断時studyLog更新失敗:', e),
+        )
+      }
+    }
+  }, [])
+
+  // セッション開始時に初期化
+  useEffect(() => {
+    isCompletedRef.current = false
+    currentCardRef.current = 0
+  }, [])
 
   return (
     <View style={styles.container}>
@@ -631,7 +664,8 @@ const FlashcardScreen = (): React.JSX.Element => {
 
       <Footer
         current="Flashcard"
-        onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
+        // onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
+        onNavigate={handleNavigateWithSave}
         deckId={deckIdStr}
         deckName={deckNameStr}
       />
@@ -646,10 +680,11 @@ const FlashcardScreen = (): React.JSX.Element => {
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => {
+                isCompletedRef.current = true 
                 updateStreakOnComplete().catch((e) =>
                   console.error('streak 更新失敗:', e),
                 )
-                updateStudyLogOnComplete(flashcards?.length ?? 0) 
+                updateStudyLogOnComplete(flashcards?.length ?? 0)
                 setShowCongratsModal(false)
               }}
             >
@@ -754,7 +789,7 @@ const styles = StyleSheet.create({
   },
   cardText: {
     fontSize: 28,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   hiddenText: {
     fontSize: 18,
@@ -768,7 +803,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     color: '#467FD3',
     fontWeight: 'bold',
-    textAlign: 'center',
+    textAlign: 'left',
   },
   nextReviewText: {
     fontSize: 16,

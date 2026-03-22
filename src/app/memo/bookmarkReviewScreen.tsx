@@ -14,7 +14,7 @@ import {
   serverTimestamp,
   increment,
 } from 'firebase/firestore'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   View,
   Text,
@@ -30,8 +30,8 @@ import FlashcardActionSheetComponent from '../components/FlashcardModal'
 import Footer from '../components/Footer'
 import ProgressBar from '../components/progressBar'
 import ReviewButton from '../components/reviewButton'
-import calculateSM2 from '../utils/srs'
 import { isMockTime } from '../dev/mockTime'
+import calculateSM2 from '../utils/srs'
 
 interface Deck {
   id: string
@@ -68,6 +68,8 @@ const BookmarkReviewScreen = (): JSX.Element => {
   const [flashcardModalVisible, setFlashcardModalVisible] = useState(false)
   const [showReviewButtons, setShowReviewButtons] = useState(false)
   const [currentCard, setCurrentCard] = useState(0)
+  const currentCardRef = useRef(0)
+  const isCompletedRef = useRef(false)
   const [flashcards, setFlashCards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false)
@@ -190,7 +192,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
       if (score === 1) {
         // Again の場合：スコアを 0 にして、nextReview は今のまま or 1分後に設定
         await calculateNextInterval(0)
-      } 
+      }
     } catch (error) {
       console.error('handleNextCard エラー:', error)
       // エラーが発生してもUIは更新
@@ -333,7 +335,6 @@ const BookmarkReviewScreen = (): JSX.Element => {
     return { isoWeek, isoYear }
   }
 
-
   // 1回の学習完了で増やす枚数を引数に
   const updateStudyLogOnComplete = async (addCount: number) => {
     // if (!auth.currentUser || isMockTime()) return // モック時間は書かない
@@ -348,7 +349,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
     await setDoc(
       ref,
       {
-        count: increment(addCount),//現在値に加算する
+        count: increment(addCount), //現在値に加算する
         // 初回作成時に必要なメタが無ければ付与、あれば温存（merge）
         year,
         month,
@@ -359,8 +360,18 @@ const BookmarkReviewScreen = (): JSX.Element => {
         date, // その日0時の Timestamp（集計キー）
         updatedAt: serverTimestamp(),
       },
-      { merge: true },//現在値を置き換える
+      { merge: true }, //現在値を置き換える
     )
+  }
+
+  // 完了済みでなく、1枚以上進んでいたら保存
+  const handleNavigateWithSave = (screen: string) => {
+    if (!isCompletedRef.current && currentCardRef.current > 0) {
+      updateStudyLogOnComplete(currentCardRef.current).catch((e) =>
+        console.error('中断時studyLog更新失敗:', e),
+      )
+    }
+    router.push(`/${screen.toLowerCase()}`)
   }
 
   useEffect(() => {
@@ -449,11 +460,33 @@ const BookmarkReviewScreen = (): JSX.Element => {
     }
   }, [showReviewButtons, currentCard, flashcards, autoSpeakEnabled])
 
+  // 現在のカードを更新
+  useEffect(() => {
+    currentCardRef.current = currentCard
+  }, [currentCard])
+
   useEffect(() => {
     if (flashcards && currentCard >= flashcards.length) {
       setShowCongratsModal(true)
     }
   }, [currentCard, flashcards])
+
+  // 中断時にstudyLogを更新
+  useEffect(() => {
+    return () => {
+      if (!isCompletedRef.current && currentCardRef.current > 0) {
+        updateStudyLogOnComplete(currentCardRef.current).catch((e) =>
+          console.error('中断時studyLog更新失敗:', e),
+        )
+      }
+    }
+  }, [])
+
+  // セッション開始時に初期化
+  useEffect(() => {
+    isCompletedRef.current = false
+    currentCardRef.current = 0
+  }, [])
 
   return (
     <View style={styles.container}>
@@ -571,7 +604,8 @@ const BookmarkReviewScreen = (): JSX.Element => {
 
       <Footer
         current="BookmarkFlashcard"
-        onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
+        // onNavigate={(screen) => router.push(`/${screen.toLowerCase()}`)}
+        onNavigate={handleNavigateWithSave}
         deckId={deckId}
         deckName={deckName}
       />
@@ -583,10 +617,11 @@ const BookmarkReviewScreen = (): JSX.Element => {
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => {
+                isCompletedRef.current = true 
                 updateStreakOnComplete().catch((e) =>
                   console.error('streak 更新失敗:', e),
-                )//追加
-                updateStudyLogOnComplete(flashcards?.length ?? 0)//追加 
+                ) 
+                updateStudyLogOnComplete(flashcards?.length ?? 0) 
                 setShowCongratsModal(false)
               }}
             >
@@ -690,7 +725,7 @@ const styles = StyleSheet.create({
   },
   cardText: {
     fontSize: 28, //少し小さめに
-    textAlign: 'center',
+    textAlign: 'left',
   },
   hiddenText: {
     fontSize: 18,
@@ -704,7 +739,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     color: '#467FD3',
     fontWeight: 'bold',
-    textAlign: 'center',
+    textAlign: 'left',
   },
   nextReviewText: {
     fontSize: 16,
