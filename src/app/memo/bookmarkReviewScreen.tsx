@@ -364,8 +364,8 @@ const BookmarkReviewScreen = (): JSX.Element => {
     )
   }
 
+  // 完了済みでなく、1枚以上進んでいたら保存
   const handleNavigateWithSave = (screen: string) => {
-    // 完了済みでなく、1枚以上進んでいたら保存
     if (!isCompletedRef.current && currentCardRef.current > 0) {
       updateStudyLogOnComplete(currentCardRef.current).catch((e) =>
         console.error('中断時studyLog更新失敗:', e),
@@ -460,6 +460,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
     }
   }, [showReviewButtons, currentCard, flashcards, autoSpeakEnabled])
 
+  // 現在のカードを更新
   useEffect(() => {
     currentCardRef.current = currentCard
   }, [currentCard])
