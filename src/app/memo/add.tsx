@@ -141,14 +141,14 @@ const AddCard = (): JSX.Element => {
           </View>
 
           {/* TODO 補助ツールエリア */}
-          <View style={styles.tools}>
+          {/* <View style={styles.tools}>
             <TouchableOpacity
               style={styles.toolButton}
               onPress={() => setAddModalVisible(true)}
             >
               <Text style={styles.toolButtonText}>AIでカード作成支援</Text>
             </TouchableOpacity>
-          </View>
+          </View> */}
 
           {/* モーダルを表示 */}
           <AddFlashcardModal
