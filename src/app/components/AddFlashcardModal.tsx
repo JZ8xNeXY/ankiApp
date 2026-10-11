@@ -8,7 +8,6 @@ import {
   StyleSheet,
 } from 'react-native'
 import { auth } from '../../config'
-// import generateFlashcard from '../utils/chatgptApi'
 import CustomRadioButton from './customRadioButton'
 
 interface AddFlashcardModalProps {
