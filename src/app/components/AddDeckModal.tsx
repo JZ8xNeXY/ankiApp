@@ -1,4 +1,5 @@
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { getDocs } from 'firebase/firestore'
 import React, { useState } from 'react'
 import {
   Modal,
@@ -8,7 +9,6 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native'
-import { getDocs } from 'firebase/firestore'
 import { auth, db } from '../../config'
 
 interface AddDeckModalProps {
@@ -40,7 +40,7 @@ const AddDeckModal: React.FC<AddDeckModalProps> = ({
       // ここで既存のデッキ数を取得
       const snapshot = await getDocs(ref)
       const currentDeckCount = snapshot.size
-      
+
       const docRef = await addDoc(ref, {
         name: deckName,
         tag: deckTag,
@@ -49,7 +49,7 @@ const AddDeckModal: React.FC<AddDeckModalProps> = ({
         order: currentDeckCount,
       })
 
-      onAddDeck(deckName, docRef.id, deckTag,)
+      onAddDeck(deckName, docRef.id, deckTag)
 
       setDeckName('')
       onClose()

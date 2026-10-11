@@ -16,7 +16,7 @@ import {
   serverTimestamp,
   increment,
 } from 'firebase/firestore'
-import React, { useState, useEffect, useCallback,useRef } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import {
   View,
   Text,
@@ -346,6 +346,7 @@ const FlashcardScreen = (): React.JSX.Element => {
   }
   // 全カード終了時に 1日 分の streak を更新
   const updateStreakOnComplete = async () => {
+    if (!auth.currentUser) return
     const uid = auth.currentUser.uid
     const userRef = doc(db, 'users', uid)
     const snapshot = await getDoc(userRef)
@@ -440,6 +441,7 @@ const FlashcardScreen = (): React.JSX.Element => {
   // 1回の学習完了で増やす枚数を引数に
   const updateStudyLogOnComplete = async (addCount: number) => {
     if (!addCount || addCount <= 0) return
+    if (!auth.currentUser) return
 
     const uid = auth.currentUser.uid
     const { id, year, month, day, yearMonth, isoWeek, isoYear, date } =
@@ -528,9 +530,9 @@ const FlashcardScreen = (): React.JSX.Element => {
 
   // 現在のカードを更新
   useEffect(() => {
-      currentCardRef.current = currentCard
-    }, [currentCard])
-  
+    currentCardRef.current = currentCard
+  }, [currentCard])
+
   useEffect(() => {
     if (flashcards && currentCard >= flashcards.length) {
       setShowCongratsModal(true)
@@ -680,7 +682,7 @@ const FlashcardScreen = (): React.JSX.Element => {
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => {
-                isCompletedRef.current = true 
+                isCompletedRef.current = true
                 updateStreakOnComplete().catch((e) =>
                   console.error('streak 更新失敗:', e),
                 )

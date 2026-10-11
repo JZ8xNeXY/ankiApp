@@ -1,9 +1,6 @@
 import { useRouter } from 'expo-router'
-import { doc, deleteDoc } from 'firebase/firestore'
 import React, { useRef, useEffect } from 'react'
 import ActionSheet from 'react-native-actionsheet'
-import { auth, db } from '../../config'
-import { Alert } from 'react-native'
 
 interface ActionSheetProps {
   visible: boolean
@@ -13,7 +10,7 @@ interface ActionSheetProps {
   flashcardId?: string
   flashcardFront?: string
   flashcardBack?: string
-  onDelete:() => void
+  onDelete?: () => void
 }
 
 const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
@@ -24,10 +21,10 @@ const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
   flashcardId,
   flashcardFront,
   flashcardBack,
-  onDelete
+  onDelete,
 }) => {
   const actionSheetRef = useRef<ActionSheet | null>(null)
-  
+
   const router = useRouter()
 
   const handleAddPress = () => {
@@ -57,42 +54,6 @@ const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
     })
   }
 
-  // const handleDeleteFlashcard = async () => {
-  //   if (!auth.currentUser || !deckId || !flashcardId) {
-  //     alert('削除に必要な情報が足りません')
-  //     return
-  //   }
-  
-  //   Alert.alert(
-  //     'フラッシュカードを削除しますか？',
-  //     '一度削除すると元に戻せません。',
-  //     [
-  //       { text: 'キャンセル', style: 'cancel' },
-  //       {
-  //         text: '削除する',
-  //         style: 'destructive',
-  //         onPress: async () => {
-  //           console.log('Deleting flashcard:', deckId, flashcardId)
-  //           try {
-  //             const flashcardRef = doc(
-  //               db,
-  //               `users/${auth.currentUser?.uid}/decks/${deckId}/flashcards`,
-  //               flashcardId,
-  //             )
-  //             await deleteDoc(flashcardRef)
-  //             alert('フラッシュカードを削除しました')
-  //             router.push('/') // 削除後にホームへ遷移
-  //           } catch (error) {
-  //             console.error('フラッシュカード削除エラー: ', error)
-  //             alert('削除に失敗しました')
-  //           }
-  //         },
-  //       },
-  //     ],
-  //     { cancelable: true }
-  //   )
-  // }
-
   useEffect(() => {
     if (visible && actionSheetRef.current) {
       actionSheetRef.current.show()
@@ -109,7 +70,7 @@ const FlashcardActionSheetComponent: React.FC<ActionSheetProps> = ({
       onPress={(index) => {
         if (index === 0) handleAddPress()
         else if (index === 1) handleEditPress()
-        else if (index === 2) onDelete()
+        else if (index === 2) onDelete?.()
         onClose()
       }}
     />

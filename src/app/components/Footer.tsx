@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { Timestamp } from 'firebase/firestore'
 import React, { useState } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import AddDeckModal from '../components/addDeckModal'
 
 interface FooterProps {
@@ -45,7 +45,6 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
   const [, setDecks] = useState<Deck[]>([])
   const [addModalVisible, setAddModalVisible] = useState(false)
 
-
   const handleAddDeck = (deckName: string, deckId: string, deckTag: string) => {
     setDecks((prevDecks) => [
       ...prevDecks,
@@ -60,7 +59,6 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
       },
     ])
   }
-
 
   return (
     <View>
@@ -101,21 +99,20 @@ const Footer = ({ current, deckId, deckName }: FooterProps) => {
           />
         )}
 
-      {current == 'Home' && (
-        <FooterButton
-        icon="star-outline"
-        label="ブックマーク"
-        size={24}
-        active={false}
-        onPress={() => {
-          router.push({
-            pathname: '/memo/bookmark',
-          })
-        }}
-      />
-      )}
+        {current == 'Home' && (
+          <FooterButton
+            icon="star-outline"
+            label="ブックマーク"
+            size={24}
+            active={false}
+            onPress={() => {
+              router.push({
+                pathname: '/memo/bookmark',
+              })
+            }}
+          />
+        )}
 
-        
         <FooterButton
           icon="trophy-outline"
           label="履歴"
@@ -174,7 +171,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 24, 
+    paddingHorizontal: 24,
     borderTopColor: '#ddd',
     borderTopWidth: 1,
     zIndex: 10,
@@ -182,7 +179,7 @@ const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 6, 
+    paddingHorizontal: 6,
   },
   label: {
     fontSize: 11,

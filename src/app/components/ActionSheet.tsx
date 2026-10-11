@@ -7,7 +7,7 @@ interface ActionSheetProps {
   deckId: string
   deckName: string
   deckTag: string | null
-  onRename: (id: string, name: string,tag:string|null) => void
+  onRename: (id: string, name: string, tag: string | null) => void
   onDelete: (id: string) => void
 }
 

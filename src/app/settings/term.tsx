@@ -5,7 +5,7 @@ const Term = (): JSX.Element => {
   return (
     <ScrollView style={styles.container}>
       <View>
-      <Text style={styles.title}>利用規約・プライバシーポリシー</Text>
+        <Text style={styles.title}>利用規約・プライバシーポリシー</Text>
       </View>
 
       <Text style={styles.sectionTitle}>■ 利用規約</Text>
@@ -25,7 +25,8 @@ const Term = (): JSX.Element => {
       <Text style={styles.sectionTitle}>■ お問い合わせ</Text>
       <Text style={styles.text}>
         お問い合わせは以下のフォームよりお願いいたします：
-        {'\n'}https://docs.google.com/forms/d/1d9DFnJrN1fBiRtKGn5e_FzcQygW_utP4YpkfsJDGueQ/viewform
+        {'\n'}
+        https://docs.google.com/forms/d/1d9DFnJrN1fBiRtKGn5e_FzcQygW_utP4YpkfsJDGueQ/viewform
       </Text>
 
       <Text style={styles.footer}>最終更新日: 2025年4月28日</Text>

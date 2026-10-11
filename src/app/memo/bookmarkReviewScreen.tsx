@@ -30,17 +30,7 @@ import FlashcardActionSheetComponent from '../components/FlashcardModal'
 import Footer from '../components/Footer'
 import ProgressBar from '../components/progressBar'
 import ReviewButton from '../components/reviewButton'
-import { isMockTime } from '../dev/mockTime'
 import calculateSM2 from '../utils/srs'
-
-interface Deck {
-  id: string
-  name: string
-  tag: string | null
-  cardCount: number // 復習対象
-  totalCount: number // 全体数
-  createdAt?: Timestamp
-}
 
 interface Flashcard {
   id: string
@@ -72,7 +62,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
   const isCompletedRef = useRef(false)
   const [flashcards, setFlashCards] = useState<Flashcard[]>()
   const [showCongratsModal, setShowCongratsModal] = useState(false)
-  const [isBookmarked, setIsBookmarked] = useState<boolean>(false)
+  const [, setIsBookmarked] = useState<boolean>(false)
   const [autoSpeakEnabled, setAutoSpeakEnabled] = useState(false)
   const [selectedCard, setSelectedCard] = useState<{
     deckId: string
@@ -243,7 +233,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
 
   // 全カード終了時に 1日 分の streak を更新
   const updateStreakOnComplete = async () => {
-    // if (!auth.currentUser || isMockTime()) return // モック時間帯は書き込まない
+    if (!auth.currentUser) return
     const uid = auth.currentUser.uid
     const userRef = doc(db, 'users', uid)
     const snapshot = await getDoc(userRef)
@@ -337,7 +327,7 @@ const BookmarkReviewScreen = (): JSX.Element => {
 
   // 1回の学習完了で増やす枚数を引数に
   const updateStudyLogOnComplete = async (addCount: number) => {
-    // if (!auth.currentUser || isMockTime()) return // モック時間は書かない
+    if (!auth.currentUser) return
     if (!addCount || addCount <= 0) return
 
     const uid = auth.currentUser.uid
@@ -541,16 +531,18 @@ const BookmarkReviewScreen = (): JSX.Element => {
 
           {/* 三点メニュー */}
           <TouchableOpacity
-            onPress={() =>
+            onPress={() => {
+              const card = flashcards?.[currentCard]
+              if (!card) return
               handleMorePress(
-                flashcards?.[currentCard]?.deckId,
-                flashcards?.[currentCard]?.deckName,
-                flashcards?.[currentCard]?.id,
-                flashcards?.[currentCard]?.question,
-                flashcards?.[currentCard]?.answer,
-                flashcards?.[currentCard]?.isBookmarked,
+                card.deckId,
+                card.deckName,
+                card.id,
+                card.question,
+                card.answer,
+                card.isBookmarked,
               )
-            }
+            }}
           >
             <Feather name="more-vertical" size={32} color="#444" />
           </TouchableOpacity>
@@ -617,11 +609,11 @@ const BookmarkReviewScreen = (): JSX.Element => {
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => {
-                isCompletedRef.current = true 
+                isCompletedRef.current = true
                 updateStreakOnComplete().catch((e) =>
                   console.error('streak 更新失敗:', e),
-                ) 
-                updateStudyLogOnComplete(flashcards?.length ?? 0) 
+                )
+                updateStudyLogOnComplete(flashcards?.length ?? 0)
                 setShowCongratsModal(false)
               }}
             >
@@ -631,15 +623,15 @@ const BookmarkReviewScreen = (): JSX.Element => {
         </View>
       </Modal>
 
-      {flashcardModalVisible && (
+      {flashcardModalVisible && selectedCard && (
         <FlashcardActionSheetComponent
           visible={flashcardModalVisible}
           onClose={() => setFlashcardModalVisible(false)}
-          deckId={selectedCard?.deckId}
-          deckName={selectedCard?.deckName}
-          flashcardId={selectedCard?.flashcardId}
-          flashcardFront={selectedCard?.flashcardFront}
-          flashcardBack={selectedCard?.flashcardBack}
+          deckId={selectedCard.deckId}
+          deckName={selectedCard.deckName}
+          flashcardId={selectedCard.flashcardId}
+          flashcardFront={selectedCard.flashcardFront}
+          flashcardBack={selectedCard.flashcardBack}
         />
       )}
 

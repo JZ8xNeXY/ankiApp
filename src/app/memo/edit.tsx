@@ -49,9 +49,9 @@ const EditDeck = (): JSX.Element => {
   const [isBookmarked, setIsBookmarked] = useState(false)
   const [tags, setTags] = useState('')
   const [, setFlashCard] = useState<Flashcard>()
-  
+
   // SM2関連
-  const [interval] = useState(0) 
+  const [interval] = useState(0)
 
   const handleEditFlashCard = async () => {
     if (!front.trim() || !back.trim()) {

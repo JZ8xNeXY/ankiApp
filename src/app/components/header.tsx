@@ -40,12 +40,11 @@ const Header = ({ showBackToDecks = true }: HeaderProps): JSX.Element => {
         </TouchableOpacity>
       )}
 
-
-        <View style={{ flex: 1, alignItems: 'flex-end' }}>
-          <TouchableOpacity onPress={handlePress}>
-            <Text style={styles.headerText}>Log Out</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={{ flex: 1, alignItems: 'flex-end' }}>
+        <TouchableOpacity onPress={handlePress}>
+          <Text style={styles.headerText}>Log Out</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   )
 }

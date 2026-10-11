@@ -5,11 +5,10 @@ import {
   onSnapshot,
   orderBy,
 } from 'firebase/firestore'
-import React, { useState, useRef, useEffect, use } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { View, Text, Dimensions, ScrollView } from 'react-native'
 import { BarChart } from 'react-native-chart-kit'
 import { auth, db } from '../../config'
-import { isMockTime } from '../dev/mockTime'
 
 interface StudyLog {
   id: string
@@ -184,7 +183,7 @@ const StudyHistoryGraph = () => {
       >
         <BarChart
           data={chartData}
-          width={chartWidth}
+          width={chartWidth ?? screenWidth}
           height={230}
           fromZero
           yAxisLabel=""

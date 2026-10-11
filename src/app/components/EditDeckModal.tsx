@@ -15,8 +15,12 @@ interface EditDeckModalProps {
   onClose: () => void
   deckId: string
   currentName: string
-  currentTag: string| null
-  onUpdateDeck: (deckId: string, newName: string,newTags:string|null) => void
+  currentTag: string | null
+  onUpdateDeck: (
+    deckId: string,
+    newName: string,
+    newTags: string | null,
+  ) => void
 }
 
 const EditDeckModal: React.FC<EditDeckModalProps> = ({
@@ -46,9 +50,9 @@ const EditDeckModal: React.FC<EditDeckModalProps> = ({
 
     try {
       const deckRef = doc(db, `users/${auth.currentUser.uid}/decks`, deckId)
-      await updateDoc(deckRef, { name: newDeckName,tag: newDeckTag})
+      await updateDoc(deckRef, { name: newDeckName, tag: newDeckTag })
 
-      onUpdateDeck(deckId, newDeckName, newDeckTag ? newDeckTag.split(',').map(tag => tag.trim()) : [])
+      onUpdateDeck(deckId, newDeckName, newDeckTag?.trim() || null)
       setNewDeckName('')
       setNewDeckTag('')
 
@@ -62,7 +66,7 @@ const EditDeckModal: React.FC<EditDeckModalProps> = ({
   useEffect(() => {
     setNewDeckName(currentName)
     setNewDeckTag(currentTag)
-  }, [currentName,currentTag, visible])
+  }, [currentName, currentTag, visible])
 
   return (
     <Modal visible={visible} animationType="slide" transparent>

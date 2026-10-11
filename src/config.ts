@@ -4,6 +4,7 @@ import {
   initializeAuth,
   getAuth,
   getReactNativePersistence,
+  type Auth,
 } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 import isMockTime from './app/dev/mockTime'
@@ -35,13 +36,13 @@ if (!isMockTime()) {
 // Appは二重初期化しない
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
 
-let auth
+let auth: Auth
 
 try {
   auth = initializeAuth(app, {
     persistence: getReactNativePersistence(ReactNativeAsyncStorage),
   })
-} catch (error: any) {
+} catch {
   auth = getAuth(app)
 }
 

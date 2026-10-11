@@ -11,7 +11,7 @@ import prettierConfig from './prettier.config.cjs' // 任意
 
 export default [
   {
-    files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'],
+    files: ['src/**/*.{ts,tsx}', '__tests__/**/*.{ts,tsx}'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
@@ -62,4 +62,18 @@ export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,
+
+  // ルート直下の設定ファイル(CJS)
+  {
+    files: ['**/*.{js,mjs,cjs}'],
+    ignores: ['src/**', '__tests__/**'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'commonjs',
+      globals: globals.node,
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
 ]
