@@ -50,7 +50,7 @@ const StudyHistoryGraph = () => {
 
   const [, setLoading] = useState(true)
 
-  const scrollRef = useRef<ScrollView>(null)
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null)
 
   useEffect(() => {
     if (!auth.currentUser) return

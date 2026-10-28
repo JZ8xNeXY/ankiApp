@@ -1,6 +1,6 @@
 module.exports = {
   preset: 'jest-expo',
-  resolver: 'react-native-worklets/jest/resolver.js',
+  resolver: 'react-native-reanimated/jest/resolver.js',
   transform: {
     '^.+\\.[jt]sx?$': 'babel-jest',
   },
